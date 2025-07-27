@@ -212,28 +212,24 @@ fun AuthTextField(
         )
     )
 }
-
-
-
-
 @Composable
 fun AuthSocialButton(
-    icon: Int,
+    icon: Int? = null,
     label: String,
     onClick: () -> Unit,
     height: Dp = LocalResponsiveSizes.current.buttonHeight,
     width: Dp = LocalResponsiveSizes.current.buttonWidth,
     fontSize: TextUnit = LocalResponsiveSizes.current.buttonFontSize,
     backgroundColor: Color = Color.White.copy(alpha = 0.08f),
-    pressedBackgroundColor: Color = Color(0xFF2E7D32)  // Dark green on press
+    pressedBackgroundColor: Color = Color(0xFF2E7D32),
+    modifier: Modifier = Modifier,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     var isPressed by remember { mutableStateOf(false) }
 
     LaunchedEffect(interactionSource) {
         interactionSource.interactions.collectLatest { interaction ->
-            isPressed =
-                interaction is PressInteraction.Press || interaction is HoverInteraction.Enter
+            isPressed = interaction is PressInteraction.Press || interaction is HoverInteraction.Enter
         }
     }
 
@@ -252,23 +248,25 @@ fun AuthSocialButton(
         interactionSource = interactionSource,
         shape = RoundedCornerShape(50),
         border = BorderStroke(1.5.dp, animatedBorderColor),
-        modifier = Modifier
-            .width(width)
-            .height(height),
+        modifier = modifier
+            .then(Modifier.width(width).height(height)),
         colors = ButtonDefaults.outlinedButtonColors(
             containerColor = animatedBackgroundColor,
             contentColor = Color.White
         )
     ) {
-        Icon(
-            painter = painterResource(id = icon),
-            contentDescription = label,
-            tint = Color.Unspecified,
-            modifier = Modifier
-                .size(20.dp)
-                .padding(end = 4.dp)
-        )
-        Spacer(modifier = Modifier.width(6.dp))
+        icon?.let {
+            Icon(
+                painter = painterResource(id = it),
+                contentDescription = label,
+                tint = Color.Unspecified,
+                modifier = Modifier
+                    .size(20.dp)
+                    .padding(end = 4.dp)
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+        }
+
         Text(
             text = label,
             fontSize = fontSize,
@@ -276,6 +274,7 @@ fun AuthSocialButton(
         )
     }
 }
+
 
 @Composable
 fun DynamicButton(

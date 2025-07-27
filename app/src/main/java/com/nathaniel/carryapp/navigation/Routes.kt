@@ -23,4 +23,6 @@ object Routes {
     const val BADGE_DETAILS = "badge_details"
 
     const val VOUCHER = "voucher"
+
+    const val ORDER = "order"
 }
