@@ -1,0 +1,34 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+
+    <!-- Background circle for "C" -->
+    <path
+        android:fillColor="#388E3C"
+        android:pathData="M100,10a90,90 0 1,0 0.01,0Z" />
+
+    <!-- Letter C (cut out) -->
+    <path
+        android:fillColor="#1B5E20"
+        android:pathData="M60,40a60,60 0 1,1 0,120l0,-20a40,40 0 1,0 0,-80z" />
+
+    <!-- Crown -->
+    <path
+        android:fillColor="#FFB300"
+        android:pathData="M70,50l5,-15 10,15 10,-15 10,15 10,-15 5,15
+            c-10,5 -30,5 -50,0z" />
+
+    <!-- Cart -->
+    <path
+        android:fillColor="#1B5E20"
+        android:pathData="M95,100h30l-5,15h-25l-5,-15z
+            M100,120a3,3 0 1,0 0.01,0z
+            M120,120a3,3 0 1,0 0.01,0z" />
+
+    <!-- Letter W -->
+    <path
+        android:fillColor="#1B5E20"
+        android:pathData="M85,135l5,-20 5,10 5,-10 5,20h-5l-2.5,-10 -2.5,10z" />
+</vector>
