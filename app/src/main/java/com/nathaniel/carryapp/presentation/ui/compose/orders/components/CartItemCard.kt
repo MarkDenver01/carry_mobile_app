@@ -1,5 +1,6 @@
 package com.nathaniel.carryapp.presentation.ui.compose.orders.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -13,7 +14,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
@@ -35,7 +39,9 @@ fun CartItemCard(
     quantity: Int,
     onIncrease: () -> Unit,
     onDecrease: () -> Unit,
-    onRemove: () -> Unit
+    onRemove: () -> Unit,
+    onAddRecommended: () -> Unit,
+    onViewRecommended: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -56,8 +62,19 @@ fun CartItemCard(
                 Text(item.name, fontSize = 14.sp, fontWeight = FontWeight.Medium)
                 Text("₱${"%,.2f".format(item.price)}", fontWeight = FontWeight.Bold)
             }
-            IconButton(onClick = onRemove) {
-                Icon(Icons.Default.Delete, contentDescription = "Remove", tint = Color.Gray)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                IconButton(onClick = onRemove) {
+                    Icon(Icons.Default.Delete, contentDescription = "Remove", tint = Color.Gray)
+                }
+                IconButton(onClick = onAddRecommended) {
+                    Icon(Icons.Default.AddCircle, contentDescription = "Add Recommended", tint = Color.Gray)
+                }
+                IconButton(onClick = onViewRecommended) {
+                    Icon(Icons.Default.Star, contentDescription = "View Recommended", tint = Color.Gray)
+                }
             }
         }
 
@@ -68,15 +85,45 @@ fun CartItemCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                OutlinedButton(onClick = onDecrease) { Text("-") }
+            Row(
+                modifier = Modifier
+                    .background(Color.White)
+                    .padding(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedButton(
+                    onClick = onDecrease,
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = Color(0xFF2E7D32),
+                        contentColor = Color.White
+                    ),
+                    border = BorderStroke(1.dp, Color(0xFF2E7D32))
+                ) {
+                    Text("-", color = Color.White, fontSize = 20.sp)
+                }
+
                 Text(
                     text = quantity.toString(),
+                    color = Color(0xFF2E7D32),
+                    fontSize = 20.sp,
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
-                OutlinedButton(onClick = onIncrease) { Text("+") }
+
+                OutlinedButton(
+                    onClick = onIncrease,
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = Color(0xFF2E7D32),
+                        contentColor = Color.White
+                    ),
+                    border = BorderStroke(1.dp, Color(0xFF2E7D32))
+                ) {
+                    Text("+", color = Color.White, fontSize = 20.sp)
+                }
             }
+
             Text("Stock Available: ${item.stock}", fontSize = 12.sp, color = Color.Gray)
         }
+
+        Spacer(modifier = Modifier.height(8.dp))
     }
 }

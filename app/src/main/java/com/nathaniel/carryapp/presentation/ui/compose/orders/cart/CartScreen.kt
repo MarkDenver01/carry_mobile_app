@@ -118,6 +118,12 @@ fun CartScreen(
                     },
                     onRemove = {
                         // Remove logic here if needed
+                    },
+                    onAddRecommended = {
+
+                    },
+                    onViewRecommended = {
+
                     }
                 )
 
@@ -146,7 +152,7 @@ fun CartScreen(
                 Spacer(modifier = Modifier.height(spacing.sm))
 
                 DynamicButton(
-                    onClick = {  },
+                    onClick = { },
                     height = sizes.buttonHeight,
                     fontSize = sizes.buttonFontSize,
                     backgroundColor = Color(0xFF2E7D32),
@@ -156,3 +162,4 @@ fun CartScreen(
         }
     }
 }
+
