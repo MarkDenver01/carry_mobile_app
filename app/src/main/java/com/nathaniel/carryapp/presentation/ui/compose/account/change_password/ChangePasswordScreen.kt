@@ -81,6 +81,7 @@ fun ChangePasswordScreen(
                 .fillMaxSize()
                 .background(
                     Brush.verticalGradient(
+
                         listOf(Color(0xFF2E7D32), Color(0XFF4CAF50))
                     )
                 )

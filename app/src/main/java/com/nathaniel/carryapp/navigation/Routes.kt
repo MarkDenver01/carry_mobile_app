@@ -12,17 +12,13 @@ object Routes {
     const val PICKUP = "pickup"
     const val SIGN_UP = "sign_up"
     const val SIGN_IN = "sign_in"
-
     const val DISPLAY_PROFILE = "display_profile"
     const val UPDATE_PROFILE = "update_profile"
-
     const val CHANGE_PASSWORD = "change_password"
-
     const val MEMBERSHIP = "membership"
     const val SUBSCRIPTION = "subscription"
     const val BADGE_DETAILS = "badge_details"
-
     const val VOUCHER = "voucher"
-
-    const val ORDER = "order"
+    const val SELECT_ORDER = "select_order"
+    const val CART = "cart"
 }

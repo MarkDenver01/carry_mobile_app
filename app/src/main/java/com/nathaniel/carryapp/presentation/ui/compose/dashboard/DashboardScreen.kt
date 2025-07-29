@@ -49,12 +49,12 @@ fun DashboardScreen(
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
     val drawerWidth = screenWidth * 0.7f
 
-    LaunchedEffect(navigateTo) {
-        navigateTo?.let { route ->
-            navController.navigate(route)
-            viewModel.resetNavigation()
-        }
-    }
+//    LaunchedEffect(navigateTo) {
+//        navigateTo?.let { route ->
+//            navController.navigate(route)
+//            viewModel.resetNavigation()
+//        }
+//    }
 
     Scaffold(
         modifier = Modifier

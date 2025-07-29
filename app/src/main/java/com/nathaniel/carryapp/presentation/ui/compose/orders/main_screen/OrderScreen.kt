@@ -15,15 +15,21 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,6 +54,7 @@ import com.nathaniel.carryapp.presentation.theme.LocalResponsiveSizes
 import com.nathaniel.carryapp.presentation.ui.compose.navigation.BottomNavigationBar
 import com.nathaniel.carryapp.presentation.ui.compose.navigation.TopNavigationBar
 import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
+import com.nathaniel.carryapp.presentation.ui.compose.orders.components.CategoryCard
 import com.nathaniel.carryapp.presentation.utils.AuthSocialButton
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,6 +63,7 @@ fun OrderScreen(
     navController: NavController,
     viewModel: OrderViewModel = hiltViewModel()
 ) {
+    val navigateTo by viewModel.navigateTo.collectAsState()
     val sizes = LocalResponsiveSizes.current
     val spacing = LocalAppSpacing.current
 
@@ -74,6 +82,13 @@ fun OrderScreen(
         Category("GROCERY STAPLES", R.drawable.ic_bevarages),
     )
 
+    LaunchedEffect(navigateTo) {
+        navigateTo?.let { route ->
+            navController.navigate(route)
+            viewModel.resetNavigation()
+        }
+    }
+
     Scaffold(
         modifier = Modifier
             .nestedScroll(scrollBehavior.nestedScrollConnection)
@@ -85,85 +100,67 @@ fun OrderScreen(
         topBar = {
             TopNavigationBar(
                 navController = navController,
-                title = "Product Category",
+                title = "Order",
                 showBackButton = false,
                 showMenuButton = false,
                 scrollBehavior = scrollBehavior
             )
-        }, bottomBar = {
+        },
+        bottomBar = {
             BottomNavigationBar(navController = navController)
         },
         containerColor = Color.Transparent
     ) { innerPadding ->
 
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            contentPadding = PaddingValues(
-                start = spacing.sm,
-                end = spacing.sm,
-                top = spacing.md,
-                bottom = spacing.xl + innerPadding.calculateBottomPadding()
-            ),
-            verticalArrangement = Arrangement.spacedBy(spacing.sm),
-            horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            items(categories) { category ->
-                CategoryCard(category)
+            // Main Grid Content
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                contentPadding = PaddingValues(
+                    start = spacing.sm,
+                    end = spacing.sm,
+                    top = spacing.md,
+                    bottom = spacing.xl + 60.dp // Extra bottom padding for button
+                ),
+                verticalArrangement = Arrangement.spacedBy(spacing.sm),
+                horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(categories) { category ->
+                    CategoryCard(category, viewModel)
+                }
             }
+
+            // Floating Icon Button (bottom-left)
+            FloatingActionButton(
+                onClick = { viewModel.onClickCart() }, // replace with your cart route
+                containerColor = Color(0xFF2E7D32),
+                contentColor = Color.White,
+                shape = RoundedCornerShape(50),
+                elevation = FloatingActionButtonDefaults.elevation(
+                    defaultElevation = 8.dp,
+                    pressedElevation = 12.dp
+                ),
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(start = 16.dp, end = 16.dp, bottom = 90.dp)
+                    .border(
+                        width = 1.dp,
+                        color = Color.White,
+                        shape = RoundedCornerShape(50)
+                    )
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_cart), // replace with your cart icon
+                    contentDescription = "Go to Cart"
+                )
+            }
+
         }
     }
-}
 
-@Composable
-fun CategoryCard(category: Category) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth() // This fixes the spacing
-            .height(120.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .border(1.dp, Color(0xFF4CAF50), RoundedCornerShape(12.dp))
-            .background(Color.Gray)
-    ) {
-        Image(
-            painter = painterResource(id = category.imageRes),
-            contentDescription = category.name,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
-        )
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.4f))
-        )
-        Column(
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(12.dp)
-        ) {
-            Text(
-                text = category.name,
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp,
-                maxLines = 2
-            )
-        }
-
-        AuthSocialButton(
-            label = "SHOP NOW",
-            onClick = { /* TODO */ },
-            height = 30.dp,
-            width = 80.dp,
-            fontSize = 12.sp,
-            backgroundColor = Color(0xFF00C3AD),
-            pressedBackgroundColor = Color(0xFF009B89),
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(8.dp)
-                .height(30.dp),
-        )
-    }
 }

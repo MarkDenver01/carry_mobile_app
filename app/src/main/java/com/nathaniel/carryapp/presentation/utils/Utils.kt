@@ -1,9 +1,13 @@
 package com.nathaniel.carryapp.presentation.utils
 
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.nathaniel.carryapp.R
 import com.nathaniel.carryapp.domain.enum.BadgeStatus
+import com.nathaniel.carryapp.presentation.theme.AppSpacing
 
 fun Color.darken(factor: Float = 0.85f): Color {
     return Color(
@@ -23,3 +27,4 @@ fun badgeIconForStatus(status: BadgeStatus): Int {
         BadgeStatus.NOT_MEMBER -> R.drawable.ic_not_member_badge
     }
 }
+
