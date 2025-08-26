@@ -12,9 +12,8 @@ import com.nathaniel.carryapp.presentation.ui.compose.dashboard.pickup.PickupScr
 import com.nathaniel.carryapp.presentation.ui.compose.initial.InitialScreen
 import com.nathaniel.carryapp.presentation.ui.compose.membership.apply.SukiMembershipScreen
 import com.nathaniel.carryapp.presentation.ui.compose.membership.payment.SubscriptionScreen
-import com.nathaniel.carryapp.presentation.ui.compose.membership.suki_badge.VerifiedSukiCard
 import com.nathaniel.carryapp.presentation.ui.compose.membership.view.ViewMembershipScreen
-import com.nathaniel.carryapp.presentation.ui.compose.orders.cart.CartScreen
+import com.nathaniel.carryapp.presentation.ui.compose.orders.shopping.ShoppingScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.main_screen.OrderScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.sub_screen.SelectOderScreen
 import com.nathaniel.carryapp.presentation.ui.compose.signin.SignInScreen
@@ -91,7 +90,10 @@ fun NavGraphBuilder.orderGraph(navController: NavController) {
         SelectOderScreen(navController = navController)
     }
 
-    composable(Routes.CART) {
-        CartScreen(navController = navController)
+}
+
+fun NavGraphBuilder.shoppingGraph(navController: NavController) {
+    composable(Routes.SHOPPING) {
+        ShoppingScreen(navController = navController)
     }
 }

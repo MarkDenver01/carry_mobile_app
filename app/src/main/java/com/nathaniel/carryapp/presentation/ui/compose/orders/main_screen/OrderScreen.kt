@@ -134,32 +134,6 @@ fun OrderScreen(
                     CategoryCard(category, viewModel)
                 }
             }
-
-            // Floating Icon Button (bottom-left)
-            FloatingActionButton(
-                onClick = { viewModel.onClickCart() }, // replace with your cart route
-                containerColor = Color(0xFF2E7D32),
-                contentColor = Color.White,
-                shape = RoundedCornerShape(50),
-                elevation = FloatingActionButtonDefaults.elevation(
-                    defaultElevation = 8.dp,
-                    pressedElevation = 12.dp
-                ),
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(start = 16.dp, end = 16.dp, bottom = 90.dp)
-                    .border(
-                        width = 1.dp,
-                        color = Color.White,
-                        shape = RoundedCornerShape(50)
-                    )
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_cart), // replace with your cart icon
-                    contentDescription = "Go to Cart"
-                )
-            }
-
         }
     }
 

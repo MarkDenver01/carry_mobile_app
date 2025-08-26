@@ -31,7 +31,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.nathaniel.carryapp.presentation.ui.compose.orders.cart.DummyCartItem
+import com.nathaniel.carryapp.presentation.ui.compose.orders.shopping.DummyCartItem
 
 @Composable
 fun CartItemCard(

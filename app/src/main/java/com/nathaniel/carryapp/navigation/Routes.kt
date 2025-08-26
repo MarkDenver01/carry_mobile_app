@@ -20,5 +20,4 @@ object Routes {
     const val BADGE_DETAILS = "badge_details"
     const val VOUCHER = "voucher"
     const val SELECT_ORDER = "select_order"
-    const val CART = "cart"
 }

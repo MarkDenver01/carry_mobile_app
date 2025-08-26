@@ -20,6 +20,7 @@ import com.nathaniel.carryapp.navigation.displayUserProfileGraph
 import com.nathaniel.carryapp.navigation.initialGraph
 import com.nathaniel.carryapp.navigation.membershipGraph
 import com.nathaniel.carryapp.navigation.orderGraph
+import com.nathaniel.carryapp.navigation.shoppingGraph
 import com.nathaniel.carryapp.navigation.signInGraph
 import com.nathaniel.carryapp.navigation.signUpGraph
 import com.nathaniel.carryapp.presentation.theme.CarryappTheme
@@ -47,6 +48,7 @@ class MainActivity : ComponentActivity() {
                     displayUserProfileGraph(navController)
                     membershipGraph(navController)
                     orderGraph(navController)
+                    shoppingGraph(navController)
                 }
             }
         }

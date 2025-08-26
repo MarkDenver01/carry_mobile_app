@@ -28,13 +28,15 @@ import com.nathaniel.carryapp.R
 import com.nathaniel.carryapp.presentation.theme.LocalAppSpacing
 import com.nathaniel.carryapp.presentation.theme.LocalAppTypography
 import com.nathaniel.carryapp.presentation.theme.LocalResponsiveSizes
+import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
 import com.nathaniel.carryapp.presentation.ui.compose.orders.sub_screen.DummyProduct
 import com.nathaniel.carryapp.presentation.utils.AuthSocialButton
 
 @Composable
 fun ProductCard(
     dummyProduct: DummyProduct,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: OrderViewModel,
 ) {
     val spacing = LocalAppSpacing.current
     val context = LocalContext.current
@@ -120,7 +122,7 @@ fun ProductCard(
 
             AuthSocialButton(
                 label = "Add to Cart",
-                onClick = { },
+                onClick = { viewModel.onClickCart() },
                 height = 30.dp,
                 width = 140.dp,
                 fontSize = 12.sp,

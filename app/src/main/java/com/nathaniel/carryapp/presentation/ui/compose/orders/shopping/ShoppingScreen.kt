@@ -1,7 +1,6 @@
-package com.nathaniel.carryapp.presentation.ui.compose.orders.cart
+package com.nathaniel.carryapp.presentation.ui.compose.orders.shopping
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.nathaniel.carryapp.R
-import com.nathaniel.carryapp.presentation.theme.AppSpacing
 import com.nathaniel.carryapp.presentation.theme.LocalAppSpacing
 import com.nathaniel.carryapp.presentation.theme.LocalResponsiveSizes
 import com.nathaniel.carryapp.presentation.ui.compose.navigation.BottomNavigationBar
@@ -46,7 +44,7 @@ data class DummyCartItem(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CartScreen(
+fun ShoppingScreen(
     navController: NavController,
     viewModel: OrderViewModel = hiltViewModel()
 ) {

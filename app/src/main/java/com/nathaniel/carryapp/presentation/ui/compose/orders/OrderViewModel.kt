@@ -21,7 +21,7 @@ class OrderViewModel @Inject constructor() : ViewModel() {
     }
 
     fun onClickCart() {
-        _navigateTo.value = Routes.CART
+        _navigateTo.value = Routes.SHOPPING
     }
 
 }
