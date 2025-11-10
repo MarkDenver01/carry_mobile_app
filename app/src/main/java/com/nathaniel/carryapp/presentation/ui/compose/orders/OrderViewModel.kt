@@ -24,4 +24,8 @@ class OrderViewModel @Inject constructor() : ViewModel() {
         _navigateTo.value = Routes.SHOPPING
     }
 
+    fun onLoginClick() {
+        _navigateTo.value = Routes.SIGN_IN
+    }
+
 }

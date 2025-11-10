@@ -36,6 +36,14 @@ fun OrderScreen(
     navController: NavController,
     viewModel: OrderViewModel = hiltViewModel()
 ) {
+    val navigateTo by viewModel.navigateTo.collectAsState()
+    LaunchedEffect(navigateTo) {
+        navigateTo?.let { route ->
+            navController.navigate(route)
+            viewModel.resetNavigation()
+        }
+    }
+
     // 🧩 Mock products (sample, replace with real VM data)
     val sampleProducts = remember {
         listOf(
@@ -67,10 +75,10 @@ fun OrderScreen(
         topBar = { ShopHeader(notifications = 12, cartCount = 15) },
         bottomBar = {
             ShopBottomBar(
-                onHome = {},
-                onCategories = {},
-                onReorder = {},
-                onAccount = {}
+                onHome = { viewModel.onLoginClick() },
+                onCategories = { viewModel.onLoginClick() },
+                onReorder = { viewModel.onLoginClick() },
+                onAccount = { viewModel.onLoginClick() }
             )
         }
     ) { inner ->
@@ -85,7 +93,7 @@ fun OrderScreen(
                 Column {
                     ShopSearchBar(
                         hint = "I'm looking for…",
-                        onSearch = { /* search action */ }
+                        onSearch = { viewModel.onLoginClick() }
                     )
                     Spacer(Modifier.height(8.dp))
                     PromoBanner(
@@ -107,7 +115,7 @@ fun OrderScreen(
                 SectionHeader(
                     title = rack.title,
                     actionText = "View More",
-                    onActionClick = { /* navigate to category */ }
+                    onActionClick = { viewModel.onLoginClick() }
                 )
 
                 // Product grid per rack
