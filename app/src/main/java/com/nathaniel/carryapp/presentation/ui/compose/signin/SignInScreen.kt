@@ -1,28 +1,33 @@
 package com.nathaniel.carryapp.presentation.ui.compose.signin
 
+import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.airbnb.lottie.compose.*
 import com.nathaniel.carryapp.domain.request.SignInRequest
 import com.nathaniel.carryapp.navigation.Routes
-import com.nathaniel.carryapp.presentation.theme.LocalAppSpacing
-import com.nathaniel.carryapp.presentation.ui.compose.navigation.TopNavigationBar
-import com.nathaniel.carryapp.presentation.utils.AuthTextField
 import com.nathaniel.carryapp.presentation.utils.DynamicButton
-import com.nathaniel.carryapp.presentation.theme.LocalResponsiveSizes
+import com.nathaniel.carryapp.R
+import com.nathaniel.carryapp.presentation.utils.getAppVersionName
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,7 +36,6 @@ fun SignInScreen(
     viewModel: SignInViewModel = hiltViewModel()
 ) {
     val navigateTo by viewModel.navigateTo.collectAsState()
-
     LaunchedEffect(navigateTo) {
         navigateTo?.let { route ->
             navController.navigate(route)
@@ -39,105 +43,133 @@ fun SignInScreen(
         }
     }
 
-    val sizes = LocalResponsiveSizes.current
-    val spacing = LocalAppSpacing.current
-    var mailAddress by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val versionName = remember { getAppVersionName(context) }
 
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    var mobileNumber by remember { mutableStateOf("") }
+
+    // Lottie composition setup
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.banner))
+    val progress by animateLottieCompositionAsState(
+        composition,
+        iterations = LottieConstants.IterateForever
+    )
+
+    // ✅ Unified background color
+    val backgroundColor = Color(0xFFF0FAF3) // pick your color here (light green tint, not white/gray)
 
     Scaffold(
-        modifier = Modifier
-            .nestedScroll(scrollBehavior.nestedScrollConnection)
-            .background(
-                Brush.verticalGradient(
-                    listOf(Color(0xFF2E7D32), Color(0xFF4CAF50))
-                )
-            ),
-        topBar = {
-            TopNavigationBar(
-                navController = navController,
-                title = "Sign in",
-                showBackButton = false,
-                showMenuButton = false,
-                scrollBehavior = scrollBehavior
-            )
-        },
-        containerColor = Color.Transparent
+        containerColor = backgroundColor
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = spacing.lg, vertical = spacing.xl),
-            verticalArrangement = Arrangement.SpaceBetween
+                .background(backgroundColor), // same color as scaffold
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Spacer(modifier = Modifier.height(spacing.md))
-
-                AuthTextField(
-                    value = mailAddress,
-                    onValueChange = { mailAddress = it },
-                    placeholder = "E-mail",
-                    leadingIcon = Icons.Default.Email,
-                    fontSize = sizes.buttonFontSize
-                )
-
-                AuthTextField(
-                    value = password,
-                    onValueChange = { password = it },
-                    placeholder = "Password",
-                    isPassword = true,
-                    leadingIcon = Icons.Default.Lock,
-                    fontSize = sizes.buttonFontSize
-                )
-
-                Spacer(modifier = Modifier.height(spacing.lg))
-
-                DynamicButton(
-                    onClick = {
-                        viewModel.onSignIn(SignInRequest(mailAddress, password))
-                    },
-                    height = sizes.buttonHeight,
-                    fontSize = sizes.buttonFontSize,
-                    backgroundColor = Color(0xFF2E7D32),
-                    content = "Sign in"
-                )
-
-                Spacer(modifier = Modifier.height(spacing.md))
-
-                Text(
-                    text = "Forgot password?",
-                    color = Color.Blue,
-                    fontSize = sizes.buttonFontSize,
-                    modifier = Modifier.clickable {
-                        navController.navigate(Routes.SIGN_UP)
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(spacing.md))
-            }
-
-            Row(
+            // === Banner Section ===
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = spacing.lsm),
-                horizontalArrangement = Arrangement.Center
+                    .height(220.dp)
             ) {
-                Text(
-                    text = "Don't have an account? ",
-                    color = Color.White,
-                    fontSize = sizes.buttonFontSize
+                // Lottie Animation Background
+                LottieAnimation(
+                    composition = composition,
+                    progress = { progress },
+                    modifier = Modifier.matchParentSize(),
+                    contentScale = ContentScale.Crop
                 )
-                Text(
-                    text = "Sign up",
-                    color = Color.Blue,
-                    fontSize = sizes.buttonFontSize,
-                    modifier = Modifier.clickable {
-                        navController.navigate(Routes.SIGN_UP)
-                    }
+
+                // Optional overlay for contrast
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    Color(0x66000000),
+                                    Color.Transparent
+                                )
+                            )
+                        )
                 )
+            }
+
+            // === Main Content Box (same color as background) ===
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .offset(y = (-40).dp)
+                    .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
+                    .background(backgroundColor) // ✅ same color
+                    .padding(horizontal = 24.dp, vertical = 32.dp)
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Top
+                ) {
+                    Text(
+                        text = "Welcome to Wrap and Carry",
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1B5E20),
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    Text(
+                        text = "Sign in with your mobile number",
+                        fontSize = 14.sp,
+                        color = Color(0xFF388E3C),
+                        modifier = Modifier.padding(bottom = 24.dp)
+                    )
+
+                    OutlinedTextField(
+                        value = mobileNumber,
+                        onValueChange = { mobileNumber = it },
+                        placeholder = { Text("09xxxxxxxxx") },
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFF4CAF50),
+                            unfocusedBorderColor = Color(0xFFBDBDBD),
+                            cursorColor = Color(0xFF4CAF50)
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    DynamicButton(
+                        onClick = {
+                            viewModel.onSignIn(SignInRequest(mobileNumber, ""))
+                        },
+                        height = 55.dp,
+                        backgroundColor = Color(0xFF4CAF50),
+                        pressedBackgroundColor = Color(0xFF388E3C),
+                        content = "Login or Register"
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = "Forgot Password?",
+                        color = Color(0xFF4CAF50),
+                        fontSize = 16.sp,
+                        modifier = Modifier.clickable {
+                            navController.navigate(Routes.FORGOT_PASSWORD)
+                        }
+                    )
+
+                    Spacer(modifier = Modifier.height(30.dp))
+
+                    Text(
+                        text = "Version $versionName",
+                        color = Color(0xFF388E3C),
+                        fontSize = 12.sp
+                    )
+                }
             }
         }
     }

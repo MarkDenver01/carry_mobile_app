@@ -1,5 +1,7 @@
 package com.nathaniel.carryapp.presentation.utils
 
+import android.content.Context
+import android.content.pm.PackageManager
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
@@ -25,6 +27,15 @@ fun badgeIconForStatus(status: BadgeStatus): Int {
         BadgeStatus.EXPIRED -> R.drawable.ic_expired_badge
         BadgeStatus.PENDING -> R.drawable.ic_pending_badge
         BadgeStatus.NOT_MEMBER -> R.drawable.ic_not_member_badge
+    }
+}
+
+fun getAppVersionName(context: Context): String {
+    return try {
+        val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+        packageInfo.versionName ?: "Unknown"
+    } catch (e: PackageManager.NameNotFoundException) {
+        "Unknown"
     }
 }
 
