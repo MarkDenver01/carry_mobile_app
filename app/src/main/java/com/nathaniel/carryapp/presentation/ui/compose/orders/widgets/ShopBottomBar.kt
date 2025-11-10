@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.nathaniel.carryapp.R
 
 @Composable
 fun ShopBottomBar(
@@ -24,7 +25,7 @@ fun ShopBottomBar(
     onAccount: () -> Unit,
     offersCount: Int = 0
 ) {
-    var selectedIndex by remember { mutableStateOf(0) } // 0=Home,1=Categories,2=Reorder,3=Account
+    var selectedIndex by remember { mutableStateOf(0) }
     val darkGreen = Color(0xFF0F8B3B)
     val lightGray = Color(0xFF6B7D85)
 
@@ -33,16 +34,15 @@ fun ShopBottomBar(
             .fillMaxWidth()
             .background(Color.Transparent)
     ) {
-        // ✅ Bottom Navigation Bar with proper system padding
+        // ✅ Base Navigation Bar
         NavigationBar(
             containerColor = Color.White,
             tonalElevation = 8.dp,
             modifier = Modifier
                 .fillMaxWidth()
-                .navigationBarsPadding() // ✅ fixes overlap with Android nav bar
-                .height(80.dp)            // ✅ gives breathing space for icons and labels
+                .navigationBarsPadding()
+                .height(80.dp)
         ) {
-            // HOME
             NavigationBarItem(
                 selected = selectedIndex == 0,
                 onClick = { selectedIndex = 0; onHome() },
@@ -57,7 +57,6 @@ fun ShopBottomBar(
                 )
             )
 
-            // CATEGORIES
             NavigationBarItem(
                 selected = selectedIndex == 1,
                 onClick = { selectedIndex = 1; onCategories() },
@@ -72,10 +71,8 @@ fun ShopBottomBar(
                 )
             )
 
-            // Spacer for floating "Offers" circle
             Spacer(modifier = Modifier.width(56.dp))
 
-            // REORDER
             NavigationBarItem(
                 selected = selectedIndex == 2,
                 onClick = { selectedIndex = 2; onReorder() },
@@ -90,7 +87,6 @@ fun ShopBottomBar(
                 )
             )
 
-            // ACCOUNT
             NavigationBarItem(
                 selected = selectedIndex == 3,
                 onClick = { selectedIndex = 3; onAccount() },
@@ -106,31 +102,16 @@ fun ShopBottomBar(
             )
         }
 
-        // ✅ Floating “OFFERS” Pill — sits above without hiding anything
+        // 🎅 Floating Festive Offers Button (non-overlapping, same baseline)
         Box(
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .offset(y = (-30).dp) // lifted just above icons cleanly
-                .size(68.dp)
-                .clip(CircleShape)
-                .background(Color(0xFF11C870)),
-            contentAlignment = Alignment.Center
+                .offset(y = (-30).dp)
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = offersCount.toString(),
-                    color = Color.White,
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Text(
-                    text = "OFFERS",
-                    color = Color.White,
-                    style = MaterialTheme.typography.labelSmall
-                )
-            }
+            FestiveOfferIconButton(
+                offersCount = offersCount,
+                onClick = { /* handle click here */ }
+            )
         }
     }
 }

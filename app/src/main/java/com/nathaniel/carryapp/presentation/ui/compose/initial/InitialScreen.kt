@@ -9,10 +9,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -29,10 +29,10 @@ fun InitialScreen(
     navController: NavController,
     viewModel: InitialViewModel = hiltViewModel()
 ) {
-    // Navigation observer
+    // Observe navigation flow
     LaunchedEffect(Unit) {
         viewModel.navigateToDashboard.collect {
-            navController.navigate(Routes.SIGN_IN) {
+            navController.navigate(Routes.ORDERS) {
                 popUpTo(Routes.INITIAL) { inclusive = true }
             }
         }
@@ -44,48 +44,49 @@ fun InitialScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    listOf(Color(0xFF4CAF50), Color(0xFF2E7D32))
-                )
-            )
+            .background(Color.White) // ✅ White background for clean look
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(
-                    horizontal = spacing.lg,
-                    vertical = spacing.xl
-                )
+                .padding(horizontal = spacing.lg, vertical = spacing.xl)
                 .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Spacer(modifier = Modifier.weight(0.8f))
+            // 🔰 App Logo
+            Image(
+                painter = painterResource(id = R.drawable.logo_final),
+                contentDescription = "App Logo",
+                modifier = Modifier
+                    .size(sizes.logoSize)
+                    .padding(bottom = spacing.lg)
+            )
 
-            // Logo & Title
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = "Wrap & Carry",
-                    fontSize = sizes.titleFontSize,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    modifier = Modifier.padding(bottom = spacing.md)
-                )
+            // 🟢 App Title
+            Text(
+                text = "Wrap & Carry",
+                fontSize = sizes.titleFontSize,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF0F8B3B), // same green as header
+                textAlign = TextAlign.Center
+            )
 
-                Image(
-                    painter = painterResource(id = R.drawable.logo_final),
-                    contentDescription = "App Logo",
-                    modifier = Modifier
-                        .size(sizes.logoSize)
-                        .padding(bottom = spacing.lg)
-                )
-            }
+            Spacer(modifier = Modifier.height(spacing.md))
 
-            Spacer(modifier = Modifier.height(spacing.xl))
+            // 📝 Subtitle or Tagline
+            Text(
+                text = "Your trusted everyday grocery partner.",
+                fontSize = 14.sp,
+                color = Color(0xFF6B7D85),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = spacing.lg)
+            )
 
-            // Animated button
+            Spacer(modifier = Modifier.height(spacing.xl * 2))
+
+            // ✅ Get Started Button
             var pressed by remember { mutableStateOf(false) }
-
             DynamicButton(
                 onClick = {
                     pressed = true
@@ -93,11 +94,9 @@ fun InitialScreen(
                 },
                 height = sizes.buttonHeight,
                 fontSize = sizes.buttonFontSize,
-                backgroundColor = BgApp,
+                backgroundColor = BgApp, // uses your green theme
                 content = "Get Started!"
             )
-
-            Spacer(modifier = Modifier.weight(1.2f))
 
             LaunchedEffect(pressed) {
                 if (pressed) {
@@ -105,6 +104,8 @@ fun InitialScreen(
                     pressed = false
                 }
             }
+
+            Spacer(modifier = Modifier.height(spacing.xl * 2))
         }
     }
 }
