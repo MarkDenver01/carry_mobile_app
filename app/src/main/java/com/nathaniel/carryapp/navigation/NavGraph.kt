@@ -16,6 +16,7 @@ import com.nathaniel.carryapp.presentation.ui.compose.membership.view.ViewMember
 import com.nathaniel.carryapp.presentation.ui.compose.orders.shopping.ShoppingScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.main_screen.OrderScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.sub_screen.SelectOderScreen
+import com.nathaniel.carryapp.presentation.ui.compose.signin.OtpVerificationScreen
 import com.nathaniel.carryapp.presentation.ui.compose.signin.SignInScreen
 import com.nathaniel.carryapp.presentation.ui.compose.signup.SignUpScreen
 import com.nathaniel.carryapp.presentation.ui.compose.voucher.VoucherScreen
@@ -54,6 +55,9 @@ fun NavGraphBuilder.signUpGraph(navController: NavController) {
 fun NavGraphBuilder.signInGraph(navController: NavController) {
     composable(Routes.SIGN_IN) {
         SignInScreen(navController = navController)
+    }
+    composable(Routes.OTP) {
+        OtpVerificationScreen(navController = navController)
     }
 }
 

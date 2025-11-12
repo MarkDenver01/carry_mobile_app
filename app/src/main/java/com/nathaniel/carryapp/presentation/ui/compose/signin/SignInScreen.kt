@@ -27,7 +27,9 @@ import com.nathaniel.carryapp.domain.request.SignInRequest
 import com.nathaniel.carryapp.navigation.Routes
 import com.nathaniel.carryapp.presentation.utils.DynamicButton
 import com.nathaniel.carryapp.R
+import com.nathaniel.carryapp.presentation.utils.NetworkResult
 import com.nathaniel.carryapp.presentation.utils.getAppVersionName
+import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,14 +37,6 @@ fun SignInScreen(
     navController: NavController,
     viewModel: SignInViewModel = hiltViewModel()
 ) {
-    val navigateTo by viewModel.navigateTo.collectAsState()
-    LaunchedEffect(navigateTo) {
-        navigateTo?.let { route ->
-            navController.navigate(route)
-            viewModel.resetNavigation()
-        }
-    }
-
     val context = LocalContext.current
     val versionName = remember { getAppVersionName(context) }
 
@@ -56,7 +50,26 @@ fun SignInScreen(
     )
 
     // ✅ Unified background color
-    val backgroundColor = Color(0xFFF0FAF3) // pick your color here (light green tint, not white/gray)
+    val backgroundColor =
+        Color(0xFFF0FAF3) // pick your color here (light green tint, not white/gray)
+
+    val otpState by viewModel.otpState.collectAsState()
+
+    LaunchedEffect(otpState) {
+        when (otpState) {
+            is NetworkResult.Success -> {
+                navController.navigate("${Routes.OTP}/$mobileNumber") {
+                    popUpTo(Routes.SIGN_IN) { inclusive = true }
+                }
+            }
+            is NetworkResult.Error -> {
+                Timber.e("Cannot send verification code")
+            }
+            is NetworkResult.Loading -> {
+                Timber.w("still loading..")
+            }
+        }
+    }
 
     Scaffold(
         containerColor = backgroundColor
@@ -143,7 +156,7 @@ fun SignInScreen(
 
                     DynamicButton(
                         onClick = {
-                            viewModel.onSignIn(SignInRequest(mobileNumber, ""))
+                            viewModel.sendOtp(mobileNumber)
                         },
                         height = 55.dp,
                         backgroundColor = Color(0xFF4CAF50),

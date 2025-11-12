@@ -26,6 +26,7 @@ import com.nathaniel.carryapp.navigation.signUpGraph
 import com.nathaniel.carryapp.presentation.theme.CarryappTheme
 import com.nathaniel.carryapp.presentation.ui.compose.dashboard.DashboardScreen
 import com.nathaniel.carryapp.presentation.ui.compose.initial.InitialScreen
+import com.nathaniel.carryapp.presentation.ui.compose.navigation.AppNavigation
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -36,6 +37,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             CarryappTheme {
                 val navController = rememberNavController()
+
+                //AppNavigation(navController = navController)
 
                 NavHost(
                     navController = navController,

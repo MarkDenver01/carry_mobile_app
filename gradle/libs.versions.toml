@@ -69,6 +69,7 @@ androidx-lifecycle-livedata-ktx = { module = "androidx.lifecycle:lifecycle-lived
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
 play-core-update = { module = "com.google.android.play:app-update", version.ref = "playCore" }
 play-core-update-ktx = { module = "com.google.android.play:app-update-ktx", version.ref = "playCore" }
+google-accompanist-navigation-animation = { module = "com.google.accompanist:accompanist-navigation-animation", version.ref = "accompanist" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

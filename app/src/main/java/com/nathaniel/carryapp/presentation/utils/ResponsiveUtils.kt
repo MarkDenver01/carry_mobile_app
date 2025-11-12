@@ -282,41 +282,51 @@ fun DynamicButton(
     modifier: Modifier = Modifier.fillMaxWidth(),
     height: Dp = LocalResponsiveSizes.current.buttonHeight,
     fontSize: TextUnit = LocalResponsiveSizes.current.buttonFontSize,
-    backgroundColor: Color = Color.White.copy(alpha = 0.08f),
-    pressedBackgroundColor: Color = Color(0xFF2E7D32),
-    content: String
+    backgroundColor: Color = Color(0xFF4CAF50),
+    pressedBackgroundColor: Color = Color(0xFF388E3C),
+    disabledBackgroundColor: Color = Color.LightGray.copy(alpha = 0.4f),
+    disabledTextColor: Color = Color.White.copy(alpha = 0.6f),
+    content: String,
+    enabled: Boolean = true
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
-    val animatedBackgroundColor by animateColorAsState(
-        targetValue = if (isPressed) pressedBackgroundColor else backgroundColor,
-        label = "ButtonBackgroundAnimation"
-    )
+    // Determine target background color based on state
+    val targetBackgroundColor =
+        when {
+            !enabled -> disabledBackgroundColor
+            isPressed -> pressedBackgroundColor
+            else -> backgroundColor
+        }
 
-    val animatedBorderColor by animateColorAsState(
-        targetValue = if (isPressed) pressedBackgroundColor else Color.White.copy(alpha = 0.4f),
-        label = "ButtonBorderAnimation"
+    val animatedBackgroundColor by animateColorAsState(
+        targetValue = targetBackgroundColor,
+        label = "ButtonBackgroundAnimation"
     )
 
     Button(
         onClick = onClick,
+        enabled = enabled,
         modifier = modifier.height(height),
         shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = animatedBackgroundColor,
-            contentColor = Color.White
+            contentColor = if (enabled) Color.White else disabledTextColor,
+            disabledContainerColor = disabledBackgroundColor,
+            disabledContentColor = disabledTextColor
         ),
-        border = BorderStroke(1.5.dp, animatedBorderColor),
-        interactionSource = interactionSource
+        interactionSource = interactionSource,
+        border = if (enabled) BorderStroke(1.5.dp, backgroundColor.copy(alpha = 0.5f)) else null
     ) {
         Text(
             text = content,
             fontSize = fontSize,
-            color = Color.White
+            color = if (enabled) Color.White else disabledTextColor
         )
     }
 }
+
 
 @Composable
 fun IconButton(

@@ -22,4 +22,6 @@ object Routes {
     const val SELECT_ORDER = "select_order"
 
     const val FORGOT_PASSWORD = "forgot_password"
+
+    const val OTP = "otp"
 }

@@ -117,4 +117,5 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.play.core.update)
     implementation(libs.play.core.update.ktx)
+    implementation(libs.google.accompanist.navigation.animation)
 }
