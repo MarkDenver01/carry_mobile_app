@@ -19,6 +19,7 @@ import com.nathaniel.carryapp.presentation.ui.compose.orders.sub_screen.SelectOd
 import com.nathaniel.carryapp.presentation.ui.compose.signin.OtpVerificationScreen
 import com.nathaniel.carryapp.presentation.ui.compose.signin.SignInScreen
 import com.nathaniel.carryapp.presentation.ui.compose.signup.SignUpScreen
+import com.nathaniel.carryapp.presentation.ui.compose.terms.AgreementTermsPrivacyScreen
 import com.nathaniel.carryapp.presentation.ui.compose.voucher.VoucherScreen
 
 fun NavGraphBuilder.initialGraph(navController: NavController) {
@@ -56,8 +57,29 @@ fun NavGraphBuilder.signInGraph(navController: NavController) {
     composable(Routes.SIGN_IN) {
         SignInScreen(navController = navController)
     }
-    composable(Routes.OTP) {
-        OtpVerificationScreen(navController = navController)
+    composable(
+        route = "${Routes.OTP}/{mobileNumber}"
+    ) { backStackEntry ->
+        val mobile = backStackEntry.arguments?.getString("mobileNumber") ?: ""
+        OtpVerificationScreen(
+            navController = navController,
+            mobileNumber = mobile
+        )
+    }
+    composable(
+        route = "${Routes.AGREEMENT_TERMS_PRIVACY}/{mobileNumber}"
+    ) { backStackEntry ->
+        val mobile = backStackEntry.arguments?.getString("mobileNumber") ?: ""
+        AgreementTermsPrivacyScreen(
+            navController = navController,
+            mobileNumber = mobile,
+            onAgree = {
+                // TODO: save flag in DataStore that user agreed, then navigate
+                navController.navigate(Routes.ORDERS) {
+                    popUpTo(Routes.AGREEMENT_TERMS_PRIVACY) { inclusive = true }
+                }
+            }
+        )
     }
 }
 

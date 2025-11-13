@@ -16,6 +16,14 @@ sealed class NetworkResult<T>(
     val data: T? = null,
     val message: String? = null
 ) {
+
+    /**
+     * Idle
+     *
+     * @param T
+     */
+    class Idle<T> : NetworkResult<T>()
+
     /**
      * Success
      *

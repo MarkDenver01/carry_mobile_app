@@ -1,7 +1,14 @@
 package com.nathaniel.carryapp.presentation.utils
 
 import android.app.DatePickerDialog
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,6 +23,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -41,9 +49,11 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -54,6 +64,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -62,7 +73,14 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.nathaniel.carryapp.R
+import com.nathaniel.carryapp.domain.enum.AlertType
 import com.nathaniel.carryapp.domain.enum.ButtonVariants
 import com.nathaniel.carryapp.presentation.theme.LocalAppColors
 import com.nathaniel.carryapp.presentation.theme.LocalAppSpacing
@@ -787,6 +805,166 @@ fun DynamicInfoCard(
                 fontStyle = FontStyle.Italic,
                 modifier = Modifier.fillMaxWidth()
             )
+        }
+    }
+}
+
+@Composable
+fun SweetAlertDialog(
+    type: AlertType,
+    title: String,
+    message: String,
+    show: Boolean,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit = {},
+    confirmText: String = "Yes",
+    dismissText: String = "No",
+    isSingleButton: Boolean = false
+) {
+    val colors = LocalAppColors.current
+    val animationRes = when (type) {
+        AlertType.SUCCESS -> R.raw.success
+        AlertType.WARNING -> R.raw.warning
+        AlertType.ERROR -> R.raw.error
+        AlertType.QUESTION -> R.raw.question
+        AlertType.INFO -> R.raw.info
+    }
+
+    if (show) {
+        AnimatedVisibility(
+            visible = show,
+            enter = fadeIn(animationSpec = tween(300)) + scaleIn(initialScale = 0.85f),
+            exit = fadeOut(animationSpec = tween(200)) + scaleOut(targetScale = 0.8f)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f))
+                    .padding(horizontal = 24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    tonalElevation = 6.dp,
+                    shadowElevation = 12.dp,
+                    color = Color.White,
+                    modifier = Modifier.animateContentSize(animationSpec = tween(300))
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(24.dp)
+                    ) {
+                        // Animation
+                        val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(animationRes))
+                        val progress by animateLottieCompositionAsState(
+                            composition = composition,
+                            iterations = LottieConstants.IterateForever
+                        )
+
+                        LottieAnimation(
+                            composition = composition,
+                            progress = { progress },
+                            modifier = Modifier
+                                .size(120.dp)
+                                .graphicsLayer {
+                                    alpha = 0.9f
+                                    scaleX = 1.1f
+                                    scaleY = 1.1f
+                                }
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Title
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = colors.primary
+                            ),
+                            textAlign = TextAlign.Center
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Message
+                        Text(
+                            text = message,
+                            style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray),
+                            textAlign = TextAlign.Center,
+                            lineHeight = 20.sp
+                        )
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        // Conditional Buttons
+                        if (isSingleButton) {
+                            // --- Single Confirm Button ---
+                            Button(
+                                onClick = onConfirm,
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = when (type) {
+                                        AlertType.SUCCESS -> Color(0xFF4CAF50)
+                                        AlertType.WARNING -> Color(0xFFFFA000)
+                                        AlertType.ERROR -> Color(0xFFD32F2F)
+                                        AlertType.QUESTION -> colors.primary
+                                        AlertType.INFO -> Color(0xFF2196F3)
+                                    }
+                                ),
+                                contentPadding = PaddingValues(vertical = 10.dp)
+                            ) {
+                                Text(
+                                    text = confirmText,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color.White
+                                )
+                            }
+                        } else {
+                            // --- Two Buttons ---
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                OutlinedButton(
+                                    onClick = onDismiss,
+                                    shape = RoundedCornerShape(12.dp),
+                                    border = BorderStroke(1.dp, Color.LightGray),
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        contentColor = Color.Gray
+                                    ),
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(dismissText)
+                                }
+
+                                Button(
+                                    onClick = onConfirm,
+                                    shape = RoundedCornerShape(12.dp),
+                                    modifier = Modifier.weight(1f),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = when (type) {
+                                            AlertType.SUCCESS -> Color(0xFF4CAF50)
+                                            AlertType.WARNING -> Color(0xFFFFA000)
+                                            AlertType.ERROR -> Color(0xFFD32F2F)
+                                            AlertType.QUESTION -> colors.primary
+                                            AlertType.INFO -> Color(0xFF2196F3)
+                                        }
+                                    ),
+                                    contentPadding = PaddingValues(vertical = 10.dp)
+                                ) {
+                                    Text(
+                                        text = confirmText,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color.White
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

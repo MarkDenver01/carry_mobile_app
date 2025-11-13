@@ -51,9 +51,12 @@ android {
 }
 
 
-tasks.register("bumpVersion") {
+/**
+ * Bump PATCH: 1.0.0 -> 1.0.1
+ */
+tasks.register("bumpPatch") {
     group = "versioning"
-    description = "Bumps the patch version"
+    description = "Increase PATCH version by 1"
 
     doLast {
         val propsFile = rootProject.file("gradle.properties")
@@ -66,10 +69,53 @@ tasks.register("bumpVersion") {
         props["VERSION_PATCH"] = patch.toString()
         props.store(propsFile.outputStream(), null)
 
-        println("Pace app version to $major.$minor.$patch")
+        println("✔ PATCH bumped → $major.$minor.$patch")
     }
 }
 
+/**
+ * Optional: Bump MINOR (resets patch = 0)
+ */
+tasks.register("bumpMinor") {
+    group = "versioning"
+    description = "Increase MINOR version by 1 and reset PATCH to 0"
+
+    doLast {
+        val propsFile = rootProject.file("gradle.properties")
+        val props = Properties().apply { load(propsFile.inputStream()) }
+
+        val major = props["VERSION_MAJOR"].toString().toInt()
+        val minor = props["VERSION_MINOR"].toString().toInt() + 1
+
+        props["VERSION_MINOR"] = minor.toString()
+        props["VERSION_PATCH"] = "0"
+        props.store(propsFile.outputStream(), null)
+
+        println("✔ MINOR bumped → $major.$minor.0")
+    }
+}
+
+/**
+ * Optional: Bump MAJOR (resets minor + patch)
+ */
+tasks.register("bumpMajor") {
+    group = "versioning"
+    description = "Increase MAJOR version by 1 and reset MINOR & PATCH to 0"
+
+    doLast {
+        val propsFile = rootProject.file("gradle.properties")
+        val props = Properties().apply { load(propsFile.inputStream()) }
+
+        val major = props["VERSION_MAJOR"].toString().toInt() + 1
+
+        props["VERSION_MAJOR"] = major.toString()
+        props["VERSION_MINOR"] = "0"
+        props["VERSION_PATCH"] = "0"
+        props.store(propsFile.outputStream(), null)
+
+        println("✔ MAJOR bumped → $major.0.0")
+    }
+}
 
 dependencies {
 

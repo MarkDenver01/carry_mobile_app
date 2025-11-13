@@ -1,0 +1,87 @@
+name: Release Automation
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  release:
+    name: Auto Release (Semantic Versioning)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0   # IMPORTANT (needed for tags)
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Get Latest Tag
+        id: get_tag
+        run: |
+          echo "tag=$(git describe --tags --abbrev=0 || echo "v0.0.0")" >> $GITHUB_OUTPUT
+
+      - name: Determine Version Bump Type
+        id: bump_type
+        run: |
+          COMMITS=$(git log ${{ steps.get_tag.outputs.tag }}..HEAD --pretty=format:"%s")
+
+          if echo "$COMMITS" | grep -q "feat:"; then
+            echo "type=minor" >> $GITHUB_OUTPUT
+          elif echo "$COMMITS" | grep -q "fix:"; then
+            echo "type=patch" >> $GITHUB_OUTPUT
+          else
+            echo "type=patch" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Bump Version
+        run: |
+          if [ "${{ steps.bump_type.outputs.type }}" = "minor" ]; then
+            ./gradlew bumpMinor
+          else
+            ./gradlew bumpPatch
+          fi
+
+      - name: Read New Version
+        id: version
+        run: |
+          MAJOR=$(grep VERSION_MAJOR gradle.properties | cut -d'=' -f2)
+          MINOR=$(grep VERSION_MINOR gradle.properties | cut -d'=' -f2)
+          PATCH=$(grep VERSION_PATCH gradle.properties | cut -d'=' -f2)
+          echo "version=v$MAJOR.$MINOR.$PATCH" >> $GITHUB_OUTPUT
+
+      - name: Commit updated version
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add gradle.properties
+          git commit -m "chore: bump version to ${{ steps.version.outputs.version }}" || echo "No changes to commit"
+
+      - name: Tag release
+        run: |
+          git tag ${{ steps.version.outputs.version }}
+          git push --tags
+
+      - name: Generate Release Notes
+        id: notes
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: Release ${{ steps.version.outputs.version }}
+          body_path: CHANGELOG.md
+
+      - name: Update Changelog
+        run: |
+          echo "## ${{ steps.version.outputs.version }} - $(date +%Y-%m-%d)" >> CHANGELOG.md
+          git log ${{ steps.get_tag.outputs.tag }}..HEAD --pretty=format:"- %s" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          git add CHANGELOG.md
+          git commit -m "docs: Update changelog" || echo "No changes"
+          git push
