@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   release:
-    name: Auto Release (Semantic Versioning)
+    name: Auto Release (Semantic Versioning + APK Build)
     runs-on: ubuntu-latest
 
     steps:
@@ -38,7 +38,10 @@ jobs:
         id: bump_type
         run: |
           COMMITS=$(git log ${{ steps.get_tag.outputs.tag }}..HEAD --pretty=format:"%s")
-          if echo "$COMMITS" | grep -q "feat:"; then
+
+          if echo "$COMMITS" | grep -q "feat!:"; then
+            echo "type=major" >> $GITHUB_OUTPUT
+          elif echo "$COMMITS" | grep -q "feat:"; then
             echo "type=minor" >> $GITHUB_OUTPUT
           elif echo "$COMMITS" | grep -q "fix:"; then
             echo "type=patch" >> $GITHUB_OUTPUT
@@ -48,7 +51,9 @@ jobs:
 
       - name: Bump Version
         run: |
-          if [ "${{ steps.bump_type.outputs.type }}" = "minor" ]; then
+          if [ "${{ steps.bump_type.outputs.type }}" = "major" ]; then
+            ./gradlew bumpMajor
+          elif [ "${{ steps.bump_type.outputs.type }}" = "minor" ]; then
             ./gradlew bumpMinor
           else
             ./gradlew bumpPatch
@@ -78,14 +83,34 @@ jobs:
           git commit -m "docs: update changelog" || true
           git push
 
+      # Build APKs (debug + release)
+      - name: Build APKs
+        run: |
+          ./gradlew assembleDebug
+          ./gradlew assembleRelease
+
+      - name: Upload APK Artifacts
+        if: ${{ steps.bump_type.outputs.type == 'major' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: APKs
+          path: |
+            app/build/outputs/apk/debug/app-debug.apk
+            app/build/outputs/apk/release/app-release-unsigned.apk
+
       - name: Tag release
+        if: ${{ steps.bump_type.outputs.type == 'major' }}
         run: |
           git tag ${{ steps.version.outputs.version }} || true
           git push --tags
 
       - name: Generate Release Notes
+        if: ${{ steps.bump_type.outputs.type == 'major' }}
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.version.outputs.version }}
           name: Release ${{ steps.version.outputs.version }}
           body_path: CHANGELOG.md
+          files: |
+            app/build/outputs/apk/debug/app-debug.apk
+            app/build/outputs/apk/release/app-release-unsigned.apk
