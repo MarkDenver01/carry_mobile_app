@@ -6,6 +6,9 @@ on:
       - main
       - master
 
+permissions:
+  contents: write
+
 jobs:
   release:
     name: Auto Release (Semantic Versioning)
@@ -15,7 +18,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0   # IMPORTANT (needed for tags)
+          fetch-depth: 0
 
       - name: Setup Java
         uses: actions/setup-java@v3
@@ -23,16 +26,18 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
       - name: Get Latest Tag
         id: get_tag
         run: |
-          echo "tag=$(git describe --tags --abbrev=0 || echo "v0.0.0")" >> $GITHUB_OUTPUT
+          echo "tag=$(git describe --tags --abbrev=0 || echo v0.0.0)" >> $GITHUB_OUTPUT
 
       - name: Determine Version Bump Type
         id: bump_type
         run: |
           COMMITS=$(git log ${{ steps.get_tag.outputs.tag }}..HEAD --pretty=format:"%s")
-
           if echo "$COMMITS" | grep -q "feat:"; then
             echo "type=minor" >> $GITHUB_OUTPUT
           elif echo "$COMMITS" | grep -q "fix:"; then
@@ -59,23 +64,10 @@ jobs:
 
       - name: Commit updated version
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git config user.name "GitHub Action"
           git add gradle.properties
-          git commit -m "chore: bump version to ${{ steps.version.outputs.version }}" || echo "No changes to commit"
-
-      - name: Tag release
-        run: |
-          git tag ${{ steps.version.outputs.version }}
-          git push --tags
-
-      - name: Generate Release Notes
-        id: notes
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ steps.version.outputs.version }}
-          name: Release ${{ steps.version.outputs.version }}
-          body_path: CHANGELOG.md
+          git commit -m "chore: bump version to ${{ steps.version.outputs.version }}" || true
 
       - name: Update Changelog
         run: |
@@ -83,5 +75,17 @@ jobs:
           git log ${{ steps.get_tag.outputs.tag }}..HEAD --pretty=format:"- %s" >> CHANGELOG.md
           echo "" >> CHANGELOG.md
           git add CHANGELOG.md
-          git commit -m "docs: Update changelog" || echo "No changes"
+          git commit -m "docs: update changelog" || true
           git push
+
+      - name: Tag release
+        run: |
+          git tag ${{ steps.version.outputs.version }} || true
+          git push --tags
+
+      - name: Generate Release Notes
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: Release ${{ steps.version.outputs.version }}
+          body_path: CHANGELOG.md
