@@ -10,3 +10,7 @@ All changes will be documented in this file.
 - update android version
 - update otp
 - update launcher
+## v2.1.0 - 2025-11-14
+- chore: bump version to v2.1.0
+- changes
+- feat: sample feature
