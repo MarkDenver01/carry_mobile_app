@@ -72,12 +72,12 @@ class SignInViewModel @Inject constructor(
 
                 is VerifyOtpResult.CustomerLogin -> {
                     _uiState.update { it.copy(isLoading = false, verified = true) }
-                    _eventFlow.emit(AuthUiEvent.NavigateToHome)
+                    _eventFlow.emit(AuthUiEvent.NavigateToTerms(mobileNumber))
                 }
 
                 is VerifyOtpResult.DriverLogin -> {
                     _uiState.update { it.copy(isLoading = false, verified = true) }
-                    _eventFlow.emit(AuthUiEvent.NavigateToHome)
+                    _eventFlow.emit(AuthUiEvent.NavigateToTerms(mobileNumber))
                 }
 
                 is VerifyOtpResult.NewUser -> {
