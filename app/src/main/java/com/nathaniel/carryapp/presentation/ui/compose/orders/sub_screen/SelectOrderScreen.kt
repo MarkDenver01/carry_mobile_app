@@ -122,7 +122,7 @@ fun SelectOderScreen(
 
             // Floating Icon Button (bottom-left)
             FloatingActionButton(
-                onClick = { viewModel.onClickCart() }, // replace with your cart route
+                onClick = {  }, // replace with your cart route
                 containerColor = Color(0xFF2E7D32),
                 contentColor = Color.White,
                 shape = RoundedCornerShape(50),

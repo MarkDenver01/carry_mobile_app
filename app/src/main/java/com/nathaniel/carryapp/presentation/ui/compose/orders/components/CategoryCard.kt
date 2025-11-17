@@ -65,7 +65,7 @@ fun CategoryCard(
 
         AuthSocialButton(
             label = "SHOP NOW",
-            onClick = { viewModel.onClickSelectProduct() },
+            onClick = { },
             height = 30.dp,
             width = 80.dp,
             fontSize = 12.sp,

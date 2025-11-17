@@ -122,7 +122,7 @@ fun ProductCard(
 
             AuthSocialButton(
                 label = "Add to Cart",
-                onClick = { viewModel.onClickCart() },
+                onClick = {  },
                 height = 30.dp,
                 width = 140.dp,
                 fontSize = 12.sp,

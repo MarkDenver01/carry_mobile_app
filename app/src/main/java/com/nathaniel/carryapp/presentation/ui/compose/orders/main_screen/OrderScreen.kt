@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.nathaniel.carryapp.R
+import com.nathaniel.carryapp.navigation.Routes
 import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
 import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.*
 
@@ -37,9 +38,12 @@ fun OrderScreen(
     viewModel: OrderViewModel = hiltViewModel()
 ) {
     val navigateTo by viewModel.navigateTo.collectAsState()
+
     LaunchedEffect(navigateTo) {
         navigateTo?.let { route ->
-            navController.navigate(route)
+            navController.navigate(route) {
+                popUpTo(Routes.ORDERS) { inclusive = false }
+            }
             viewModel.resetNavigation()
         }
     }
@@ -75,10 +79,10 @@ fun OrderScreen(
         topBar = { ShopHeader(notifications = 12, cartCount = 15) },
         bottomBar = {
             ShopBottomBar(
-                onHome = { viewModel.onLoginClick() },
-                onCategories = { viewModel.onLoginClick() },
-                onReorder = { viewModel.onLoginClick() },
-                onAccount = { viewModel.onLoginClick() }
+                onHome = { viewModel.onHomeClick() },
+                onCategories = { viewModel.onCategoriesClick() },
+                onReorder = { viewModel.onReorderClick() },
+                onAccount = { viewModel.onAccountClick() }
             )
         }
     ) { inner ->
@@ -93,7 +97,7 @@ fun OrderScreen(
                 Column {
                     ShopSearchBar(
                         hint = "I'm looking for…",
-                        onSearch = { viewModel.onLoginClick() }
+                        onSearch = { viewModel.onSearchClick() }
                     )
                     Spacer(Modifier.height(8.dp))
                     PromoBanner(
@@ -115,7 +119,7 @@ fun OrderScreen(
                 SectionHeader(
                     title = rack.title,
                     actionText = "View More",
-                    onActionClick = { viewModel.onLoginClick() }
+                    onActionClick = { viewModel.onViewMoreClick() }
                 )
 
                 // Product grid per rack

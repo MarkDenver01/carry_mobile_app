@@ -7,7 +7,6 @@ object Routes {
     const val SHOPPING = "shopping"
     const val ALERTS = "alerts"
     const val BROWSE = "browse"
-
     const val DELIVERY = "delivery"
     const val PICKUP = "pickup"
     const val SIGN_UP = "sign_up"
@@ -24,5 +23,10 @@ object Routes {
     const val FORGOT_PASSWORD = "forgot_password"
     const val OTP = "otp"
     const val AGREEMENT_TERMS_PRIVACY = "agreement_terms_privacy"
+
+    const val CATEGORIES = "categories"
+    const val REORDER = "reorder"
+    const val ACCOUNT = "account"
+
 
 }

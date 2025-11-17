@@ -43,7 +43,7 @@ fun SignInScreen(
     val typography = LocalAppTypography.current
     val sizes = LocalResponsiveSizes.current
 
-    var mobileNumber by remember { mutableStateOf("") }
+    var mobileNumberOrEmailAddress by remember { mutableStateOf("") }
 
     // Lottie
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.banner))
@@ -160,11 +160,11 @@ fun SignInScreen(
                         )
 
                         OutlinedTextField(
-                            value = mobileNumber,
-                            onValueChange = { mobileNumber = it },
+                            value = mobileNumberOrEmailAddress,
+                            onValueChange = { mobileNumberOrEmailAddress = it },
                             placeholder = {
                                 Text(
-                                    text = "09xxxxxxxxx",
+                                    text = "Mobile number or Email address",
                                     color = Color(0xFF666666),
                                     fontSize = typography.body.fontSize
                                 )
@@ -186,7 +186,7 @@ fun SignInScreen(
                         Spacer(modifier = Modifier.height(spacing.lg))
 
                         DynamicButton(
-                            onClick = { viewModel.sendOtp(mobileNumber) },
+                            onClick = { viewModel.sendOtp(mobileNumberOrEmailAddress) },
                             height = sizes.buttonHeight,
                             backgroundColor = colors.primary,
                             pressedBackgroundColor = colors.primaryDark,
