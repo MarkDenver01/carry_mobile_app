@@ -12,12 +12,22 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * Auto Login event.
+ *
+ */
 sealed class AutoLoginEvent {
     object NavigateToSignIn : AutoLoginEvent()
     object NavigateToHome : AutoLoginEvent()
     data class ShowError(val message: String) : AutoLoginEvent()
 }
 
+/**
+ * Auto login state.
+ *
+ * @property isChecking
+ * @property isLoggedIn
+ */
 data class AutoLoginState(
     val isChecking: Boolean = true,
     val isLoggedIn: Boolean = false
