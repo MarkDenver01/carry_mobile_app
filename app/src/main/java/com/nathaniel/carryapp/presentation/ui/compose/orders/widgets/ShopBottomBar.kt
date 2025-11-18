@@ -108,9 +108,10 @@ fun ShopBottomBar(
                 .align(Alignment.TopCenter)
                 .offset(y = (-30).dp)
         ) {
-            FestiveOfferIconButton(
-                offersCount = offersCount,
-                onClick = { /* handle click here */ }
+            FloatingSnowballButton(
+                count = 12,
+                onClick = { /* navigate to offers */ },
+                modifier = Modifier.align(Alignment.TopCenter)
             )
         }
     }
