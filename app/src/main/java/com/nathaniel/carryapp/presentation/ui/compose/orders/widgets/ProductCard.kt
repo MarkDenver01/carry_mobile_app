@@ -23,23 +23,28 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.clickable
+import coil.compose.AsyncImage
 
 @Composable
 fun ProductCard(
-    imageRes: Int,
+    imageUrl: String,
     name: String,
     weight: String,
     sold: String,
     price: String,
     onFavorite: () -> Unit,
     onAdd: () -> Unit,
-    onMinus: () -> Unit
+    onMinus: () -> Unit,
+    onDetailClick: () -> Unit
 ) {
     var qty by remember { mutableStateOf(0) }
     var isFavorite by remember { mutableStateOf(false) }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onDetailClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
@@ -58,8 +63,8 @@ fun ProductCard(
                     .clip(RoundedCornerShape(12.dp))
                     .background(Color(0xFFF1F5F6))
             ) {
-                Image(
-                    painter = painterResource(id = imageRes),
+                AsyncImage(
+                    model = imageUrl,
                     contentDescription = name,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
@@ -148,7 +153,12 @@ fun ProductCard(
                     modifier = Modifier.width(48.dp),
                     contentPadding = PaddingValues(0.dp)
                 ) {
-                    Text("–", color = Color(0xFF6B7D85), fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        "–",
+                        color = Color(0xFF6B7D85),
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
 
                 Text(
@@ -166,7 +176,12 @@ fun ProductCard(
                     modifier = Modifier.width(48.dp),
                     contentPadding = PaddingValues(0.dp)
                 ) {
-                    Text("+", color = Color(0xFF118B3C), fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        "+",
+                        color = Color(0xFF118B3C),
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }

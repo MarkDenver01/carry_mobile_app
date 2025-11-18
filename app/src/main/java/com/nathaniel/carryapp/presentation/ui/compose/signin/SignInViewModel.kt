@@ -2,7 +2,9 @@ package com.nathaniel.carryapp.presentation.ui.compose.signin
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.nathaniel.carryapp.data.repository.AuthRepository
+import com.nathaniel.carryapp.data.repository.ApiRepository
+import com.nathaniel.carryapp.domain.usecase.VerifyOtpResult
+import com.nathaniel.carryapp.domain.usecase.VerifyOtpUseCase
 import com.nathaniel.carryapp.presentation.utils.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -29,69 +31,61 @@ data class AuthUiState(
 
 @HiltViewModel
 class SignInViewModel @Inject constructor(
-    private val repository: AuthRepository
+    private val verifyOtpUseCase: VerifyOtpUseCase,
+    private val repository: ApiRepository
 ) : ViewModel() {
 
-    // -------------------------
-    // UI STATE
-    // -------------------------
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState
 
-    // -------------------------
-    // ONE-TIME UI EVENTS
-    // -------------------------
     private val _eventFlow = MutableSharedFlow<AuthUiEvent>()
     val eventFlow: SharedFlow<AuthUiEvent> = _eventFlow
 
 
-    // -------------------------
-    // SEND OTP
-    // -------------------------
     fun sendOtp(mobileNumber: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
 
             when (val result = repository.sendOtp(mobileNumber)) {
-
                 is NetworkResult.Success -> {
                     _uiState.update { it.copy(isLoading = false, otpSent = true) }
-
-                    // 🔥 one-time event (NO LEAKS)
                     _eventFlow.emit(AuthUiEvent.NavigateToOtp(mobileNumber))
                 }
-
                 is NetworkResult.Error -> {
                     _uiState.update { it.copy(isLoading = false) }
                     _eventFlow.emit(AuthUiEvent.ShowError(result.message ?: "Failed to send OTP"))
                 }
-
                 else -> Unit
             }
         }
     }
 
 
-    // -------------------------
-    // VERIFY OTP
-    // -------------------------
     fun verifyOtp(mobileNumber: String, otp: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
 
-            when (val result = repository.verifyOtp(mobileNumber, otp)) {
+            when (val result = verifyOtpUseCase(mobileNumber, otp)) {
 
-                is NetworkResult.Success -> {
+                is VerifyOtpResult.CustomerLogin -> {
                     _uiState.update { it.copy(isLoading = false, verified = true) }
-                    _eventFlow.emit(AuthUiEvent.NavigateToHome)
+                    _eventFlow.emit(AuthUiEvent.NavigateToTerms(mobileNumber))
                 }
 
-                is NetworkResult.Error -> {
+                is VerifyOtpResult.DriverLogin -> {
+                    _uiState.update { it.copy(isLoading = false, verified = true) }
+                    _eventFlow.emit(AuthUiEvent.NavigateToTerms(mobileNumber))
+                }
+
+                is VerifyOtpResult.NewUser -> {
+                    _uiState.update { it.copy(isLoading = false, verified = true) }
+                    _eventFlow.emit(AuthUiEvent.NavigateToTerms(mobileNumber))
+                }
+
+                is VerifyOtpResult.Error -> {
                     _uiState.update { it.copy(isLoading = false) }
-                    _eventFlow.emit(AuthUiEvent.ShowError(result.message ?: "Incorrect OTP"))
+                    _eventFlow.emit(AuthUiEvent.ShowError(result.message))
                 }
-
-                else -> Unit
             }
         }
     }

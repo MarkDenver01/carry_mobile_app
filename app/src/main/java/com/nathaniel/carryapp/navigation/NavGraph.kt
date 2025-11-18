@@ -13,8 +13,11 @@ import com.nathaniel.carryapp.presentation.ui.compose.initial.InitialScreen
 import com.nathaniel.carryapp.presentation.ui.compose.membership.apply.SukiMembershipScreen
 import com.nathaniel.carryapp.presentation.ui.compose.membership.payment.SubscriptionScreen
 import com.nathaniel.carryapp.presentation.ui.compose.membership.view.ViewMembershipScreen
+import com.nathaniel.carryapp.presentation.ui.compose.orders.category.CategoriesScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.shopping.ShoppingScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.main_screen.OrderScreen
+import com.nathaniel.carryapp.presentation.ui.compose.orders.product.ProductDetailRouter
+import com.nathaniel.carryapp.presentation.ui.compose.orders.product.ProductDetailScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.sub_screen.SelectOderScreen
 import com.nathaniel.carryapp.presentation.ui.compose.signin.OtpVerificationScreen
 import com.nathaniel.carryapp.presentation.ui.compose.signin.SignInScreen
@@ -116,6 +119,19 @@ fun NavGraphBuilder.orderGraph(navController: NavController) {
         SelectOderScreen(navController = navController)
     }
 
+    composable(
+        route = "${Routes.PRODUCT_DETAIL}/{productId}"
+    ) { backStackEntry ->
+        val productId = backStackEntry.arguments?.getString("productId")?.toLongOrNull()
+        ProductDetailRouter(
+            navController = navController,
+            productId = productId
+        )
+    }
+
+    composable(Routes.CATEGORIES) {
+        CategoriesScreen(navController = navController)
+    }
 }
 
 fun NavGraphBuilder.shoppingGraph(navController: NavController) {
