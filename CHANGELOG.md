@@ -14,3 +14,19 @@ All changes will be documented in this file.
 - chore: bump version to v2.1.0
 - changes
 - feat: sample feature
+## v3.1.1 - 2025-11-18
+- chore: bump version to v3.1.1
+- update yml
+- update version
+- Merge pull request #4 from MarkDenver01/impl/func/app
+- update AccountScreen.kt
+- Merge pull request #3 from MarkDenver01/impl/func/app
+- update AccountScreen.kt
+- Merge pull request #2 from MarkDenver01/impl/func/app
+- update category card
+- update product details screen
+- update product
+- update terms and condition transition
+- update gmail
+- Merge pull request #1
+- update release.yml
