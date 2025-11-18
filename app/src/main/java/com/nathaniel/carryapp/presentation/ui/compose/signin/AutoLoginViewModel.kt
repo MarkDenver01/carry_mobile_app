@@ -2,7 +2,7 @@ package com.nathaniel.carryapp.presentation.ui.compose.signin
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.nathaniel.carryapp.data.repository.AuthRepository
+import com.nathaniel.carryapp.data.repository.ApiRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +25,7 @@ data class AutoLoginState(
 
 @HiltViewModel
 class AutoLoginViewModel @Inject constructor(
-    private val repository: AuthRepository
+    private val repository: ApiRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AutoLoginState())

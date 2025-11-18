@@ -1,6 +1,6 @@
 package com.nathaniel.carryapp.domain.usecase
 
-import com.nathaniel.carryapp.data.repository.AuthRepository
+import com.nathaniel.carryapp.data.repository.ApiRepository
 import com.nathaniel.carryapp.domain.mapper.LoginMapper
 import com.nathaniel.carryapp.presentation.utils.NetworkResult
 import javax.inject.Inject
@@ -13,11 +13,11 @@ sealed class VerifyOtpResult {
 }
 
 class VerifyOtpUseCase @Inject constructor(
-    private val authRepository: AuthRepository
+    private val apiRepository: ApiRepository
 ) {
     suspend operator fun invoke(mobile: String, otp: String): VerifyOtpResult {
 
-        when (val result = authRepository.verifyOtp(mobile, otp)) {
+        when (val result = apiRepository.verifyOtp(mobile, otp)) {
 
             is NetworkResult.Error -> {
                 return VerifyOtpResult.Error(result.message ?: "OTP verification failed")
@@ -32,7 +32,7 @@ class VerifyOtpUseCase @Inject constructor(
                 val driverEntity = LoginMapper.toDriverEntity(data)
 
                 // Save session locally
-                authRepository.saveLoginSession(
+                apiRepository.saveLoginSession(
                     loginEntity = loginEntity,
                     customerEntity = customerEntity,
                     driverEntity = driverEntity

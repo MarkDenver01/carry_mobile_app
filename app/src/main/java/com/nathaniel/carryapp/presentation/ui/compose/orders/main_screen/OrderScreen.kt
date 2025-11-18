@@ -15,21 +15,10 @@ import androidx.navigation.NavController
 import com.nathaniel.carryapp.R
 import com.nathaniel.carryapp.navigation.Routes
 import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
+import com.nathaniel.carryapp.presentation.ui.compose.orders.model.ProductRack
+import com.nathaniel.carryapp.presentation.ui.compose.orders.model.toShopProduct
 import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.*
 
-data class ShopProduct(
-    val id: String,
-    val name: String,
-    val weight: String,
-    val sold: String,
-    val price: String,
-    val imageRes: Int
-)
-
-data class ProductRack(
-    val title: String,
-    val products: List<ShopProduct>
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,6 +27,10 @@ fun OrderScreen(
     viewModel: OrderViewModel = hiltViewModel()
 ) {
     val navigateTo by viewModel.navigateTo.collectAsState()
+    val products by viewModel.products.collectAsState()
+    val error by viewModel.error.collectAsState()
+    // Convert from domain → UI
+    val shopProducts = products.map { it.toShopProduct() }
 
     LaunchedEffect(navigateTo) {
         navigateTo?.let { route ->
@@ -48,31 +41,20 @@ fun OrderScreen(
         }
     }
 
-    // 🧩 Mock products (sample, replace with real VM data)
-    val sampleProducts = remember {
-        listOf(
-            ShopProduct("1", "Carrots Regular", "230–250G", "15.3k", "₱45", R.drawable.logs),
-            ShopProduct("2", "Banana Lakatan Ripe", "0.9–1KG", "13.7k", "₱115", R.drawable.logs),
-            ShopProduct("3", "Cabbage", "450–500G", "15.1k", "₱38", R.drawable.logs),
-            ShopProduct("4", "Tomato", "300–350G", "9.6k", "₱28", R.drawable.logs)
-        )
+    // ⚠ Handle API errors
+    error?.let {
+        Text("Error loading products: $it", color = Color.Red)
     }
 
-    // 🗂️ All racks (categories)
-    val racks = remember {
-        listOf(
-            ProductRack("Beverages", sampleProducts),
-            ProductRack("Wines & Liquor", sampleProducts),
-            ProductRack("Snacks", sampleProducts),
-            ProductRack("Sweets", sampleProducts),
-            ProductRack("Milk Products", sampleProducts),
-            ProductRack("Formula Milk & Baby Foods", sampleProducts),
-            ProductRack("Cigars", sampleProducts),
-            ProductRack("Condiments, Sauces, & Dressings", sampleProducts),
-            ProductRack("Canned Goods", sampleProducts),
-            ProductRack("Grocery Staples", sampleProducts)
-        )
-    }
+    // Dynamic category groups
+    val racks = shopProducts
+        .groupBy { it.category } // GROUP BY CATEGORY
+        .map { (categoryName, productList) ->
+            ProductRack(
+                title = categoryName,
+                products = productList
+            )
+        }
 
     Scaffold(
         containerColor = Color(0xFFF7F8FA),
@@ -133,7 +115,7 @@ fun OrderScreen(
                 ) {
                     items(rack.products, key = { it.id }) { p ->
                         ProductCard(
-                            imageRes = p.imageRes,
+                            imageUrl = p.imageUrl,
                             name = p.name,
                             weight = p.weight,
                             sold = p.sold,

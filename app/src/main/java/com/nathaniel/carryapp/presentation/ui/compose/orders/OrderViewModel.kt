@@ -2,7 +2,11 @@ package com.nathaniel.carryapp.presentation.ui.compose.orders
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.nathaniel.carryapp.data.repository.AuthRepository
+import com.nathaniel.carryapp.data.repository.ApiRepository
+import com.nathaniel.carryapp.domain.model.Product
+import com.nathaniel.carryapp.domain.usecase.GetAllProductsUseCase
+import com.nathaniel.carryapp.domain.usecase.ProductResult
+import com.nathaniel.carryapp.domain.usecase.VerifyOtpUseCase
 import com.nathaniel.carryapp.navigation.Routes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,7 +16,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class OrderViewModel @Inject constructor(
-    private val authRepository: AuthRepository
+    private val productsUseCase: GetAllProductsUseCase,
+    private val apiRepository: ApiRepository
 ) : ViewModel() {
 
     private val _navigateTo = MutableStateFlow<String?>(null)
@@ -21,13 +26,33 @@ class OrderViewModel @Inject constructor(
     private val _isLoggedIn = MutableStateFlow<Boolean?>(null)
     val isLoggedIn: StateFlow<Boolean?> = _isLoggedIn
 
+    private val _products = MutableStateFlow<List<Product>>(emptyList())
+    val products: StateFlow<List<Product>> = _products
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
     init {
         checkLoginStatus()
+        loadProducts()
+    }
+
+    private fun loadProducts() {
+        viewModelScope.launch {
+            when (val result = productsUseCase()) {
+                is ProductResult.Success -> {
+                    _products.value = result.products
+                }
+                is ProductResult.Error -> {
+                    _error.value = result.message
+                }
+            }
+        }
     }
 
     private fun checkLoginStatus() {
         viewModelScope.launch {
-            val login = authRepository.getCurrentSession()
+            val login = apiRepository.getCurrentSession()
             _isLoggedIn.value = login != null
         }
     }

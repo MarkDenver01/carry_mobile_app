@@ -4,19 +4,21 @@ import com.nathaniel.carryapp.data.local.prefs.TokenManager
 import com.nathaniel.carryapp.data.local.room.entity.CustomerEntity
 import com.nathaniel.carryapp.data.local.room.entity.DriverEntity
 import com.nathaniel.carryapp.data.local.room.entity.LoginEntity
-import com.nathaniel.carryapp.data.remote.datasource.AuthImplRemoteDataSource
 import com.nathaniel.carryapp.domain.datasource.AuthRemoteDatasource
 import com.nathaniel.carryapp.domain.datasource.LoginLocalDataSource
 import com.nathaniel.carryapp.domain.enum.HttpStatus
+import com.nathaniel.carryapp.domain.mapper.ProductMapper
+import com.nathaniel.carryapp.domain.model.Product
 import com.nathaniel.carryapp.domain.request.LoginResponse
+import com.nathaniel.carryapp.domain.response.ProductResponse
 import com.nathaniel.carryapp.presentation.utils.NetworkResult
 import javax.inject.Inject
 
-class AuthRepository @Inject constructor(
+class ApiRepository @Inject constructor(
     private val remote: AuthRemoteDatasource,
     private val loginLocalDataSource: LoginLocalDataSource,
     private val tokenManager: TokenManager
-){
+) {
 
     suspend fun sendOtp(mobileNumber: String): NetworkResult<Unit> {
         return try {
@@ -53,6 +55,35 @@ class AuthRepository @Inject constructor(
             }
         } catch (e: Exception) {
             NetworkResult.Error(HttpStatus.ERROR, e.message ?: "Network or server error")
+        }
+    }
+
+    suspend fun getAllProducts(): NetworkResult<List<Product>> {
+        return try {
+            val response = remote.getAllProducts()
+
+            if (response.isSuccessful) {
+                val body = response.body()
+
+                if (body != null) {
+                    val mapped = ProductMapper.toDomainList(body)
+                    NetworkResult.Success(HttpStatus.SUCCESS, mapped)
+                } else {
+                    NetworkResult.Error(HttpStatus.ERROR, "Invalid response from server")
+                }
+
+            } else {
+                NetworkResult.Error(
+                    HttpStatus.ERROR,
+                    response.errorBody()?.string() ?: "Failed to fetch products"
+                )
+            }
+
+        } catch (e: Exception) {
+            NetworkResult.Error(
+                HttpStatus.ERROR,
+                e.message ?: "Network or server error"
+            )
         }
     }
 

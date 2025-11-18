@@ -23,10 +23,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
+import coil.compose.AsyncImage
 
 @Composable
 fun ProductCard(
-    imageRes: Int,
+    imageUrl: String,
     name: String,
     weight: String,
     sold: String,
@@ -58,8 +59,8 @@ fun ProductCard(
                     .clip(RoundedCornerShape(12.dp))
                     .background(Color(0xFFF1F5F6))
             ) {
-                Image(
-                    painter = painterResource(id = imageRes),
+                AsyncImage(
+                    model = imageUrl,
                     contentDescription = name,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()

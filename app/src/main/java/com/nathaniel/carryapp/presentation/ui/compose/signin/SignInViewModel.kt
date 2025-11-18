@@ -2,10 +2,7 @@ package com.nathaniel.carryapp.presentation.ui.compose.signin
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.nathaniel.carryapp.data.local.room.entity.CustomerEntity
-import com.nathaniel.carryapp.data.local.room.entity.DriverEntity
-import com.nathaniel.carryapp.data.local.room.entity.LoginEntity
-import com.nathaniel.carryapp.data.repository.AuthRepository
+import com.nathaniel.carryapp.data.repository.ApiRepository
 import com.nathaniel.carryapp.domain.usecase.VerifyOtpResult
 import com.nathaniel.carryapp.domain.usecase.VerifyOtpUseCase
 import com.nathaniel.carryapp.presentation.utils.NetworkResult
@@ -35,7 +32,7 @@ data class AuthUiState(
 @HiltViewModel
 class SignInViewModel @Inject constructor(
     private val verifyOtpUseCase: VerifyOtpUseCase,
-    private val repository: AuthRepository
+    private val repository: ApiRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AuthUiState())
