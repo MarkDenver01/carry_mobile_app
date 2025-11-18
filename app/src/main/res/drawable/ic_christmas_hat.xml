@@ -1,0 +1,34 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+
+    <!-- 🎅 Big Red Curved Hat -->
+    <path
+        android:fillColor="#D83A34"
+        android:pathData="
+            M6,26
+            C8,16 20,6 32,10
+            C40,12.5 45,18 46,22
+            C38,22 28,21 18,24
+            C12,25.5 9,26 6,26z" />
+
+    <!-- 🎅 Big White Fluffy Brim -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M4,28
+            C8,32 16,34 24,34
+            C32,34 40,32 44,28
+            C41,31 35,34 24,34
+            C13,34 7,31 4,28z" />
+
+    <!-- ❄ Much Larger Pom-Pom -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M34,8
+            a6,6 0 1,0 12,0
+            a6,6 0 1,0 -12,0z" />
+</vector>
