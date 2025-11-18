@@ -72,11 +72,12 @@ class OrderViewModel @Inject constructor(
     }
 
     fun onCategoriesClick() {
-        if (_isLoggedIn.value == true) {
-            //_navigateTo.value = Routes.CATEGORIES
-        } else {
-            _navigateTo.value = Routes.SIGN_IN
-        }
+//        if (_isLoggedIn.value == true) {
+//            _navigateTo.value = Routes.CATEGORIES
+//        } else {
+//            _navigateTo.value = Routes.SIGN_IN
+//        }
+        _navigateTo.value = Routes.CATEGORIES
     }
 
     fun onReorderClick() {
