@@ -16,12 +16,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Setup Java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
@@ -51,13 +51,11 @@ jobs:
 
       - name: Bump Version
         run: |
-          if [ "${{ steps.bump_type.outputs.type }}" = "major" ]; then
-            ./gradlew bumpMajor
-          elif [ "${{ steps.bump_type.outputs.type }}" = "minor" ]; then
-            ./gradlew bumpMinor
-          else
-            ./gradlew bumpPatch
-          fi
+          case "${{ steps.bump_type.outputs.type }}" in
+            major) ./gradlew bumpMajor ;;
+            minor) ./gradlew bumpMinor ;;
+            *) ./gradlew bumpPatch ;;
+          esac
 
       - name: Read New Version
         id: version
@@ -81,9 +79,11 @@ jobs:
           echo "" >> CHANGELOG.md
           git add CHANGELOG.md
           git commit -m "docs: update changelog" || true
-          git push
 
-      # Build APKs (debug + release)
+      - name: Push changes
+        run: git push || true
+
+      # Build APKs
       - name: Build APKs
         run: |
           ./gradlew assembleDebug
@@ -91,7 +91,7 @@ jobs:
 
       - name: Upload APK Artifacts
         if: ${{ steps.bump_type.outputs.type == 'major' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: APKs
           path: |
@@ -106,7 +106,7 @@ jobs:
 
       - name: Generate Release Notes
         if: ${{ steps.bump_type.outputs.type == 'major' }}
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.version }}
           name: Release ${{ steps.version.outputs.version }}
