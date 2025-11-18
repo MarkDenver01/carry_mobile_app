@@ -122,7 +122,10 @@ fun OrderScreen(
                             price = p.price,
                             onFavorite = {},
                             onAdd = {},
-                            onMinus = {}
+                            onMinus = {},
+                            onDetailClick = {
+                                navController.navigate("${Routes.PRODUCT_DETAIL}/${p.id}")
+                            }
                         )
                     }
                 }

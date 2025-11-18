@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.clickable
 import coil.compose.AsyncImage
 
 @Composable
@@ -34,13 +35,16 @@ fun ProductCard(
     price: String,
     onFavorite: () -> Unit,
     onAdd: () -> Unit,
-    onMinus: () -> Unit
+    onMinus: () -> Unit,
+    onDetailClick: () -> Unit
 ) {
     var qty by remember { mutableStateOf(0) }
     var isFavorite by remember { mutableStateOf(false) }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onDetailClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
@@ -149,7 +153,12 @@ fun ProductCard(
                     modifier = Modifier.width(48.dp),
                     contentPadding = PaddingValues(0.dp)
                 ) {
-                    Text("–", color = Color(0xFF6B7D85), fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        "–",
+                        color = Color(0xFF6B7D85),
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
 
                 Text(
@@ -167,7 +176,12 @@ fun ProductCard(
                     modifier = Modifier.width(48.dp),
                     contentPadding = PaddingValues(0.dp)
                 ) {
-                    Text("+", color = Color(0xFF118B3C), fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        "+",
+                        color = Color(0xFF118B3C),
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }

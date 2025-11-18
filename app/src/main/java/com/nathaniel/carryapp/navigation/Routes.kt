@@ -27,6 +27,7 @@ object Routes {
     const val CATEGORIES = "categories"
     const val REORDER = "reorder"
     const val ACCOUNT = "account"
+    const val PRODUCT_DETAIL = "product_detail"
 
 
 }

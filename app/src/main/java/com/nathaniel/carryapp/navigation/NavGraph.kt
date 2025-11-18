@@ -15,6 +15,8 @@ import com.nathaniel.carryapp.presentation.ui.compose.membership.payment.Subscri
 import com.nathaniel.carryapp.presentation.ui.compose.membership.view.ViewMembershipScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.shopping.ShoppingScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.main_screen.OrderScreen
+import com.nathaniel.carryapp.presentation.ui.compose.orders.product.ProductDetailRouter
+import com.nathaniel.carryapp.presentation.ui.compose.orders.product.ProductDetailScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.sub_screen.SelectOderScreen
 import com.nathaniel.carryapp.presentation.ui.compose.signin.OtpVerificationScreen
 import com.nathaniel.carryapp.presentation.ui.compose.signin.SignInScreen
@@ -114,6 +116,16 @@ fun NavGraphBuilder.orderGraph(navController: NavController) {
 
     composable(Routes.SELECT_ORDER) {
         SelectOderScreen(navController = navController)
+    }
+
+    composable(
+        route = "${Routes.PRODUCT_DETAIL}/{productId}"
+    ) { backStackEntry ->
+        val productId = backStackEntry.arguments?.getString("productId")?.toLongOrNull()
+        ProductDetailRouter(
+            navController = navController,
+            productId = productId
+        )
     }
 
 }
