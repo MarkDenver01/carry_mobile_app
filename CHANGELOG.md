@@ -30,3 +30,22 @@ All changes will be documented in this file.
 - update gmail
 - Merge pull request #1
 - update release.yml
+## v4.0.0 - 2025-11-18
+- chore: bump version to v4.0.0
+- feat!: release APK
+- docs: update changelog
+- chore: bump version to v3.1.1
+- update yml
+- update version
+- Merge pull request #4 from MarkDenver01/impl/func/app
+- update AccountScreen.kt
+- Merge pull request #3 from MarkDenver01/impl/func/app
+- update AccountScreen.kt
+- Merge pull request #2 from MarkDenver01/impl/func/app
+- update category card
+- update product details screen
+- update product
+- update terms and condition transition
+- update gmail
+- Merge pull request #1
+- update release.yml
