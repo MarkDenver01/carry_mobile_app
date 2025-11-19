@@ -2,6 +2,7 @@ package com.nathaniel.carryapp.presentation.ui.compose.orders
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
 import com.nathaniel.carryapp.data.repository.ApiRepository
 import com.nathaniel.carryapp.domain.model.Product
 import com.nathaniel.carryapp.domain.usecase.GetAllProductsUseCase
@@ -32,6 +33,19 @@ class OrderViewModel @Inject constructor(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
 
+    private val _selected = MutableStateFlow("Metro Manila")
+    val selected: StateFlow<String> = _selected
+
+    val mainRegion = "Metro Manila"
+
+    val regions = listOf(
+        "Batangas",
+        "Bulacan",
+        "Cavite",
+        "Laguna",
+        "Rizal"
+    )
+
     init {
         checkLoginStatus()
         loadProducts()
@@ -43,6 +57,7 @@ class OrderViewModel @Inject constructor(
                 is ProductResult.Success -> {
                     _products.value = result.products
                 }
+
                 is ProductResult.Error -> {
                     _error.value = result.message
                 }
@@ -72,12 +87,11 @@ class OrderViewModel @Inject constructor(
     }
 
     fun onCategoriesClick() {
-//        if (_isLoggedIn.value == true) {
-//            _navigateTo.value = Routes.CATEGORIES
-//        } else {
-//            _navigateTo.value = Routes.SIGN_IN
-//        }
-        _navigateTo.value = Routes.CATEGORIES
+        if (_isLoggedIn.value == true) {
+            _navigateTo.value = Routes.CATEGORIES
+        } else {
+            _navigateTo.value = Routes.SIGN_IN
+        }
     }
 
     fun onReorderClick() {
@@ -89,12 +103,12 @@ class OrderViewModel @Inject constructor(
     }
 
     fun onAccountClick() {
-//        if (_isLoggedIn.value == true) {
-//
-//        } else {
-//            _navigateTo.value = Routes.SIGN_IN
-//        }
-        _navigateTo.value = Routes.ACCOUNT
+        if (_isLoggedIn.value == true) {
+            _navigateTo.value = Routes.ACCOUNT
+        } else {
+            _navigateTo.value = Routes.SIGN_IN
+        }
+
     }
 
     fun onSearchClick() {
@@ -111,5 +125,15 @@ class OrderViewModel @Inject constructor(
         } else {
             _navigateTo.value = Routes.SIGN_IN
         }
+    }
+
+
+    fun select(area: String) {
+        _selected.value = area
+    }
+
+    fun onNext(nav: NavController) {
+        // TODO: navigate to next screen
+        // nav.navigate(Routes.NEXT_SCREEN)
     }
 }

@@ -70,6 +70,11 @@ fun NavGraphBuilder.signInGraph(navController: NavController) {
             mobileNumber = mobile
         )
     }
+
+    composable(Routes.DELIVERY_AREA) {
+        DeliveryScreen(navController = navController)
+    }
+
     composable(
         route = "${Routes.AGREEMENT_TERMS_PRIVACY}/{mobileNumber}"
     ) { backStackEntry ->
@@ -78,8 +83,7 @@ fun NavGraphBuilder.signInGraph(navController: NavController) {
             navController = navController,
             mobileNumber = mobile,
             onAgree = {
-                // TODO: save flag in DataStore that user agreed, then navigate
-                navController.navigate(Routes.ORDERS) {
+                navController.navigate(Routes.DELIVERY_AREA) {
                     popUpTo(Routes.AGREEMENT_TERMS_PRIVACY) { inclusive = true }
                 }
             }
