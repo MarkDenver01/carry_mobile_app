@@ -49,3 +49,10 @@ data class DriverResponse(
     val createdDate: String? = "",
     val accountStatus: String? = ""
 )
+
+data class CustomerRegistrationRequest(
+    val userName: String,
+    val address: String,
+    val email: String,
+    val photoUrl: String? = null
+)

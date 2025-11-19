@@ -1,6 +1,7 @@
 package com.nathaniel.carryapp.presentation.ui.compose.orders
 
 import android.location.Location
+import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -15,6 +16,7 @@ import com.nathaniel.carryapp.domain.model.Barangay
 import com.nathaniel.carryapp.domain.model.City
 import com.nathaniel.carryapp.domain.model.Product
 import com.nathaniel.carryapp.domain.model.Province
+import com.nathaniel.carryapp.domain.request.CustomerRegistrationRequest
 import com.nathaniel.carryapp.domain.request.DeliveryAddressMapper
 import com.nathaniel.carryapp.domain.request.DeliveryAddressRequest
 import com.nathaniel.carryapp.domain.usecase.BarangayResult
@@ -36,10 +38,26 @@ import com.nathaniel.carryapp.navigation.Routes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 private const val REGION_IV_A = "040000000"
+
+data class CustomerUIState(
+    val userName: String = "",
+    val email: String = "",
+    val mobileNumber: String = "",
+    val address: String = "",
+    val photoUri: Uri? = null
+)
+
+sealed class CustomerRegistrationUIEvent {
+    data class OnUserNameChanged(val value: String) : CustomerRegistrationUIEvent()
+    data class OnEmailChanged(val value: String) : CustomerRegistrationUIEvent()
+    data class OnMobileChanged(val value: String) : CustomerRegistrationUIEvent()
+    data class OnPhotoSelected(val uri: Uri) : CustomerRegistrationUIEvent()
+}
 
 @HiltViewModel
 class OrderViewModel @Inject constructor(
@@ -113,6 +131,9 @@ class OrderViewModel @Inject constructor(
 
     private val _pinMoveMode = MutableStateFlow(false)
     val pinMoveMode: StateFlow<Boolean> = _pinMoveMode
+
+    private val _uiState = MutableStateFlow(CustomerUIState())
+    val uiState: StateFlow<CustomerUIState> = _uiState
 
     init {
         checkLoginStatus()
@@ -450,6 +471,38 @@ class OrderViewModel @Inject constructor(
                 )
             }
         }
+    }
+
+    fun onEvent(event: CustomerRegistrationUIEvent) {
+        when (event) {
+            is CustomerRegistrationUIEvent.OnUserNameChanged ->
+                _uiState.update { it.copy(userName = event.value) }
+
+            is CustomerRegistrationUIEvent.OnEmailChanged ->
+                _uiState.update { it.copy(email = event.value) }
+
+            is CustomerRegistrationUIEvent.OnMobileChanged ->
+                _uiState.update { it.copy(mobileNumber = event.value) }
+
+            is CustomerRegistrationUIEvent.OnPhotoSelected ->
+                _uiState.update { it.copy(photoUri = event.uri) }
+        }
+    }
+
+    fun submitCustomer(navController: NavController) = viewModelScope.launch {
+        val state = uiState.value
+
+        val request = CustomerRegistrationRequest(
+            userName = state.userName,
+            address = state.address,
+            email = state.email,
+            photoUrl = "" // server upload URL
+        )
+
+//        val success = apiRepository.register(request, state.photoUri)
+//        if (success) {
+//            navController.popBackStack()
+//        }
     }
 
 
