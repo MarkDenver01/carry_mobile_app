@@ -1,14 +1,17 @@
 package com.nathaniel.carryapp.data.remote.api
 
-import com.nathaniel.carryapp.domain.request.CustomerRequest
+import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
 import com.nathaniel.carryapp.domain.request.LoginResponse
 import com.nathaniel.carryapp.domain.request.MobileRequest
+import com.nathaniel.carryapp.domain.response.CustomerDetailResponse
 import com.nathaniel.carryapp.domain.response.ProductResponse
 import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
+import retrofit2.http.Path
 
 interface ApiService {
     @POST("/user/public/send_otp")
@@ -26,6 +29,12 @@ interface ApiService {
 
     @POST("/user/public/customer")
     suspend fun saveCustomerDetails(
-        @Body request: CustomerRequest
+        @Body request: CustomerDetailRequest
     ): Response<ResponseBody>
+
+    @PUT("/user/public/customer/update/{identifier}")
+    suspend fun updateCustomer(
+        @Path("identifier") identifier: String,
+        @Body request: CustomerDetailRequest
+    ): Response<CustomerDetailResponse>
 }

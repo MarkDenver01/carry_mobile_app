@@ -58,7 +58,7 @@ fun CustomerRegistrationScreen(
                             state.value.email
                         )
                         viewModel
-                            .submitCustomer(request, navController)
+                            .submitCustomer(request)
                     },
                     modifier = Modifier
                         .fillMaxWidth()

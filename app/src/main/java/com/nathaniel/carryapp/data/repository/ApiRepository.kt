@@ -15,9 +15,11 @@ import com.nathaniel.carryapp.domain.model.Barangay
 import com.nathaniel.carryapp.domain.model.City
 import com.nathaniel.carryapp.domain.model.Product
 import com.nathaniel.carryapp.domain.model.Province
+import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
 import com.nathaniel.carryapp.domain.request.LoginResponse
-import com.nathaniel.carryapp.domain.response.ProductResponse
+import com.nathaniel.carryapp.domain.response.CustomerDetailResponse
 import com.nathaniel.carryapp.presentation.utils.NetworkResult
+import retrofit2.Response
 import javax.inject.Inject
 
 class ApiRepository @Inject constructor(
@@ -196,4 +198,11 @@ class ApiRepository @Inject constructor(
 
     suspend fun logout() =
         loginLocalDataSource.logout()
+
+    suspend fun updateCustomer(
+        identifier: String,
+        request: CustomerDetailRequest
+    ): Response<CustomerDetailResponse> {
+        return remote.updateCustomer(identifier, request)
+    }
 }

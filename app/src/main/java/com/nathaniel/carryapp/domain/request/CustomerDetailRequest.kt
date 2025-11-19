@@ -1,6 +1,6 @@
 package com.nathaniel.carryapp.domain.request
 
-data class CustomerRequest(
+data class CustomerDetailRequest(
     val userName: String,
     val email: String,
     val mobileNumber: String,

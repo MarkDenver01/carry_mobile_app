@@ -6,7 +6,7 @@ import com.nathaniel.carryapp.data.local.room.entity.DeliveryAddressEntity
 import com.nathaniel.carryapp.domain.datasource.AddressLocalDataSource
 import com.nathaniel.carryapp.domain.datasource.LoginLocalDataSource
 import com.nathaniel.carryapp.domain.mapper.CustomerDetailsMapper
-import com.nathaniel.carryapp.domain.request.CustomerRequest
+import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
 import javax.inject.Inject
 
 class LocalRepository @Inject constructor(
@@ -15,11 +15,11 @@ class LocalRepository @Inject constructor(
     private val tokenManager: TokenManager
 ) {
 
-    suspend fun saveCustomerDetails(customerRequest: CustomerRequest) {
-        loginLocalDataSource.saveCustomerDetails(customerRequest)
+    suspend fun saveCustomerDetails(customerDetailRequest: CustomerDetailRequest) {
+        loginLocalDataSource.saveCustomerDetails(customerDetailRequest)
     }
 
-    suspend fun getCustomerDetails(): CustomerRequest? {
+    suspend fun getCustomerDetails(): CustomerDetailRequest? {
         val entity: CustomerDetailsEntity? = loginLocalDataSource.getCustomerDetails()
         return entity?.let { CustomerDetailsMapper.fromEntity(it) }
     }

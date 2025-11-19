@@ -6,7 +6,7 @@ import com.nathaniel.carryapp.data.local.room.entity.DriverEntity
 import com.nathaniel.carryapp.data.local.room.entity.LoginEntity
 import com.nathaniel.carryapp.data.local.room.relations.LoginWithCustomer
 import com.nathaniel.carryapp.data.local.room.relations.LoginWithDriver
-import com.nathaniel.carryapp.domain.request.CustomerRequest
+import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
 
 interface LoginLocalDataSource {
     suspend fun saveLogin(
@@ -16,7 +16,7 @@ interface LoginLocalDataSource {
     )
 
     suspend fun saveCustomerDetails(
-        customerRequest: CustomerRequest?
+        customerDetailRequest: CustomerDetailRequest?
     )
 
     suspend fun getCustomerDetails(): CustomerDetailsEntity?

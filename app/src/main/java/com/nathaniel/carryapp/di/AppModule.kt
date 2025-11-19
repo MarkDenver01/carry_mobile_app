@@ -26,6 +26,7 @@ import com.nathaniel.carryapp.domain.usecase.SaveAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveCustomerDetailsUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveMobileOrEmailUseCase
 import com.nathaniel.carryapp.domain.usecase.UpdateAddressUseCase
+import com.nathaniel.carryapp.domain.usecase.UpdateCustomerUseCase
 import com.nathaniel.carryapp.domain.usecase.VerifyOtpUseCase
 import dagger.Module
 import dagger.Provides
@@ -159,4 +160,10 @@ object AppModule {
     fun provideGetCustomerDetailUseCase(
         repository: LocalRepository
     ): GetCustomerDetailsUseCase = GetCustomerDetailsUseCase(repository)
+
+    @Provides
+    @Singleton
+    fun provideUpdateCustomerUseCase(
+        repository: ApiRepository
+    ): UpdateCustomerUseCase = UpdateCustomerUseCase(repository)
 }

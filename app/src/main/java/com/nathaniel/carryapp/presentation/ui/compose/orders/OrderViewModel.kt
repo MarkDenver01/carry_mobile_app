@@ -39,6 +39,7 @@ import com.nathaniel.carryapp.domain.usecase.SaveAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveCustomerDetailsUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveMobileOrEmailUseCase
 import com.nathaniel.carryapp.domain.usecase.UpdateAddressUseCase
+import com.nathaniel.carryapp.domain.usecase.UpdateCustomerUseCase
 import com.nathaniel.carryapp.navigation.Routes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -85,6 +86,7 @@ class OrderViewModel @Inject constructor(
     private val saveMobileOrEmailUseCase: SaveMobileOrEmailUseCase,
     private val saveCustomerDetailsUseCase: SaveCustomerDetailsUseCase,
     private val getCustomerDetailsUseCase: GetCustomerDetailsUseCase,
+    private val updateCustomerUseCase: UpdateCustomerUseCase,
     private val apiRepository: ApiRepository
 ) : ViewModel() {
 
@@ -555,10 +557,15 @@ class OrderViewModel @Inject constructor(
     }
 
 
-    fun submitCustomer(customerRegistrationRequest: CustomerRegistrationRequest, navController: NavController) = viewModelScope.launch {
+    fun submitCustomer(customerRegistrationRequest: CustomerRegistrationRequest) = viewModelScope.launch {
         val details = CustomerDetailsMapper.toCustomerRequest(customerRegistrationRequest)
-        saveCustomerDetailsUseCase.invoke(details) // saved to local
 
+        val identifier = details.mobileNumber.ifBlank { details.email }
+        val response = updateCustomerUseCase(identifier, details)
+        if (response.isSuccessful) {
+            saveCustomerDetailsUseCase.invoke(details) // saved to local
+            _navigateTo.value = Routes.ORDERS
+        }
     }
 
 

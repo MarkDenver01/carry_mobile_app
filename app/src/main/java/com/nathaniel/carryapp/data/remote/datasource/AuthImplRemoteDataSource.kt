@@ -3,10 +3,12 @@ package com.nathaniel.carryapp.data.remote.datasource
 import com.nathaniel.carryapp.data.remote.api.ApiService
 import com.nathaniel.carryapp.data.remote.api.PsgcApiService
 import com.nathaniel.carryapp.domain.datasource.AuthRemoteDatasource
+import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
 import com.nathaniel.carryapp.domain.request.LoginResponse
 import com.nathaniel.carryapp.domain.request.MobileRequest
 import com.nathaniel.carryapp.domain.response.BarangayResponse
 import com.nathaniel.carryapp.domain.response.CityResponse
+import com.nathaniel.carryapp.domain.response.CustomerDetailResponse
 import com.nathaniel.carryapp.domain.response.ProductResponse
 import com.nathaniel.carryapp.domain.response.ProvinceResponse
 import okhttp3.ResponseBody
@@ -35,4 +37,10 @@ class AuthImplRemoteDataSource @Inject constructor(
 
     override suspend fun getBarangaysByCity(cityCode: String): Response<List<BarangayResponse>> =
         psgcApiService.getBarangays(cityCode)
+
+    override suspend fun updateCustomer(
+        identifier: String,
+        request: CustomerDetailRequest
+    ): Response<CustomerDetailResponse> =
+        apiService.updateCustomer(identifier, request)
 }

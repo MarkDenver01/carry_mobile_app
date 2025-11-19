@@ -9,7 +9,7 @@ import com.nathaniel.carryapp.data.local.room.entity.DriverEntity
 import com.nathaniel.carryapp.data.local.room.entity.LoginEntity
 import com.nathaniel.carryapp.domain.datasource.LoginLocalDataSource
 import com.nathaniel.carryapp.domain.mapper.CustomerDetailsMapper
-import com.nathaniel.carryapp.domain.request.CustomerRequest
+import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
 import javax.inject.Inject
 
 class LoginLocalDataSourceImpl @Inject constructor(
@@ -28,9 +28,9 @@ class LoginLocalDataSourceImpl @Inject constructor(
         driver?.let { driverDao.insertDriver(it) }
     }
 
-    override suspend fun saveCustomerDetails(customerRequest: CustomerRequest?) {
-        customerRequest?.let {
-            val entity = CustomerDetailsMapper.toEntity(customerRequest)
+    override suspend fun saveCustomerDetails(customerDetailRequest: CustomerDetailRequest?) {
+        customerDetailRequest?.let {
+            val entity = CustomerDetailsMapper.toEntity(customerDetailRequest)
             customerDao.insertCustomerDetails(entity)
         }
     }

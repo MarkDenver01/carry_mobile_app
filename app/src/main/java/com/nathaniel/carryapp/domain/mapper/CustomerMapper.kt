@@ -2,12 +2,12 @@ package com.nathaniel.carryapp.domain.mapper
 
 import com.nathaniel.carryapp.data.local.room.entity.CustomerDetailsEntity
 import com.nathaniel.carryapp.domain.request.CustomerRegistrationRequest
-import com.nathaniel.carryapp.domain.request.CustomerRequest
+import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
 
 object CustomerDetailsMapper {
 
     /** Convert Request → Entity (for saving to Room) */
-    fun toEntity(request: CustomerRequest): CustomerDetailsEntity {
+    fun toEntity(request: CustomerDetailRequest): CustomerDetailsEntity {
         return CustomerDetailsEntity(
             customerId = 1, // fixed ID since it's a single customer profile
             userName = request.userName,
@@ -19,8 +19,8 @@ object CustomerDetailsMapper {
     }
 
     /** Convert Entity → Request (helpful when retrieving later) */
-    fun fromEntity(entity: CustomerDetailsEntity): CustomerRequest {
-        return CustomerRequest(
+    fun fromEntity(entity: CustomerDetailsEntity): CustomerDetailRequest {
+        return CustomerDetailRequest(
             userName = entity.userName.orEmpty(),
             email = entity.email.orEmpty(),
             mobileNumber = entity.mobileNumber.orEmpty(),
@@ -33,8 +33,8 @@ object CustomerDetailsMapper {
     Convert RegistrationRequest → Core Request
     (Used before saving to server or Room)
  --------------------------------------------- */
-    fun toCustomerRequest(reg: CustomerRegistrationRequest): CustomerRequest {
-        return CustomerRequest(
+    fun toCustomerRequest(reg: CustomerRegistrationRequest): CustomerDetailRequest {
+        return CustomerDetailRequest(
             userName = reg.userName,
             email = reg.email,
             mobileNumber = reg.mobileNumber,
