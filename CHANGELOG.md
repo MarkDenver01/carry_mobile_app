@@ -49,3 +49,19 @@ All changes will be documented in this file.
 - update gmail
 - Merge pull request #1
 - update release.yml
+## v4.0.1 - 2025-11-19
+- chore: bump version to v4.0.1
+- Merge pull request #5 from MarkDenver01/impl/phase2
+- update api key
+- update
+- update customer registration
+- update customer request
+- update CustomerRegistrationScreen.kt
+- update address
+- update geofence
+- update delivery address
+- update db version
+- update
+- update delivery address screen
+- update changes for location delivery area
+- update delivery
