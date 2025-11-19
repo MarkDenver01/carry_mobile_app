@@ -4,6 +4,7 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.nathaniel.carryapp.data.local.prefs.TokenManager
 import com.nathaniel.carryapp.data.remote.api.ApiService
+import com.nathaniel.carryapp.data.remote.api.PsgcApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -14,12 +15,22 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
+import javax.inject.Qualifier
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
     private const val BASE_URL = "https://carrybackend-dfyh.onrender.com"
+    private const val LOCATION_BASE_URL = "https://psgc.gitlab.io"
+
+    @Qualifier
+    @Retention(AnnotationRetention.BINARY)
+    annotation class MainApi
+
+    @Qualifier
+    @Retention(AnnotationRetention.BINARY)
+    annotation class LocationApi
 
     @Provides
     @Singleton
@@ -71,6 +82,7 @@ object NetworkModule {
 
     @Provides
     @Singleton
+    @MainApi
     fun provideRetrofit(
         okHttpClient: OkHttpClient,
         gson: Gson
@@ -84,7 +96,28 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideApiService(retrofit: Retrofit): ApiService =
+    @LocationApi
+    fun provideLocationRetrofit(
+        gson: Gson
+    ): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl(LOCATION_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideApiService(
+        @MainApi retrofit: Retrofit
+    ): ApiService =
         retrofit.create(ApiService::class.java)
+
+    @Provides
+    @Singleton
+    fun providePsgcApiService(
+        @LocationApi retrofit: Retrofit
+    ): PsgcApiService =
+        retrofit.create(PsgcApiService::class.java)
 
 }

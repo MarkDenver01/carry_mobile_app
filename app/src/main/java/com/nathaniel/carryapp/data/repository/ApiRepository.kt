@@ -8,7 +8,9 @@ import com.nathaniel.carryapp.domain.datasource.AuthRemoteDatasource
 import com.nathaniel.carryapp.domain.datasource.LoginLocalDataSource
 import com.nathaniel.carryapp.domain.enum.HttpStatus
 import com.nathaniel.carryapp.domain.mapper.ProductMapper
+import com.nathaniel.carryapp.domain.mapper.ProvinceMapper
 import com.nathaniel.carryapp.domain.model.Product
+import com.nathaniel.carryapp.domain.model.Province
 import com.nathaniel.carryapp.domain.request.LoginResponse
 import com.nathaniel.carryapp.domain.response.ProductResponse
 import com.nathaniel.carryapp.presentation.utils.NetworkResult
@@ -86,6 +88,36 @@ class ApiRepository @Inject constructor(
             )
         }
     }
+
+    suspend fun getProvincesByRegion(regionCode: String): NetworkResult<List<Province>> {
+        return try {
+            val response = remote.getProvincesByRegion(regionCode)
+
+            if (response.isSuccessful) {
+                val body = response.body()
+
+                if (body != null) {
+                    val mapped = ProvinceMapper.toDomainList(body)
+                    NetworkResult.Success(HttpStatus.SUCCESS, mapped)
+                } else {
+                    NetworkResult.Error(HttpStatus.ERROR, "Invalid response from PSGC server")
+                }
+
+            } else {
+                NetworkResult.Error(
+                    HttpStatus.ERROR,
+                    response.errorBody()?.string() ?: "Failed to load provinces"
+                )
+            }
+
+        } catch (e: Exception) {
+            NetworkResult.Error(
+                HttpStatus.ERROR,
+                e.message ?: "Network or server error"
+            )
+        }
+    }
+
 
 
     // Save session to Room

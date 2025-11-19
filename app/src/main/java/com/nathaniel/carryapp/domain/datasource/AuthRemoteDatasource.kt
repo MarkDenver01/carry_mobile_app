@@ -2,6 +2,7 @@ package com.nathaniel.carryapp.domain.datasource
 
 import com.nathaniel.carryapp.domain.request.LoginResponse
 import com.nathaniel.carryapp.domain.response.ProductResponse
+import com.nathaniel.carryapp.domain.response.ProvinceResponse
 import okhttp3.ResponseBody
 import retrofit2.Response
 
@@ -10,4 +11,7 @@ interface AuthRemoteDatasource {
     suspend fun verifyOtp(mobile: String, otp: String): Response<LoginResponse>
 
     suspend fun getAllProducts(): Response<List<ProductResponse>>
+
+    suspend fun getProvincesByRegion(regionCode: String): Response<List<ProvinceResponse>>
+
 }

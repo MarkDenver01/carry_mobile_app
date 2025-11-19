@@ -6,7 +6,9 @@ import androidx.navigation.NavController
 import com.nathaniel.carryapp.data.repository.ApiRepository
 import com.nathaniel.carryapp.domain.model.Product
 import com.nathaniel.carryapp.domain.usecase.GetAllProductsUseCase
+import com.nathaniel.carryapp.domain.usecase.GetProvincesByRegionUseCase
 import com.nathaniel.carryapp.domain.usecase.ProductResult
+import com.nathaniel.carryapp.domain.usecase.ProvinceResult
 import com.nathaniel.carryapp.domain.usecase.VerifyOtpUseCase
 import com.nathaniel.carryapp.navigation.Routes
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,6 +20,7 @@ import javax.inject.Inject
 @HiltViewModel
 class OrderViewModel @Inject constructor(
     private val productsUseCase: GetAllProductsUseCase,
+    private val getProvincesByRegionUseCase: GetProvincesByRegionUseCase,
     private val apiRepository: ApiRepository
 ) : ViewModel() {
 
@@ -33,22 +36,18 @@ class OrderViewModel @Inject constructor(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
 
-    private val _selected = MutableStateFlow("Metro Manila")
+    private val _selected = MutableStateFlow("Select Area")
     val selected: StateFlow<String> = _selected
 
-    val mainRegion = "Metro Manila"
+    private val _regions = MutableStateFlow<List<String>>(emptyList())
+    val regions: StateFlow<List<String>> = _regions
 
-    val regions = listOf(
-        "Batangas",
-        "Bulacan",
-        "Cavite",
-        "Laguna",
-        "Rizal"
-    )
+    val mainRegion = "Region IV-A (CALABARZON)"
 
     init {
         checkLoginStatus()
         loadProducts()
+        loadRegions()
     }
 
     private fun loadProducts() {
@@ -64,6 +63,25 @@ class OrderViewModel @Inject constructor(
             }
         }
     }
+
+    private fun loadRegions() {
+        viewModelScope.launch {
+
+            val regionCode = "040000000" // CALABARZON
+
+            when (val result = getProvincesByRegionUseCase(regionCode)) {
+
+                is ProvinceResult.Success -> {
+                    _regions.value = result.provinces.map { it.name }
+                }
+
+                is ProvinceResult.Error -> {
+                    _error.value = result.message
+                }
+            }
+        }
+    }
+
 
     private fun checkLoginStatus() {
         viewModelScope.launch {
@@ -88,7 +106,7 @@ class OrderViewModel @Inject constructor(
 
     fun onCategoriesClick() {
         if (_isLoggedIn.value == true) {
-            _navigateTo.value = Routes.CATEGORIES
+            _navigateTo.value = Routes.DELIVERY_AREA // TODO CHANGE TO CATEGORIES LATER
         } else {
             _navigateTo.value = Routes.SIGN_IN
         }

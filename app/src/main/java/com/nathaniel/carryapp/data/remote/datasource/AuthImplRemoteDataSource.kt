@@ -1,16 +1,19 @@
 package com.nathaniel.carryapp.data.remote.datasource
 
 import com.nathaniel.carryapp.data.remote.api.ApiService
+import com.nathaniel.carryapp.data.remote.api.PsgcApiService
 import com.nathaniel.carryapp.domain.datasource.AuthRemoteDatasource
 import com.nathaniel.carryapp.domain.request.LoginResponse
 import com.nathaniel.carryapp.domain.request.MobileRequest
 import com.nathaniel.carryapp.domain.response.ProductResponse
+import com.nathaniel.carryapp.domain.response.ProvinceResponse
 import okhttp3.ResponseBody
 import retrofit2.Response
 import javax.inject.Inject
 
 class AuthImplRemoteDataSource @Inject constructor(
-    private val apiService: ApiService
+    private val apiService: ApiService,
+    private val psgcApiService: PsgcApiService
 ) : AuthRemoteDatasource {
 
     override suspend fun sendOtp(mobile: String): Response<ResponseBody> =
@@ -21,4 +24,7 @@ class AuthImplRemoteDataSource @Inject constructor(
 
     override suspend fun getAllProducts(): Response<List<ProductResponse>> =
         apiService.getAllProducts()
+
+    override suspend fun getProvincesByRegion(regionCode: String): Response<List<ProvinceResponse>> =
+        psgcApiService.getProvinces(regionCode)
 }

@@ -3,11 +3,13 @@ package com.nathaniel.carryapp.di
 import com.nathaniel.carryapp.data.local.datasource.LoginLocalDataSourceImpl
 import com.nathaniel.carryapp.data.local.prefs.TokenManager
 import com.nathaniel.carryapp.data.remote.api.ApiService
+import com.nathaniel.carryapp.data.remote.api.PsgcApiService
 import com.nathaniel.carryapp.data.remote.datasource.AuthImplRemoteDataSource
 import com.nathaniel.carryapp.data.repository.ApiRepository
 import com.nathaniel.carryapp.domain.datasource.AuthRemoteDatasource
 import com.nathaniel.carryapp.domain.datasource.LoginLocalDataSource
 import com.nathaniel.carryapp.domain.usecase.GetAllProductsUseCase
+import com.nathaniel.carryapp.domain.usecase.GetProvincesByRegionUseCase
 import com.nathaniel.carryapp.domain.usecase.VerifyOtpUseCase
 import dagger.Module
 import dagger.Provides
@@ -21,8 +23,11 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideAuthRemoteDataSource(apiService: ApiService): AuthRemoteDatasource {
-        return AuthImplRemoteDataSource(apiService)
+    fun provideAuthRemoteDataSource(
+        apiService: ApiService,
+        psgcApiService: PsgcApiService
+    ): AuthRemoteDatasource {
+        return AuthImplRemoteDataSource(apiService, psgcApiService)
     }
 
     @Provides
@@ -52,4 +57,10 @@ object AppModule {
     fun provideGetAllProductsUseCase(
         apiRepository: ApiRepository
     ): GetAllProductsUseCase = GetAllProductsUseCase(apiRepository)
+
+    @Provides
+    @Singleton
+    fun provideGetProvincesByRegionUseCase(
+        apiRepository: ApiRepository
+    ): GetProvincesByRegionUseCase = GetProvincesByRegionUseCase(apiRepository)
 }
