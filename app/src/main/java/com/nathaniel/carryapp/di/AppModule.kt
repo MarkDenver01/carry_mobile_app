@@ -6,10 +6,15 @@ import com.nathaniel.carryapp.data.remote.api.ApiService
 import com.nathaniel.carryapp.data.remote.api.PsgcApiService
 import com.nathaniel.carryapp.data.remote.datasource.AuthImplRemoteDataSource
 import com.nathaniel.carryapp.data.repository.ApiRepository
+import com.nathaniel.carryapp.data.repository.LocalRepository
+import com.nathaniel.carryapp.domain.datasource.AddressLocalDataSource
 import com.nathaniel.carryapp.domain.datasource.AuthRemoteDatasource
 import com.nathaniel.carryapp.domain.datasource.LoginLocalDataSource
 import com.nathaniel.carryapp.domain.usecase.GetAllProductsUseCase
+import com.nathaniel.carryapp.domain.usecase.GetBarangaysByCityUseCase
+import com.nathaniel.carryapp.domain.usecase.GetCitiesByProvinceUseCase
 import com.nathaniel.carryapp.domain.usecase.GetProvincesByRegionUseCase
+import com.nathaniel.carryapp.domain.usecase.SaveAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.VerifyOtpUseCase
 import dagger.Module
 import dagger.Provides
@@ -48,6 +53,12 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideLocalRepository(
+        addressLocalDataSource: AddressLocalDataSource
+    ): LocalRepository = LocalRepository(addressLocalDataSource)
+
+    @Provides
+    @Singleton
     fun provideVerifyOtpUseCase(
         apiRepository: ApiRepository
     ): VerifyOtpUseCase = VerifyOtpUseCase(apiRepository)
@@ -63,4 +74,24 @@ object AppModule {
     fun provideGetProvincesByRegionUseCase(
         apiRepository: ApiRepository
     ): GetProvincesByRegionUseCase = GetProvincesByRegionUseCase(apiRepository)
+
+    @Provides
+    @Singleton
+    fun provideCitiesByProvinceUseCase(
+        apiRepository: ApiRepository
+    ): GetCitiesByProvinceUseCase = GetCitiesByProvinceUseCase(apiRepository)
+
+    @Provides
+    @Singleton
+    fun provideBarangaysByCityUseCase(
+        apiRepository: ApiRepository
+    ): GetBarangaysByCityUseCase = GetBarangaysByCityUseCase(apiRepository)
+
+    @Provides
+    @Singleton
+    fun provideSavedAddressUseCase(
+        localRepository: LocalRepository
+    ): SaveAddressUseCase = SaveAddressUseCase(localRepository)
+
+
 }

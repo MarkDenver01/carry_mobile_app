@@ -31,4 +31,6 @@ object Routes {
     const val DELIVERY_AREA = "delivery_area"
     const val DELIVERY_ADDRESS = "delivery_address"
 
+    const val LOCATION_CONFIRMATION_SCREEN = "location_confirmation_screen"
+
 }

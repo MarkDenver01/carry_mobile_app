@@ -32,4 +32,7 @@ object DatabaseModule {
 
     @Provides
     fun provideDriverDao(db: CarryDatabase) = db.driverDao()
+
+    @Provides
+    fun provideDeliveryAddressDao(db: CarryDatabase) = db.deliveryAddressDao()
 }

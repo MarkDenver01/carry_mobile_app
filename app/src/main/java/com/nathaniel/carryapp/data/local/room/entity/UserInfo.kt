@@ -48,3 +48,21 @@ data class DriverEntity(
     val createdDate: String? = null,
     val accountStatus: String? = null
 )
+
+@Entity(tableName = "delivery_address")
+data class DeliveryAddressEntity(
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
+
+    val provinceCode: String,
+    val provinceName: String,
+
+    val cityCode: String,
+    val cityName: String,
+
+    val barangayCode: String,
+    val barangayName: String,
+
+    val addressDetail: String,
+    val landmark: String?
+)

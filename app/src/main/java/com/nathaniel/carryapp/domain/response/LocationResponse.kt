@@ -9,3 +9,18 @@ data class ProvinceResponse(
     val islandGroupCode: String,
     val population: Int
 )
+
+data class CityResponse(
+    val code: String,
+    val name: String,
+    val regionCode: String?,
+    val provinceCode: String?
+)
+
+data class BarangayResponse(
+    val code: String,
+    val name: String,
+    val cityCode: String?,
+    val provinceCode: String?,
+    val regionCode: String?
+)

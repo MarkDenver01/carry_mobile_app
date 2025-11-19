@@ -6,9 +6,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
@@ -42,6 +42,7 @@ fun DeliveryAreaScreen(
             contentPadding = PaddingValues(bottom = 96.dp)
         ) {
 
+            // HEADER
             item {
                 Column(modifier = Modifier.padding(horizontal = 16.dp)) {
 
@@ -55,7 +56,6 @@ fun DeliveryAreaScreen(
 
                     Spacer(Modifier.height(24.dp))
 
-                    // MAIN REGION
                     AreaRow(
                         title = mainRegion,
                         isSelected = selectedArea == mainRegion,
@@ -82,16 +82,15 @@ fun DeliveryAreaScreen(
                         color = Color.Red,
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
-                    Spacer(Modifier.height(12.dp))
                 }
             }
 
-            // LOADING SHIMMER
+            // SHIMMER LOADING
             if (regions.isEmpty() && error == null) {
                 items(5) { LoadingAreaCardShimmer() }
             }
 
-            // LIST OF PROVINCES
+            // LIST OF PROVINCES — NO SPACING BELOW EACH ROW
             items(regions.size) { index ->
                 val province = regions[index]
 

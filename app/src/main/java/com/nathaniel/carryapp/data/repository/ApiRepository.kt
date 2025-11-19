@@ -7,8 +7,12 @@ import com.nathaniel.carryapp.data.local.room.entity.LoginEntity
 import com.nathaniel.carryapp.domain.datasource.AuthRemoteDatasource
 import com.nathaniel.carryapp.domain.datasource.LoginLocalDataSource
 import com.nathaniel.carryapp.domain.enum.HttpStatus
+import com.nathaniel.carryapp.domain.mapper.BarangayMapper
+import com.nathaniel.carryapp.domain.mapper.CityMapper
 import com.nathaniel.carryapp.domain.mapper.ProductMapper
 import com.nathaniel.carryapp.domain.mapper.ProvinceMapper
+import com.nathaniel.carryapp.domain.model.Barangay
+import com.nathaniel.carryapp.domain.model.City
 import com.nathaniel.carryapp.domain.model.Product
 import com.nathaniel.carryapp.domain.model.Province
 import com.nathaniel.carryapp.domain.request.LoginResponse
@@ -118,6 +122,58 @@ class ApiRepository @Inject constructor(
         }
     }
 
+
+    suspend fun getCitiesByProvince(provinceCode: String): NetworkResult<List<City>> {
+        return try {
+            val response = remote.getCitiesByProvince(provinceCode)
+
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body != null) {
+                    val mapped = CityMapper.toDomainList(body)
+                    NetworkResult.Success(HttpStatus.SUCCESS, mapped)
+                } else {
+                    NetworkResult.Error(HttpStatus.ERROR, "Invalid response from PSGC server")
+                }
+            } else {
+                NetworkResult.Error(
+                    HttpStatus.ERROR,
+                    response.errorBody()?.string() ?: "Failed to load cities"
+                )
+            }
+        } catch (e: Exception) {
+            NetworkResult.Error(
+                HttpStatus.ERROR,
+                e.message ?: "Network or server error"
+            )
+        }
+    }
+
+    suspend fun getBarangaysByCity(cityCode: String): NetworkResult<List<Barangay>> {
+        return try {
+            val response = remote.getBarangaysByCity(cityCode)
+
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body != null) {
+                    val mapped = BarangayMapper.toDomainList(body)
+                    NetworkResult.Success(HttpStatus.SUCCESS, mapped)
+                } else {
+                    NetworkResult.Error(HttpStatus.ERROR, "Invalid response from PSGC server")
+                }
+            } else {
+                NetworkResult.Error(
+                    HttpStatus.ERROR,
+                    response.errorBody()?.string() ?: "Failed to load barangays"
+                )
+            }
+        } catch (e: Exception) {
+            NetworkResult.Error(
+                HttpStatus.ERROR,
+                e.message ?: "Network or server error"
+            )
+        }
+    }
 
 
     // Save session to Room

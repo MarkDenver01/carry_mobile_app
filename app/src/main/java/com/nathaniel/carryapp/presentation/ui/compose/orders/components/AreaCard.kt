@@ -25,8 +25,7 @@ private val GrayBorder = Color(0xFFE0E0E0)
 fun AreaRow(
     title: String,
     isSelected: Boolean,
-    isMain: Boolean,
-    modifier: Modifier = Modifier
+    isMain: Boolean
 ) {
     val borderColor by animateColorAsState(
         targetValue = if (isMain || isSelected) Green else GrayBorder
@@ -35,33 +34,30 @@ fun AreaRow(
     val iconSize = if (isMain) 50.dp else 38.dp
     val rowHeight = if (isMain) 80.dp else 70.dp
 
-    Box(
-        modifier = modifier
+    Row(
+        modifier = Modifier
             .fillMaxWidth()
             .height(rowHeight)
+            .padding(horizontal = 16.dp)  // Left & Right spacing only
             .border(BorderStroke(1.dp, borderColor))
-            .background(Color.White)
-            .padding(horizontal = 16.dp) // No vertical padding
+            .background(Color.White),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier.fillMaxSize(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                painter = painterResource(id = provinceIcon(title)),
-                contentDescription = title,
-                tint = Color.Unspecified,
-                modifier = Modifier.size(iconSize)
-            )
 
-            Spacer(modifier = Modifier.width(16.dp))
+        Icon(
+            painter = painterResource(id = provinceIcon(title)),
+            contentDescription = title,
+            tint = Color.Unspecified,
+            modifier = Modifier.size(iconSize)
+        )
 
-            Text(
-                text = title,
-                fontSize = if (isMain) 22.sp else 20.sp,
-                fontWeight = if (isMain) FontWeight.SemiBold else FontWeight.Medium,
-                color = Green
-            )
-        }
+        Spacer(modifier = Modifier.width(16.dp))
+
+        Text(
+            text = title,
+            fontSize = if (isMain) 22.sp else 20.sp,
+            fontWeight = if (isMain) FontWeight.SemiBold else FontWeight.Medium,
+            color = Green
+        )
     }
 }
