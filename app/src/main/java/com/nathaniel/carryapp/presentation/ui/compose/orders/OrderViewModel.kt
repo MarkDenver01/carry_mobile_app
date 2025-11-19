@@ -558,14 +558,16 @@ class OrderViewModel @Inject constructor(
 
 
     fun submitCustomer(customerRegistrationRequest: CustomerRegistrationRequest) = viewModelScope.launch {
-        val details = CustomerDetailsMapper.toCustomerRequest(customerRegistrationRequest)
-
-        val identifier = details.mobileNumber.ifBlank { details.email }
-        val response = updateCustomerUseCase(identifier, details)
-        if (response.isSuccessful) {
-            saveCustomerDetailsUseCase.invoke(details) // saved to local
-            _navigateTo.value = Routes.ORDERS
-        }
+        Timber.d("submit customer...")
+//        val details = CustomerDetailsMapper.toCustomerRequest(customerRegistrationRequest)
+//
+//        val identifier = details.mobileNumber.ifBlank { details.email }
+//        val response = updateCustomerUseCase(identifier, details)
+//        if (response.isSuccessful) {
+//            saveCustomerDetailsUseCase.invoke(details) // saved to local
+//            _navigateTo.value = Routes.ORDERS
+//        }
+        _navigateTo.value = Routes.ORDERS
     }
 
 
