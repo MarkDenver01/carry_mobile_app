@@ -29,5 +29,6 @@ object Routes {
     const val ACCOUNT = "account"
     const val PRODUCT_DETAIL = "product_detail"
     const val DELIVERY_AREA = "delivery_area"
+    const val DELIVERY_ADDRESS = "delivery_address"
 
 }

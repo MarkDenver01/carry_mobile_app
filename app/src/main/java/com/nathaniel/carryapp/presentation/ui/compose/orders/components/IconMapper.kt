@@ -1,4 +1,4 @@
-package com.nathaniel.carryapp.presentation.ui.compose.orders.location
+package com.nathaniel.carryapp.presentation.ui.compose.orders.components
 
 import com.nathaniel.carryapp.R
 

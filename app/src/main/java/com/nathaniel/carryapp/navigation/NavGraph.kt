@@ -16,6 +16,7 @@ import com.nathaniel.carryapp.presentation.ui.compose.membership.payment.Subscri
 import com.nathaniel.carryapp.presentation.ui.compose.membership.view.ViewMembershipScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.account.AccountScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.category.CategoriesScreen
+import com.nathaniel.carryapp.presentation.ui.compose.orders.location.DeliveryAddressScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.shopping.ShoppingScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.main_screen.OrderScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.product.ProductDetailRouter
@@ -73,6 +74,10 @@ fun NavGraphBuilder.signInGraph(navController: NavController) {
 
     composable(Routes.DELIVERY_AREA) {
         DeliveryAreaScreen(navController = navController)
+    }
+
+    composable(Routes.DELIVERY_ADDRESS) {
+        DeliveryAddressScreen(navController = navController)
     }
 
     composable(

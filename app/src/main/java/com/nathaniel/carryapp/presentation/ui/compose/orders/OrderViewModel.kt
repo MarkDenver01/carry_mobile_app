@@ -151,7 +151,6 @@ class OrderViewModel @Inject constructor(
     }
 
     fun onNext(nav: NavController) {
-        // TODO: navigate to next screen
-        // nav.navigate(Routes.NEXT_SCREEN)
+        nav.navigate(Routes.DELIVERY_ADDRESS)
     }
 }
