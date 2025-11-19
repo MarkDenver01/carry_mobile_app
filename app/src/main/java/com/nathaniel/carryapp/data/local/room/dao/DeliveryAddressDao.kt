@@ -14,4 +14,7 @@ interface DeliveryAddressDao {
 
     @Query("DELETE FROM delivery_address")
     suspend fun clearAddress()
+
+    @Query("SELECT COUNT(*) FROM delivery_address")
+    suspend fun getAddressCount(): Int
 }

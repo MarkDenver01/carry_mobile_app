@@ -51,8 +51,8 @@ data class DriverEntity(
 
 @Entity(tableName = "delivery_address")
 data class DeliveryAddressEntity(
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
+    @PrimaryKey
+    val id: Int = 1,
 
     val provinceCode: String,
     val provinceName: String,
