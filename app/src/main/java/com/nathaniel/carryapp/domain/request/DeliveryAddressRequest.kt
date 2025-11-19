@@ -29,7 +29,9 @@ object DeliveryAddressMapper {
             barangayName = request.barangayName,
 
             addressDetail = request.addressDetails,
-            landmark = request.landMark
+            landmark = request.landMark,
+            latitude = 0.0,
+            longitude = 0.0
         )
     }
 

@@ -1,12 +1,16 @@
 package com.nathaniel.carryapp.presentation.ui.compose.orders
 
+import android.location.Location
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import com.google.android.gms.maps.model.LatLng
+import com.nathaniel.carryapp.data.local.room.entity.DeliveryAddressEntity
 import com.nathaniel.carryapp.data.repository.ApiRepository
+import com.nathaniel.carryapp.data.repository.GeocodedAddress
 import com.nathaniel.carryapp.domain.model.Barangay
 import com.nathaniel.carryapp.domain.model.City
 import com.nathaniel.carryapp.domain.model.Product
@@ -15,12 +19,17 @@ import com.nathaniel.carryapp.domain.request.DeliveryAddressMapper
 import com.nathaniel.carryapp.domain.request.DeliveryAddressRequest
 import com.nathaniel.carryapp.domain.usecase.BarangayResult
 import com.nathaniel.carryapp.domain.usecase.CityResult
+import com.nathaniel.carryapp.domain.usecase.ForwardGeocodeUseCase
+import com.nathaniel.carryapp.domain.usecase.GeocodeResult
+import com.nathaniel.carryapp.domain.usecase.GetAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.GetAllProductsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetBarangaysByCityUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCitiesByProvinceUseCase
+import com.nathaniel.carryapp.domain.usecase.GetCurrentLocationUseCase
 import com.nathaniel.carryapp.domain.usecase.GetProvincesByRegionUseCase
 import com.nathaniel.carryapp.domain.usecase.ProductResult
 import com.nathaniel.carryapp.domain.usecase.ProvinceResult
+import com.nathaniel.carryapp.domain.usecase.ReverseGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveAddressUseCase
 import com.nathaniel.carryapp.navigation.Routes
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -38,6 +47,10 @@ class OrderViewModel @Inject constructor(
     private val getCitiesByProvinceUseCase: GetCitiesByProvinceUseCase,
     private val getBarangaysByCityUseCase: GetBarangaysByCityUseCase,
     private val saveAddressUseCase: SaveAddressUseCase,
+    private val forwardGeocodeUseCase: ForwardGeocodeUseCase,
+    private val reverseGeocodeUseCase: ReverseGeocodeUseCase,
+    private val getAddressUseCase: GetAddressUseCase,
+    private val getCurrentLocationUseCase: GetCurrentLocationUseCase,
     private val apiRepository: ApiRepository
 ) : ViewModel() {
 
@@ -68,7 +81,6 @@ class OrderViewModel @Inject constructor(
     private val _barangays = MutableStateFlow<List<Barangay>>(emptyList())
     val barangays: StateFlow<List<Barangay>> = _barangays
 
-
     var selectedProvince by mutableStateOf<Province?>(null)
         private set
 
@@ -78,15 +90,75 @@ class OrderViewModel @Inject constructor(
     var selectedBarangay by mutableStateOf<Barangay?>(null)
         private set
 
-    var addressDetail by mutableStateOf("")
-    var landmark by mutableStateOf("")
+    private val _state = MutableStateFlow("")
+    val state = _state
+
+    private val _selectedLatLng = MutableStateFlow<LatLng?>(null)
+    val selectedLatLng: StateFlow<LatLng?> = _selectedLatLng
+
+    private val _loadAddressLocal = MutableStateFlow<String?>(null)
+    val loadAddressLocal: StateFlow<String?> = _loadAddressLocal
+
+    private val _reverseAddress = MutableStateFlow(
+        GeocodedAddress(
+            fullAddressLine = "",
+            province = "",
+            city = "",
+            barangay = ""
+        )
+    )
+    val reverseAddress: StateFlow<GeocodedAddress> = _reverseAddress
+
+    private val _pinMoveMode = MutableStateFlow(false)
+    val pinMoveMode: StateFlow<Boolean> = _pinMoveMode
 
     init {
         checkLoginStatus()
         loadProducts()
         loadRegions()
         loadProvinces()
+        loadSavedAddress()
     }
+
+    private fun loadSavedAddress() {
+        viewModelScope.launch {
+
+            val saved = getAddressUseCase()
+
+            if (saved != null) {
+
+                // 1. USE THE SAVED ADDRESS TEXT AS GEOCODING INPUT
+                val fullAddress = saved.addressDetail ?: ""
+
+                // 2. Convert text → LatLng
+                val geocodeResult = forwardGeocodeUseCase(fullAddress)
+
+                if (geocodeResult is GeocodeResult.Success) {
+
+                    // 3. THIS is the TRUE starting point of the map
+                    _selectedLatLng.value = geocodeResult.data
+
+                } else {
+
+                    // OPTIONAL fallback if geocode fails
+                    _selectedLatLng.value = LatLng(14.085, 121.146)
+                }
+
+                // 4. Load structured address FROM ROOM (no API call)
+                _reverseAddress.value = GeocodedAddress(
+                    fullAddressLine = saved.addressDetail,
+                    province = saved.provinceName,
+                    city = saved.cityName,
+                    barangay = saved.barangayName
+                )
+
+                // 5. UI flag (optional)
+                _loadAddressLocal.value = saved.addressDetail
+            }
+        }
+    }
+
+
 
     private fun loadProducts() {
         viewModelScope.launch {
@@ -269,5 +341,112 @@ class OrderViewModel @Inject constructor(
     fun select(area: String) {
         _selected.value = area
     }
+
+    fun searchCoordinates(address: String) {
+        viewModelScope.launch {
+            when (val result = forwardGeocodeUseCase(address)) {
+                is GeocodeResult.Success -> _state.value = "LatLng: ${result.data}"
+                is GeocodeResult.Error -> _state.value = result.message
+            }
+        }
+    }
+
+    fun searchAddress(lat: Double, lng: Double) {
+        viewModelScope.launch {
+            when (val result = reverseGeocodeUseCase(lat, lng)) {
+                is GeocodeResult.Success -> _state.value = "Address: ${result.data.fullAddressLine}"
+                is GeocodeResult.Error -> _state.value = result.message
+            }
+        }
+    }
+
+
+    fun initLocation(lat: Double, lng: Double) {
+        val pos = LatLng(lat, lng)
+        _selectedLatLng.value = pos
+        reverseLookup(pos)
+    }
+
+    fun updatePin(newPos: LatLng) {
+        _selectedLatLng.value = newPos
+        reverseLookup(newPos)
+    }
+
+    private fun reverseLookup(pos: LatLng) {
+        viewModelScope.launch {
+            when (val result = reverseGeocodeUseCase(pos.latitude, pos.longitude)) {
+                is GeocodeResult.Success -> {
+                    _reverseAddress.value = result.data
+                }
+
+                is GeocodeResult.Error -> {
+                    _reverseAddress.value = _reverseAddress.value.copy(
+                        fullAddressLine = "Unable to fetch address"
+                    )
+                }
+            }
+        }
+    }
+
+    fun confirmAddress(navController: NavController) {
+        val loc = selectedLatLng.value
+        val addr = reverseAddress.value
+
+        // TODO: SAVE TO ORDER OBJECT, etc.
+        // Example:
+        // order.deliveryLat = loc?.latitude
+        // order.deliveryLng = loc?.longitude
+        // order.fullAddress = addr.fullAddressLine
+
+        // Then navigate
+        navController.popBackStack()
+    }
+
+    fun triggerPinMoveMode() {
+        _pinMoveMode.value = true
+    }
+
+    fun loadCurrentLocation() {
+        viewModelScope.launch {
+
+            // Step 1: Get device location
+            val loc = getCurrentLocationUseCase()
+
+            if (loc != null) {
+
+                // Step 2: Convert to LatLng
+                val latLng = LatLng(loc.latitude, loc.longitude)
+
+                // Step 3: Move the pin on the map
+                _selectedLatLng.value = latLng
+
+                // Step 4: Reverse geocode → update address fields
+                when (val result = reverseGeocodeUseCase(latLng.latitude, latLng.longitude)) {
+                    is GeocodeResult.Success -> {
+                        _reverseAddress.value = result.data
+                    }
+                    is GeocodeResult.Error -> {
+                        _reverseAddress.value = GeocodedAddress(
+                            fullAddressLine = "Unable to fetch address",
+                            province = "",
+                            city = "",
+                            barangay = ""
+                        )
+                    }
+                }
+
+            } else {
+                // OPTIONAL: fallback if no GPS
+                _reverseAddress.value = GeocodedAddress(
+                    fullAddressLine = "GPS unavailable",
+                    province = "",
+                    city = "",
+                    barangay = ""
+                )
+            }
+        }
+    }
+
+
 
 }

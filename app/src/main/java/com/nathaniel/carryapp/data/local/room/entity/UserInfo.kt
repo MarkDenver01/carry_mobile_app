@@ -64,5 +64,8 @@ data class DeliveryAddressEntity(
     val barangayName: String,
 
     val addressDetail: String,
-    val landmark: String?
+    val landmark: String?,
+
+    val latitude: Double,
+    val longitude: Double
 )

@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">carryapp</string>
+    <string name="app_name">WrapAndCarry</string>
+    <string name="google_maps_key">AIzaSyBneJ1ud0G3L98g6ORpee6uBBvZZiCTvmI</string>
 </resources>

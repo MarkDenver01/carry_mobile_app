@@ -6,14 +6,19 @@ import com.nathaniel.carryapp.data.remote.api.ApiService
 import com.nathaniel.carryapp.data.remote.api.PsgcApiService
 import com.nathaniel.carryapp.data.remote.datasource.AuthImplRemoteDataSource
 import com.nathaniel.carryapp.data.repository.ApiRepository
+import com.nathaniel.carryapp.data.repository.GeocodingRepository
 import com.nathaniel.carryapp.data.repository.LocalRepository
 import com.nathaniel.carryapp.domain.datasource.AddressLocalDataSource
 import com.nathaniel.carryapp.domain.datasource.AuthRemoteDatasource
 import com.nathaniel.carryapp.domain.datasource.LoginLocalDataSource
+import com.nathaniel.carryapp.domain.usecase.ForwardGeocodeUseCase
+import com.nathaniel.carryapp.domain.usecase.GetAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.GetAllProductsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetBarangaysByCityUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCitiesByProvinceUseCase
+import com.nathaniel.carryapp.domain.usecase.GetCurrentLocationUseCase
 import com.nathaniel.carryapp.domain.usecase.GetProvincesByRegionUseCase
+import com.nathaniel.carryapp.domain.usecase.ReverseGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.VerifyOtpUseCase
 import dagger.Module
@@ -93,5 +98,27 @@ object AppModule {
         localRepository: LocalRepository
     ): SaveAddressUseCase = SaveAddressUseCase(localRepository)
 
+    @Provides
+    @Singleton
+    fun provideForwardGeocodeUseCase(
+        geocodingRepository: GeocodingRepository
+    ): ForwardGeocodeUseCase = ForwardGeocodeUseCase(geocodingRepository)
 
+    @Provides
+    @Singleton
+    fun provideReverseGeocodeUseCase(
+        geocingRepository: GeocodingRepository
+    ): ReverseGeocodeUseCase = ReverseGeocodeUseCase(geocingRepository)
+
+    @Provides
+    @Singleton
+    fun provideGetAddressUseCase(
+        localRepository: LocalRepository
+    ): GetAddressUseCase = GetAddressUseCase(localRepository)
+
+    @Provides
+    @Singleton
+    fun provideGetCurrentLocationUseCase(
+        repository: GeocodingRepository
+    ): GetCurrentLocationUseCase = GetCurrentLocationUseCase(repository)
 }
