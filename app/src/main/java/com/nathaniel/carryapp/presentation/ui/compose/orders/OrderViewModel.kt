@@ -148,7 +148,7 @@ class OrderViewModel @Inject constructor(
     }
 
     fun onDeliveryAreaClick(nav: NavController) {
-        nav.navigate(Routes.DELIVERY_AREA)
+        nav.navigate(Routes.DELIVERY_ADDRESS)
     }
 
     fun onProvinceSelected(province: Province) {
@@ -228,7 +228,7 @@ class OrderViewModel @Inject constructor(
         if (_isLoggedIn.value == true) {
             _navigateTo.value = Routes.DELIVERY_AREA // TODO CHANGE TO CATEGORIES LATER
         } else {
-            _navigateTo.value = Routes.SIGN_IN
+            _navigateTo.value = Routes.DELIVERY_AREA  // TODO CHANGE TO SIGNIN LATER
         }
     }
 
