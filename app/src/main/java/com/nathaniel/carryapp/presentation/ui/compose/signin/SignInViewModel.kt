@@ -3,6 +3,7 @@ package com.nathaniel.carryapp.presentation.ui.compose.signin
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nathaniel.carryapp.data.repository.ApiRepository
+import com.nathaniel.carryapp.domain.usecase.SaveMobileOrEmailUseCase
 import com.nathaniel.carryapp.domain.usecase.VerifyOtpResult
 import com.nathaniel.carryapp.domain.usecase.VerifyOtpUseCase
 import com.nathaniel.carryapp.presentation.utils.NetworkResult
@@ -32,6 +33,7 @@ data class AuthUiState(
 @HiltViewModel
 class SignInViewModel @Inject constructor(
     private val verifyOtpUseCase: VerifyOtpUseCase,
+    private val saveMobileOrEmailUseCase: SaveMobileOrEmailUseCase,
     private val repository: ApiRepository
 ) : ViewModel() {
 
@@ -41,7 +43,9 @@ class SignInViewModel @Inject constructor(
     private val _eventFlow = MutableSharedFlow<AuthUiEvent>()
     val eventFlow: SharedFlow<AuthUiEvent> = _eventFlow
 
-
+    fun saveMobileOrEmail(mobileOrEmail: String) {
+        saveMobileOrEmailUseCase.invoke(mobileOrEmail)
+    }
     fun sendOtp(mobileNumber: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }

@@ -27,6 +27,10 @@ lottie = "6.1.0"
 coil = "2.7.0"
 playCore = "2.1.0"
 
+google-maps-compose = "4.4.1" # or latest
+play-services-maps = "18.2.0"
+playServicesLocation = "21.3.0" # or latest
+
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -70,6 +74,9 @@ coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
 play-core-update = { module = "com.google.android.play:app-update", version.ref = "playCore" }
 play-core-update-ktx = { module = "com.google.android.play:app-update-ktx", version.ref = "playCore" }
 google-accompanist-navigation-animation = { module = "com.google.accompanist:accompanist-navigation-animation", version.ref = "accompanist" }
+google-maps-compose = { group = "com.google.maps.android", name = "maps-compose", version.ref = "google-maps-compose" }
+google-play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "play-services-maps" }
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

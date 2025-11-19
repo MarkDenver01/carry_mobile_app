@@ -15,11 +15,20 @@ class TokenManager @Inject constructor(
         prefs.edit().putString("jwt_token", token).apply()
     }
 
+    fun saveMobileOrEmail(mobileOrEmail: String) {
+        prefs.edit().putString("mobile_email", mobileOrEmail).apply()
+    }
+
     fun getToken(): String? {
         return prefs.getString("jwt_token", null)
     }
 
+    fun getMobileOrEmail(): String? {
+        return prefs.getString("mobile_email", null)
+    }
+
     fun clearToken() {
         prefs.edit().remove("jwt_token").apply()
+        prefs.edit().remove("mobile_email").apply()
     }
 }

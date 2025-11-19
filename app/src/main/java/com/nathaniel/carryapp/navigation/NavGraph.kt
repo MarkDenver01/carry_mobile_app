@@ -10,15 +10,18 @@ import com.nathaniel.carryapp.presentation.ui.compose.dashboard.DashboardScreen
 import com.nathaniel.carryapp.presentation.ui.compose.dashboard.delivery.DeliveryScreen
 import com.nathaniel.carryapp.presentation.ui.compose.dashboard.pickup.PickupScreen
 import com.nathaniel.carryapp.presentation.ui.compose.initial.InitialScreen
+import com.nathaniel.carryapp.presentation.ui.compose.orders.location.DeliveryAreaScreen
 import com.nathaniel.carryapp.presentation.ui.compose.membership.apply.SukiMembershipScreen
 import com.nathaniel.carryapp.presentation.ui.compose.membership.payment.SubscriptionScreen
 import com.nathaniel.carryapp.presentation.ui.compose.membership.view.ViewMembershipScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.account.AccountScreen
+import com.nathaniel.carryapp.presentation.ui.compose.orders.account.CustomerRegistrationScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.category.CategoriesScreen
+import com.nathaniel.carryapp.presentation.ui.compose.orders.location.DeliveryAddressScreen
+import com.nathaniel.carryapp.presentation.ui.compose.orders.location.LocationConfirmationScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.shopping.ShoppingScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.main_screen.OrderScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.product.ProductDetailRouter
-import com.nathaniel.carryapp.presentation.ui.compose.orders.product.ProductDetailScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.sub_screen.SelectOderScreen
 import com.nathaniel.carryapp.presentation.ui.compose.signin.OtpVerificationScreen
 import com.nathaniel.carryapp.presentation.ui.compose.signin.SignInScreen
@@ -70,6 +73,19 @@ fun NavGraphBuilder.signInGraph(navController: NavController) {
             mobileNumber = mobile
         )
     }
+
+    composable(Routes.DELIVERY_AREA) {
+        DeliveryAreaScreen(navController = navController)
+    }
+
+    composable(Routes.DELIVERY_ADDRESS) {
+        DeliveryAddressScreen(navController = navController)
+    }
+
+    composable(Routes.LOCATION_CONFIRMATION_SCREEN) {
+        LocationConfirmationScreen(navController = navController)
+    }
+
     composable(
         route = "${Routes.AGREEMENT_TERMS_PRIVACY}/{mobileNumber}"
     ) { backStackEntry ->
@@ -78,8 +94,7 @@ fun NavGraphBuilder.signInGraph(navController: NavController) {
             navController = navController,
             mobileNumber = mobile,
             onAgree = {
-                // TODO: save flag in DataStore that user agreed, then navigate
-                navController.navigate(Routes.ORDERS) {
+                navController.navigate(Routes.DELIVERY_AREA) {
                     popUpTo(Routes.AGREEMENT_TERMS_PRIVACY) { inclusive = true }
                 }
             }
@@ -136,6 +151,10 @@ fun NavGraphBuilder.orderGraph(navController: NavController) {
 
     composable(Routes.ACCOUNT) {
         AccountScreen(navController = navController)
+    }
+
+    composable(Routes.CUSTOMER_DETAIL) {
+        CustomerRegistrationScreen(navController = navController)
     }
 }
 

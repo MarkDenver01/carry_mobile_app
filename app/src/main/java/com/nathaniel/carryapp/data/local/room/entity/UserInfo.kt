@@ -32,6 +32,16 @@ data class CustomerEntity(
     val accountStatus: String? = null
 )
 
+@Entity(tableName = "customer_details_table")
+data class CustomerDetailsEntity(
+    @PrimaryKey val customerId: Long = 1,
+    val userName: String? = null,
+    val email: String? = null,
+    val mobileNumber: String? = null,
+    val photoUrl: String? = null,
+    val address: String? = null
+)
+
 @Entity(tableName = "driver_table")
 data class DriverEntity(
     @PrimaryKey val driverId: Long, // backend customerId
@@ -47,4 +57,25 @@ data class DriverEntity(
     val backIdUrl: String? = null,
     val createdDate: String? = null,
     val accountStatus: String? = null
+)
+
+@Entity(tableName = "delivery_address")
+data class DeliveryAddressEntity(
+    @PrimaryKey
+    val id: Int = 1,
+
+    val provinceCode: String,
+    val provinceName: String,
+
+    val cityCode: String,
+    val cityName: String,
+
+    val barangayCode: String,
+    val barangayName: String,
+
+    val addressDetail: String,
+    val landmark: String?,
+
+    val latitude: Double,
+    val longitude: Double
 )

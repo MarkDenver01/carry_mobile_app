@@ -126,6 +126,7 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.play.services.location)
     //implementation(libs.androidx.material3)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -164,4 +165,6 @@ dependencies {
     implementation(libs.play.core.update)
     implementation(libs.play.core.update.ktx)
     implementation(libs.google.accompanist.navigation.animation)
+    implementation(libs.google.maps.compose)
+    implementation(libs.google.play.services.maps)
 }
