@@ -33,4 +33,6 @@ object Routes {
 
     const val LOCATION_CONFIRMATION_SCREEN = "location_confirmation_screen"
 
+    const val CUSTOMER_DETAIL = "customer_detail"
+
 }

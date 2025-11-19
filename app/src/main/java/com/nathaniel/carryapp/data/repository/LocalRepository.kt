@@ -14,4 +14,18 @@ class LocalRepository @Inject constructor(
     suspend fun getAddress(): DeliveryAddressEntity? = addressLocalDataSource.get()
 
     suspend fun clearAddress() = addressLocalDataSource.clear()
+
+    suspend fun updateAddress(
+        provinceName: String,
+        cityName: String,
+        barangayName: String,
+        addressDetail: String
+    ) {
+        addressLocalDataSource.updateAddressFields(
+            provinceName,
+            cityName,
+            barangayName,
+            addressDetail
+        )
+    }
 }

@@ -31,6 +31,7 @@ import com.nathaniel.carryapp.domain.usecase.ProductResult
 import com.nathaniel.carryapp.domain.usecase.ProvinceResult
 import com.nathaniel.carryapp.domain.usecase.ReverseGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveAddressUseCase
+import com.nathaniel.carryapp.domain.usecase.UpdateAddressUseCase
 import com.nathaniel.carryapp.navigation.Routes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -51,6 +52,7 @@ class OrderViewModel @Inject constructor(
     private val reverseGeocodeUseCase: ReverseGeocodeUseCase,
     private val getAddressUseCase: GetAddressUseCase,
     private val getCurrentLocationUseCase: GetCurrentLocationUseCase,
+    private val updateAddressUseCase: UpdateAddressUseCase,
     private val apiRepository: ApiRepository
 ) : ViewModel() {
 
@@ -157,7 +159,6 @@ class OrderViewModel @Inject constructor(
             }
         }
     }
-
 
 
     private fun loadProducts() {
@@ -388,18 +389,21 @@ class OrderViewModel @Inject constructor(
         }
     }
 
-    fun confirmAddress(navController: NavController) {
-        val loc = selectedLatLng.value
-        val addr = reverseAddress.value
-
-        // TODO: SAVE TO ORDER OBJECT, etc.
-        // Example:
-        // order.deliveryLat = loc?.latitude
-        // order.deliveryLng = loc?.longitude
-        // order.fullAddress = addr.fullAddressLine
-
-        // Then navigate
-        navController.popBackStack()
+    fun confirmAddress(
+        deliveryAddressRequest: DeliveryAddressRequest,
+        navController: NavController
+    ) {
+        viewModelScope.launch {
+            updateAddressUseCase.invoke(
+                deliveryAddressRequest.provinceName,
+                deliveryAddressRequest.cityName,
+                deliveryAddressRequest.barangayName,
+                deliveryAddressRequest.addressDetails
+            )
+            navController.navigate(Routes.CUSTOMER_DETAIL) {
+                popUpTo(Routes.DELIVERY_ADDRESS) { inclusive = true }
+            }
+        }
     }
 
     fun triggerPinMoveMode() {
@@ -425,6 +429,7 @@ class OrderViewModel @Inject constructor(
                     is GeocodeResult.Success -> {
                         _reverseAddress.value = result.data
                     }
+
                     is GeocodeResult.Error -> {
                         _reverseAddress.value = GeocodedAddress(
                             fullAddressLine = "Unable to fetch address",
@@ -446,7 +451,6 @@ class OrderViewModel @Inject constructor(
             }
         }
     }
-
 
 
 }

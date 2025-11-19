@@ -20,4 +20,18 @@ class AddressLocalDataSourceImpl @Inject constructor(
     override suspend fun clear() {
         dao.clearAddress()
     }
+
+    override suspend fun updateAddressFields(
+        provinceName: String?,
+        cityName: String?,
+        barangayName: String?,
+        addressDetail: String?
+    ) {
+        dao.updateAddressFields(
+            provinceName,
+            cityName,
+            barangayName,
+            addressDetail
+        )
+    }
 }

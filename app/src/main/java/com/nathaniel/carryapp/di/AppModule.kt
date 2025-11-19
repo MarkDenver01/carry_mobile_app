@@ -1,5 +1,6 @@
 package com.nathaniel.carryapp.di
 
+import androidx.room.Update
 import com.nathaniel.carryapp.data.local.datasource.LoginLocalDataSourceImpl
 import com.nathaniel.carryapp.data.local.prefs.TokenManager
 import com.nathaniel.carryapp.data.remote.api.ApiService
@@ -20,6 +21,7 @@ import com.nathaniel.carryapp.domain.usecase.GetCurrentLocationUseCase
 import com.nathaniel.carryapp.domain.usecase.GetProvincesByRegionUseCase
 import com.nathaniel.carryapp.domain.usecase.ReverseGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveAddressUseCase
+import com.nathaniel.carryapp.domain.usecase.UpdateAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.VerifyOtpUseCase
 import dagger.Module
 import dagger.Provides
@@ -121,4 +123,10 @@ object AppModule {
     fun provideGetCurrentLocationUseCase(
         repository: GeocodingRepository
     ): GetCurrentLocationUseCase = GetCurrentLocationUseCase(repository)
+
+    @Provides
+    @Singleton
+    fun provideUpdateAddressUseCase(
+        repository: LocalRepository
+    ): UpdateAddressUseCase = UpdateAddressUseCase(repository)
 }

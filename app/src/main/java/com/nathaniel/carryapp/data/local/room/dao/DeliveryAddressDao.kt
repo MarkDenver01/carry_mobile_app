@@ -17,4 +17,20 @@ interface DeliveryAddressDao {
 
     @Query("SELECT COUNT(*) FROM delivery_address")
     suspend fun getAddressCount(): Int
+
+    @Query("""
+        UPDATE delivery_address 
+        SET 
+            provinceName = :provinceName,
+            cityName = :cityName,
+            barangayName = :barangayName,
+            addressDetail = :addressDetail
+        WHERE id = 1
+    """)
+    suspend fun updateAddressFields(
+        provinceName: String?,
+        cityName: String?,
+        barangayName: String?,
+        addressDetail: String?
+    )
 }

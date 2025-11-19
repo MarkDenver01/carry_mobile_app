@@ -20,6 +20,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
+import com.nathaniel.carryapp.domain.request.DeliveryAddressRequest
 import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
 import com.nathaniel.carryapp.presentation.ui.compose.orders.components.BackHeader
 import com.nathaniel.carryapp.presentation.utils.rememberLocationPermissionState
@@ -66,7 +67,26 @@ fun LocationConfirmationScreen(
                     .padding(16.dp)
             ) {
                 Button(
-                    onClick = { viewModel.confirmAddress(navController) },
+                    onClick = {
+                        val detailAddress = addressState.value.fullAddressLine
+                        val province = addressState.value.province
+                        val city = addressState.value.city
+                        val barangay = addressState.value.barangay
+
+                        val deliveryAddressRequest = DeliveryAddressRequest(
+                            provinceCode = "",
+                            provinceName = province ?: "",
+                            cityCode = "",
+                            cityName = city ?: "",
+                            barangayCode = "",
+                            barangayName = barangay ?: "",
+                            addressDetails = detailAddress ?: "",
+                            landMark = ""
+                        )
+
+                        viewModel.confirmAddress(deliveryAddressRequest, navController)
+
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp),
@@ -164,7 +184,11 @@ fun LocationConfirmationScreen(
                         contentColor = Color(0xFF1E88E5)
                     )
                 ) {
-                    Text("Use My Current Location", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        "Use My Current Location",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
 
                 Spacer(Modifier.height(16.dp))
