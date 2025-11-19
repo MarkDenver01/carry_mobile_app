@@ -53,6 +53,7 @@ data class DriverResponse(
 data class CustomerRegistrationRequest(
     val userName: String,
     val address: String,
+    val mobileNumber: String,
     val email: String,
     val photoUrl: String? = null
 )

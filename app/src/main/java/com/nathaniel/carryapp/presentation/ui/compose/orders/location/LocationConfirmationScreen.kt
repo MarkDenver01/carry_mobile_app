@@ -63,6 +63,7 @@ fun LocationConfirmationScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .navigationBarsPadding()
                     .background(Color.White)
                     .padding(16.dp)
             ) {

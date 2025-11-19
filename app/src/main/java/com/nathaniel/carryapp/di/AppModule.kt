@@ -18,9 +18,13 @@ import com.nathaniel.carryapp.domain.usecase.GetAllProductsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetBarangaysByCityUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCitiesByProvinceUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCurrentLocationUseCase
+import com.nathaniel.carryapp.domain.usecase.GetCustomerDetailsUseCase
+import com.nathaniel.carryapp.domain.usecase.GetMobileOrEmailUseCase
 import com.nathaniel.carryapp.domain.usecase.GetProvincesByRegionUseCase
 import com.nathaniel.carryapp.domain.usecase.ReverseGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveAddressUseCase
+import com.nathaniel.carryapp.domain.usecase.SaveCustomerDetailsUseCase
+import com.nathaniel.carryapp.domain.usecase.SaveMobileOrEmailUseCase
 import com.nathaniel.carryapp.domain.usecase.UpdateAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.VerifyOtpUseCase
 import dagger.Module
@@ -61,8 +65,10 @@ object AppModule {
     @Provides
     @Singleton
     fun provideLocalRepository(
-        addressLocalDataSource: AddressLocalDataSource
-    ): LocalRepository = LocalRepository(addressLocalDataSource)
+        addressLocalDataSource: AddressLocalDataSource,
+        loginLocalDataSource: LoginLocalDataSource,
+        tokenManager: TokenManager
+    ): LocalRepository = LocalRepository(addressLocalDataSource, loginLocalDataSource, tokenManager)
 
     @Provides
     @Singleton
@@ -129,4 +135,28 @@ object AppModule {
     fun provideUpdateAddressUseCase(
         repository: LocalRepository
     ): UpdateAddressUseCase = UpdateAddressUseCase(repository)
+
+    @Provides
+    @Singleton
+    fun provideSaveMobileOrEmailUseCase(
+        repository: LocalRepository
+    ): SaveMobileOrEmailUseCase = SaveMobileOrEmailUseCase(repository)
+
+    @Provides
+    @Singleton
+    fun provideGetMobileOrEmailUseCase(
+        repository: LocalRepository
+    ): GetMobileOrEmailUseCase = GetMobileOrEmailUseCase(repository)
+
+    @Provides
+    @Singleton
+    fun provideSaveCustomerDetailUseCase(
+        repository: LocalRepository
+    ): SaveCustomerDetailsUseCase = SaveCustomerDetailsUseCase(repository)
+
+    @Provides
+    @Singleton
+    fun provideGetCustomerDetailUseCase(
+        repository: LocalRepository
+    ): GetCustomerDetailsUseCase = GetCustomerDetailsUseCase(repository)
 }

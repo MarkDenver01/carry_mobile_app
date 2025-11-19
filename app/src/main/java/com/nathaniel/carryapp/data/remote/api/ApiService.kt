@@ -1,5 +1,6 @@
 package com.nathaniel.carryapp.data.remote.api
 
+import com.nathaniel.carryapp.domain.request.CustomerRequest
 import com.nathaniel.carryapp.domain.request.LoginResponse
 import com.nathaniel.carryapp.domain.request.MobileRequest
 import com.nathaniel.carryapp.domain.response.ProductResponse
@@ -22,4 +23,9 @@ interface ApiService {
 
     @GET("/user/public/api/price/all")
     suspend fun getAllProducts(): Response<List<ProductResponse>>
+
+    @POST("/user/public/customer")
+    suspend fun saveCustomerDetails(
+        @Body request: CustomerRequest
+    ): Response<ResponseBody>
 }

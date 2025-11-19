@@ -12,6 +12,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.nathaniel.carryapp.data.local.room.entity.DeliveryAddressEntity
 import com.nathaniel.carryapp.data.repository.ApiRepository
 import com.nathaniel.carryapp.data.repository.GeocodedAddress
+import com.nathaniel.carryapp.domain.mapper.CustomerDetailsMapper
 import com.nathaniel.carryapp.domain.model.Barangay
 import com.nathaniel.carryapp.domain.model.City
 import com.nathaniel.carryapp.domain.model.Product
@@ -28,11 +29,15 @@ import com.nathaniel.carryapp.domain.usecase.GetAllProductsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetBarangaysByCityUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCitiesByProvinceUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCurrentLocationUseCase
+import com.nathaniel.carryapp.domain.usecase.GetCustomerDetailsUseCase
+import com.nathaniel.carryapp.domain.usecase.GetMobileOrEmailUseCase
 import com.nathaniel.carryapp.domain.usecase.GetProvincesByRegionUseCase
 import com.nathaniel.carryapp.domain.usecase.ProductResult
 import com.nathaniel.carryapp.domain.usecase.ProvinceResult
 import com.nathaniel.carryapp.domain.usecase.ReverseGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveAddressUseCase
+import com.nathaniel.carryapp.domain.usecase.SaveCustomerDetailsUseCase
+import com.nathaniel.carryapp.domain.usecase.SaveMobileOrEmailUseCase
 import com.nathaniel.carryapp.domain.usecase.UpdateAddressUseCase
 import com.nathaniel.carryapp.navigation.Routes
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -40,6 +45,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 private const val REGION_IV_A = "040000000"
@@ -47,7 +53,11 @@ private const val REGION_IV_A = "040000000"
 data class CustomerUIState(
     val userName: String = "",
     val email: String = "",
+    val isEmailDisabled: Boolean = false,
+
     val mobileNumber: String = "",
+    val isMobileDisabled: Boolean = false,
+
     val address: String = "",
     val photoUri: Uri? = null
 )
@@ -71,6 +81,10 @@ class OrderViewModel @Inject constructor(
     private val getAddressUseCase: GetAddressUseCase,
     private val getCurrentLocationUseCase: GetCurrentLocationUseCase,
     private val updateAddressUseCase: UpdateAddressUseCase,
+    private val getMobileOrEmailUseCase: GetMobileOrEmailUseCase,
+    private val saveMobileOrEmailUseCase: SaveMobileOrEmailUseCase,
+    private val saveCustomerDetailsUseCase: SaveCustomerDetailsUseCase,
+    private val getCustomerDetailsUseCase: GetCustomerDetailsUseCase,
     private val apiRepository: ApiRepository
 ) : ViewModel() {
 
@@ -141,7 +155,38 @@ class OrderViewModel @Inject constructor(
         loadRegions()
         loadProvinces()
         loadSavedAddress()
+        loadSavedMobileOrEmail()
     }
+
+    private fun loadSavedMobileOrEmail() {
+        val saved = getMobileOrEmailUseCase()
+
+        if (!saved.isNullOrBlank()) {
+
+            if (saved.contains("@")) {
+                // It's an email
+                _uiState.update {
+                    it.copy(
+                        email = saved,
+                        isEmailDisabled = true,
+                        mobileNumber = "",
+                        isMobileDisabled = false
+                    )
+                }
+            } else {
+                // It's a mobile number
+                _uiState.update {
+                    it.copy(
+                        mobileNumber = saved,
+                        isMobileDisabled = true,
+                        email = "",
+                        isEmailDisabled = false
+                    )
+                }
+            }
+        }
+    }
+
 
     private fun loadSavedAddress() {
         viewModelScope.launch {
@@ -174,6 +219,17 @@ class OrderViewModel @Inject constructor(
                     city = saved.cityName,
                     barangay = saved.barangayName
                 )
+
+                _uiState.update {
+                    it.copy(
+                        address = listOf(
+                            saved.addressDetail,
+                            saved.barangayName,
+                            saved.cityName,
+                            saved.provinceName
+                        ).filter { s -> s.isNotBlank() }.joinToString(", ")
+                    )
+                }
 
                 // 5. UI flag (optional)
                 _loadAddressLocal.value = saved.addressDetail
@@ -319,10 +375,12 @@ class OrderViewModel @Inject constructor(
     }
 
     fun onCategoriesClick() {
+        val a = _isLoggedIn.value
+        Timber.e("xxxxxxx: $a" )
         if (_isLoggedIn.value == true) {
-            _navigateTo.value = Routes.DELIVERY_AREA // TODO CHANGE TO CATEGORIES LATER
+            _navigateTo.value = Routes.CATEGORIES
         } else {
-            _navigateTo.value = Routes.DELIVERY_AREA  // TODO CHANGE TO SIGNIN LATER
+            _navigateTo.value = Routes.SIGN_IN
         }
     }
 
@@ -475,34 +533,32 @@ class OrderViewModel @Inject constructor(
 
     fun onEvent(event: CustomerRegistrationUIEvent) {
         when (event) {
+
             is CustomerRegistrationUIEvent.OnUserNameChanged ->
                 _uiState.update { it.copy(userName = event.value) }
 
             is CustomerRegistrationUIEvent.OnEmailChanged ->
-                _uiState.update { it.copy(email = event.value) }
+                _uiState.update { ui ->
+                    if (ui.isEmailDisabled) ui // ignore changes
+                    else ui.copy(email = event.value)
+                }
 
             is CustomerRegistrationUIEvent.OnMobileChanged ->
-                _uiState.update { it.copy(mobileNumber = event.value) }
+                _uiState.update { ui ->
+                    if (ui.isMobileDisabled) ui // ignore changes
+                    else ui.copy(mobileNumber = event.value)
+                }
 
             is CustomerRegistrationUIEvent.OnPhotoSelected ->
                 _uiState.update { it.copy(photoUri = event.uri) }
         }
     }
 
-    fun submitCustomer(navController: NavController) = viewModelScope.launch {
-        val state = uiState.value
 
-        val request = CustomerRegistrationRequest(
-            userName = state.userName,
-            address = state.address,
-            email = state.email,
-            photoUrl = "" // server upload URL
-        )
+    fun submitCustomer(customerRegistrationRequest: CustomerRegistrationRequest, navController: NavController) = viewModelScope.launch {
+        val details = CustomerDetailsMapper.toCustomerRequest(customerRegistrationRequest)
+        saveCustomerDetailsUseCase.invoke(details) // saved to local
 
-//        val success = apiRepository.register(request, state.photoUri)
-//        if (success) {
-//            navController.popBackStack()
-//        }
     }
 
 

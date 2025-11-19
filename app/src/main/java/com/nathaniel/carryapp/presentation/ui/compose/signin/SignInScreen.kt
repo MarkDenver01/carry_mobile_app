@@ -58,6 +58,7 @@ fun SignInScreen(
         viewModel.eventFlow.collect { event ->
             when (event) {
                 is AuthUiEvent.NavigateToOtp -> {
+                    viewModel.saveMobileOrEmail(event.mobile)
                     navController.navigate("${Routes.OTP}/${event.mobile}") {
                         popUpTo(Routes.SIGN_IN) { inclusive = true }
                     }

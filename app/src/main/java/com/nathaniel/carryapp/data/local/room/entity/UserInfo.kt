@@ -32,6 +32,16 @@ data class CustomerEntity(
     val accountStatus: String? = null
 )
 
+@Entity(tableName = "customer_details_table")
+data class CustomerDetailsEntity(
+    @PrimaryKey val customerId: Long = 1,
+    val userName: String? = null,
+    val email: String? = null,
+    val mobileNumber: String? = null,
+    val photoUrl: String? = null,
+    val address: String? = null
+)
+
 @Entity(tableName = "driver_table")
 data class DriverEntity(
     @PrimaryKey val driverId: Long, // backend customerId
