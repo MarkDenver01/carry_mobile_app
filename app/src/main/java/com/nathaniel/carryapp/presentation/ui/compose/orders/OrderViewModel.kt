@@ -408,19 +408,19 @@ class OrderViewModel @Inject constructor(
     }
 
     fun onSearchClick() {
-        if (_isLoggedIn.value == true) {
-            // do nothing for now
-        } else {
-            _navigateTo.value = Routes.SIGN_IN
-        }
+//        if (_isLoggedIn.value == true) {
+//            // do nothing for now
+//        } else {
+//            _navigateTo.value = Routes.SIGN_IN
+//        }
     }
 
     fun onViewMoreClick() {
-        if (_isLoggedIn.value == true) {
-            // do nothing for now
-        } else {
-            _navigateTo.value = Routes.SIGN_IN
-        }
+//        if (_isLoggedIn.value == true) {
+//            // do nothing for now
+//        } else {
+//            _navigateTo.value = Routes.SIGN_IN
+//        }
     }
 
 
