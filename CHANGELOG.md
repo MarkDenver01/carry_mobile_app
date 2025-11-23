@@ -84,3 +84,26 @@ All changes will be documented in this file.
 - update delivery address screen
 - update changes for location delivery area
 - update delivery
+## v4.0.3 - 2025-11-23
+- chore: bump version to v4.0.3
+- Merge remote-tracking branch 'origin/master'
+- update carry
+- docs: update changelog
+- chore: bump version to v4.0.2
+- update api key
+- docs: update changelog
+- chore: bump version to v4.0.1
+- Merge pull request #5 from MarkDenver01/impl/phase2
+- update api key
+- update
+- update customer registration
+- update customer request
+- update CustomerRegistrationScreen.kt
+- update address
+- update geofence
+- update delivery address
+- update db version
+- update
+- update delivery address screen
+- update changes for location delivery area
+- update delivery
