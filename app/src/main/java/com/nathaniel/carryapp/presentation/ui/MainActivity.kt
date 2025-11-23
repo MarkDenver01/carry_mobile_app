@@ -46,12 +46,12 @@ class MainActivity : ComponentActivity() {
                 ) {
                     initialGraph(navController)
                     signInGraph(navController)
-                    signUpGraph(navController)
-                    dashboardGraph(navController)
-                    displayUserProfileGraph(navController)
-                    membershipGraph(navController)
+                    //signUpGraph(navController)
+                    //dashboardGraph(navController)
+                    //displayUserProfileGraph(navController)
+                    //membershipGraph(navController)
                     orderGraph(navController)
-                    shoppingGraph(navController)
+                    //shoppingGraph(navController)
                 }
             }
         }

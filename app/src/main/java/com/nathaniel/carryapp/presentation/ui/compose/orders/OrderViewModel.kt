@@ -369,37 +369,41 @@ class OrderViewModel @Inject constructor(
     // ---------- BUTTON ACTIONS ----------
 
     fun onHomeClick() {
-        if (_isLoggedIn.value == true) {
-            _navigateTo.value = Routes.ORDERS
-        } else {
-            _navigateTo.value = Routes.SIGN_IN
-        }
+//        if (_isLoggedIn.value == true) {
+//            _navigateTo.value = Routes.ORDERS
+//        } else {
+//            _navigateTo.value = Routes.SIGN_IN
+//        }
+        _navigateTo.value = Routes.ORDERS
     }
 
     fun onCategoriesClick() {
-        val a = _isLoggedIn.value
-        Timber.e("xxxxxxx: $a" )
-        if (_isLoggedIn.value == true) {
-            _navigateTo.value = Routes.CATEGORIES
-        } else {
-            _navigateTo.value = Routes.SIGN_IN
-        }
+//        val a = _isLoggedIn.value
+//        Timber.e("xxxxxxx: $a" )
+//        if (_isLoggedIn.value == true) {
+//            _navigateTo.value = Routes.CATEGORIES
+//        } else {
+//            _navigateTo.value = Routes.SIGN_IN
+//        }
+        _navigateTo.value = Routes.CATEGORIES
     }
 
     fun onReorderClick() {
-        if (_isLoggedIn.value == true) {
-            //_navigateTo.value = Routes.REORDER
-        } else {
-            _navigateTo.value = Routes.SIGN_IN
-        }
+//        if (_isLoggedIn.value == true) {
+//            //_navigateTo.value = Routes.REORDER
+//        } else {
+//            _navigateTo.value = Routes.SIGN_IN
+//        }
+        //_navigateTo.value = Routes.REORDER // TODO <--- GAWAN MO UI ITO
     }
 
     fun onAccountClick() {
-        if (_isLoggedIn.value == true) {
-            _navigateTo.value = Routes.ACCOUNT
-        } else {
-            _navigateTo.value = Routes.SIGN_IN
-        }
+//        if (_isLoggedIn.value == true) {
+//            _navigateTo.value = Routes.ACCOUNT
+//        } else {
+//            _navigateTo.value = Routes.SIGN_IN
+//        }
+        _navigateTo.value = Routes.ACCOUNT
 
     }
 
