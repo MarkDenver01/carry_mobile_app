@@ -45,7 +45,7 @@ class MainActivity : ComponentActivity() {
                     startDestination = Routes.INITIAL
                 ) {
                     initialGraph(navController)
-                    //signInGraph(navController)
+                    signInGraph(navController)
                     //signUpGraph(navController)
                     //dashboardGraph(navController)
                     //displayUserProfileGraph(navController)
