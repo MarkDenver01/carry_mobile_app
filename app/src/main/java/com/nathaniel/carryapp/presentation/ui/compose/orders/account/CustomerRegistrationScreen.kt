@@ -191,7 +191,7 @@ fun CustomerRegistrationScreen(
             toastMessage = toastState,
             onDismiss = { viewModel.resetToast() },
             modifier = Modifier
-                .align(Alignment.TopCenter)
+                .align(Alignment.BottomEnd)
                 .padding(top = 20.dp)
         )
 
