@@ -200,7 +200,7 @@ fun SignInScreen(
                         Text(
                             text = "Forgot Password?",
                             color = Color(0xFF1A1A1A),
-                            fontSize = sizes.labelFontSize,
+                            fontSize = sizes.buttonFontSize,
                             modifier = Modifier.clickable {
                                 navController.navigate(Routes.FORGOT_PASSWORD)
                             }

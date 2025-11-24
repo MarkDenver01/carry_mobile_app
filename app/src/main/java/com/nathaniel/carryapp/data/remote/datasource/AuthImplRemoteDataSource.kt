@@ -11,6 +11,8 @@ import com.nathaniel.carryapp.domain.response.CityResponse
 import com.nathaniel.carryapp.domain.response.CustomerDetailResponse
 import com.nathaniel.carryapp.domain.response.ProductResponse
 import com.nathaniel.carryapp.domain.response.ProvinceResponse
+import com.nathaniel.carryapp.domain.response.UploadPhotoResponse
+import okhttp3.MultipartBody
 import okhttp3.ResponseBody
 import retrofit2.Response
 import javax.inject.Inject
@@ -39,8 +41,11 @@ class AuthImplRemoteDataSource @Inject constructor(
         psgcApiService.getBarangays(cityCode)
 
     override suspend fun updateCustomer(
-        identifier: String,
         request: CustomerDetailRequest
     ): Response<CustomerDetailResponse> =
-        apiService.updateCustomer(identifier, request)
+        apiService.updateCustomer(request)
+
+    override suspend fun uploadCustomerPhoto(
+        file: MultipartBody.Part
+    ): Response<UploadPhotoResponse> = apiService.uploadCustomerPhoto(file)
 }

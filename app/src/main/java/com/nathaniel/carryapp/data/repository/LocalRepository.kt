@@ -15,6 +15,12 @@ class LocalRepository @Inject constructor(
     private val tokenManager: TokenManager
 ) {
 
+    fun saveUserSession(session: Boolean) {
+        tokenManager.userSession(session)
+    }
+
+    fun getUserSession(): Boolean = tokenManager.getUserSession()
+
     suspend fun saveCustomerDetails(customerDetailRequest: CustomerDetailRequest) {
         loginLocalDataSource.saveCustomerDetails(customerDetailRequest)
     }
@@ -23,6 +29,7 @@ class LocalRepository @Inject constructor(
         val entity: CustomerDetailsEntity? = loginLocalDataSource.getCustomerDetails()
         return entity?.let { CustomerDetailsMapper.fromEntity(it) }
     }
+
     fun saveMobileOrEmail(mobileOrEmail: String) {
         tokenManager.saveMobileOrEmail(mobileOrEmail)
     }

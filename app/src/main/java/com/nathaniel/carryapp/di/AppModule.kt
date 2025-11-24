@@ -21,12 +21,15 @@ import com.nathaniel.carryapp.domain.usecase.GetCurrentLocationUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCustomerDetailsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetMobileOrEmailUseCase
 import com.nathaniel.carryapp.domain.usecase.GetProvincesByRegionUseCase
+import com.nathaniel.carryapp.domain.usecase.GetUserSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.ReverseGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveCustomerDetailsUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveMobileOrEmailUseCase
+import com.nathaniel.carryapp.domain.usecase.SaveUserSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.UpdateAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.UpdateCustomerUseCase
+import com.nathaniel.carryapp.domain.usecase.UploadCustomerPhotoUseCase
 import com.nathaniel.carryapp.domain.usecase.VerifyOtpUseCase
 import dagger.Module
 import dagger.Provides
@@ -166,4 +169,22 @@ object AppModule {
     fun provideUpdateCustomerUseCase(
         repository: ApiRepository
     ): UpdateCustomerUseCase = UpdateCustomerUseCase(repository)
+
+    @Provides
+    @Singleton
+    fun provideSaveUserSessionUseCase(
+        repository: LocalRepository
+    ): SaveUserSessionUseCase = SaveUserSessionUseCase(repository)
+
+    @Provides
+    @Singleton
+    fun provideGetUserSessionUseCase(
+        repository: LocalRepository
+    ): GetUserSessionUseCase = GetUserSessionUseCase(repository)
+
+    @Provides
+    @Singleton
+    fun provideUploadCustomerPhotoUseCase(
+        repository: ApiRepository
+    ): UploadCustomerPhotoUseCase = UploadCustomerPhotoUseCase(repository)
 }

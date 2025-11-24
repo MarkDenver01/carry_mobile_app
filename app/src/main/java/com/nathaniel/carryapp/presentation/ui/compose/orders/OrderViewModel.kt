@@ -1,5 +1,6 @@
 package com.nathaniel.carryapp.presentation.ui.compose.orders
 
+import android.content.Context
 import android.location.Location
 import android.net.Uri
 import androidx.compose.runtime.getValue
@@ -12,6 +13,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.nathaniel.carryapp.data.local.room.entity.DeliveryAddressEntity
 import com.nathaniel.carryapp.data.repository.ApiRepository
 import com.nathaniel.carryapp.data.repository.GeocodedAddress
+import com.nathaniel.carryapp.domain.enum.ToastType
 import com.nathaniel.carryapp.domain.mapper.CustomerDetailsMapper
 import com.nathaniel.carryapp.domain.model.Barangay
 import com.nathaniel.carryapp.domain.model.City
@@ -32,16 +34,23 @@ import com.nathaniel.carryapp.domain.usecase.GetCurrentLocationUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCustomerDetailsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetMobileOrEmailUseCase
 import com.nathaniel.carryapp.domain.usecase.GetProvincesByRegionUseCase
+import com.nathaniel.carryapp.domain.usecase.GetUserSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.ProductResult
 import com.nathaniel.carryapp.domain.usecase.ProvinceResult
 import com.nathaniel.carryapp.domain.usecase.ReverseGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveCustomerDetailsUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveMobileOrEmailUseCase
+import com.nathaniel.carryapp.domain.usecase.SaveUserSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.UpdateAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.UpdateCustomerUseCase
+import com.nathaniel.carryapp.domain.usecase.UploadCustomerPhotoUseCase
 import com.nathaniel.carryapp.navigation.Routes
+import com.nathaniel.carryapp.presentation.utils.toMultipart
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -50,6 +59,11 @@ import timber.log.Timber
 import javax.inject.Inject
 
 private const val REGION_IV_A = "040000000"
+
+data class ToastMessage(
+    val message: String,
+    val type: ToastType
+)
 
 data class CustomerUIState(
     val userName: String = "",
@@ -87,7 +101,11 @@ class OrderViewModel @Inject constructor(
     private val saveCustomerDetailsUseCase: SaveCustomerDetailsUseCase,
     private val getCustomerDetailsUseCase: GetCustomerDetailsUseCase,
     private val updateCustomerUseCase: UpdateCustomerUseCase,
-    private val apiRepository: ApiRepository
+    private val saveUserSessionUseCase: SaveUserSessionUseCase,
+    private val getUserSessionUseCase: GetUserSessionUseCase,
+    private val updatePhotoUseCase: UploadCustomerPhotoUseCase,
+    private val apiRepository: ApiRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _navigateTo = MutableStateFlow<String?>(null)
@@ -117,6 +135,9 @@ class OrderViewModel @Inject constructor(
     private val _barangays = MutableStateFlow<List<Barangay>>(emptyList())
     val barangays: StateFlow<List<Barangay>> = _barangays
 
+    private val _toastState = MutableStateFlow<ToastMessage?>(null)
+    val toastState: StateFlow<ToastMessage?> = _toastState
+
     var selectedProvince by mutableStateOf<Province?>(null)
         private set
 
@@ -134,6 +155,7 @@ class OrderViewModel @Inject constructor(
 
     private val _loadAddressLocal = MutableStateFlow<String?>(null)
     val loadAddressLocal: StateFlow<String?> = _loadAddressLocal
+
 
     private val _reverseAddress = MutableStateFlow(
         GeocodedAddress(
@@ -369,58 +391,57 @@ class OrderViewModel @Inject constructor(
     // ---------- BUTTON ACTIONS ----------
 
     fun onHomeClick() {
-//        if (_isLoggedIn.value == true) {
-//            _navigateTo.value = Routes.ORDERS
-//        } else {
-//            _navigateTo.value = Routes.SIGN_IN
-//        }
-        _navigateTo.value = Routes.ORDERS
+        Timber.d("onHomeClick ${_isLoggedIn.value}")
+        if (_isLoggedIn.value == true) {
+            _navigateTo.value = Routes.ORDERS
+        } else {
+            _navigateTo.value = Routes.SIGN_IN
+        }
     }
 
     fun onCategoriesClick() {
-//        val a = _isLoggedIn.value
-//        Timber.e("xxxxxxx: $a" )
-//        if (_isLoggedIn.value == true) {
-//            _navigateTo.value = Routes.CATEGORIES
-//        } else {
-//            _navigateTo.value = Routes.SIGN_IN
-//        }
-        _navigateTo.value = Routes.CATEGORIES
+        Timber.d("onCategoriesClick ${_isLoggedIn.value}")
+        if (_isLoggedIn.value == true) {
+            _navigateTo.value = Routes.CATEGORIES
+        } else {
+            _navigateTo.value = Routes.SIGN_IN
+        }
     }
 
     fun onReorderClick() {
-//        if (_isLoggedIn.value == true) {
-//            //_navigateTo.value = Routes.REORDER
-//        } else {
-//            _navigateTo.value = Routes.SIGN_IN
-//        }
-        //_navigateTo.value = Routes.REORDER // TODO <--- GAWAN MO UI ITO
+        Timber.d("onReorderClick ${_isLoggedIn.value}")
+        if (_isLoggedIn.value == true) {
+            //_navigateTo.value = Routes.REORDER
+        } else {
+            _navigateTo.value = Routes.SIGN_IN
+        }
     }
 
     fun onAccountClick() {
-//        if (_isLoggedIn.value == true) {
-//            _navigateTo.value = Routes.ACCOUNT
-//        } else {
-//            _navigateTo.value = Routes.SIGN_IN
-//        }
-        _navigateTo.value = Routes.ACCOUNT
-
+        Timber.d("onAccountClick ${_isLoggedIn.value}")
+        if (_isLoggedIn.value == true) {
+            _navigateTo.value = Routes.ACCOUNT
+        } else {
+            _navigateTo.value = Routes.SIGN_IN
+        }
     }
 
     fun onSearchClick() {
-//        if (_isLoggedIn.value == true) {
-//            // do nothing for now
-//        } else {
-//            _navigateTo.value = Routes.SIGN_IN
-//        }
+        Timber.d("onSearchClick ${_isLoggedIn.value}")
+        if (_isLoggedIn.value == true) {
+            // do nothing for now
+        } else {
+            _navigateTo.value = Routes.SIGN_IN
+        }
     }
 
     fun onViewMoreClick() {
-//        if (_isLoggedIn.value == true) {
-//            // do nothing for now
-//        } else {
-//            _navigateTo.value = Routes.SIGN_IN
-//        }
+        Timber.d("onViewMoreClick ${_isLoggedIn.value}")
+        if (_isLoggedIn.value == true) {
+            // do nothing for now
+        } else {
+            _navigateTo.value = Routes.SIGN_IN
+        }
     }
 
 
@@ -560,19 +581,59 @@ class OrderViewModel @Inject constructor(
         }
     }
 
+    fun submitCustomer(
+        request: CustomerRegistrationRequest,
+        photoUri: Uri?
+    ) = viewModelScope.launch {
 
-    fun submitCustomer(customerRegistrationRequest: CustomerRegistrationRequest) = viewModelScope.launch {
-        Timber.d("submit customer...")
-//        val details = CustomerDetailsMapper.toCustomerRequest(customerRegistrationRequest)
-//
-//        val identifier = details.mobileNumber.ifBlank { details.email }
-//        val response = updateCustomerUseCase(identifier, details)
-//        if (response.isSuccessful) {
-//            saveCustomerDetailsUseCase.invoke(details) // saved to local
-//            _navigateTo.value = Routes.ORDERS
-//        }
-        _navigateTo.value = Routes.ORDERS
+        try {
+
+            var uploadedUrl: String? = null
+
+            // Upload photo first (if may file)
+            if (photoUri != null) {
+                val filePart = photoUri.toMultipart(context)
+                uploadedUrl = updatePhotoUseCase(filePart)
+            }
+
+            val details = CustomerDetailsMapper.toCustomerRequest(request)
+            details.photoUrl = uploadedUrl ?: ""
+
+            val response = updateCustomerUseCase(details)
+
+            if (response.isSuccessful) {
+
+                saveUserSessionUseCase(true)
+                saveCustomerDetailsUseCase(details)
+
+                _toastState.value = ToastMessage(
+                    "Registration successful",
+                    ToastType.SUCCESS
+                )
+
+                delay(2000)
+                _navigateTo.value = Routes.ORDERS
+            }
+
+        } catch (e: Exception) {
+            val msg = e.message ?: ""
+
+            _toastState.value = when {
+                msg.contains("Customer not found", true) ->
+                    ToastMessage("Customer not found", ToastType.DANGER)
+
+                msg.contains("Email already in use", true) ->
+                    ToastMessage("Email already in use", ToastType.WARNING)
+
+                msg.contains("Mobile number already in use", true) ->
+                    ToastMessage("Mobile number already in use", ToastType.WARNING)
+
+                else -> ToastMessage("Unknown error!", ToastType.DANGER)
+            }
+        }
     }
 
-
+    fun resetToast() {
+        _toastState.value = null
+    }
 }

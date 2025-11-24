@@ -7,6 +7,8 @@ import com.nathaniel.carryapp.domain.response.CityResponse
 import com.nathaniel.carryapp.domain.response.CustomerDetailResponse
 import com.nathaniel.carryapp.domain.response.ProductResponse
 import com.nathaniel.carryapp.domain.response.ProvinceResponse
+import com.nathaniel.carryapp.domain.response.UploadPhotoResponse
+import okhttp3.MultipartBody
 import okhttp3.ResponseBody
 import retrofit2.Response
 
@@ -22,6 +24,8 @@ interface AuthRemoteDatasource {
 
     suspend fun getBarangaysByCity(cityCode: String): Response<List<BarangayResponse>>
 
-    suspend fun updateCustomer(identifier: String, request: CustomerDetailRequest): Response<CustomerDetailResponse>
+    suspend fun updateCustomer(request: CustomerDetailRequest): Response<CustomerDetailResponse>
+
+    suspend fun uploadCustomerPhoto(file: MultipartBody.Part): Response<UploadPhotoResponse>
 
 }

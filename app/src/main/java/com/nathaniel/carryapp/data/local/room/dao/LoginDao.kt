@@ -15,7 +15,7 @@ interface LoginDao {
     suspend fun insertLogin(login: LoginEntity)
 
     @Query("SELECT * FROM login_table WHERE userId = :userId LIMIT 1")
-    suspend fun   getLogin(userId: Long): LoginEntity?
+    suspend fun getLogin(userId: Long): LoginEntity?
 
     @Query("SELECT * FROM login_table LIMIT 1")
     suspend fun getCurrentLogin(): LoginEntity?

@@ -1,6 +1,8 @@
 package com.nathaniel.carryapp.presentation.ui.compose.orders.account
 
+import android.content.Context
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -17,6 +19,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -24,10 +28,15 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.nathaniel.carryapp.domain.enum.ToastType
 import com.nathaniel.carryapp.domain.request.CustomerRegistrationRequest
+import com.nathaniel.carryapp.navigation.Routes
 import com.nathaniel.carryapp.presentation.ui.compose.orders.CustomerRegistrationUIEvent
 import com.nathaniel.carryapp.presentation.ui.compose.orders.components.BackHeader
 import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
+import com.nathaniel.carryapp.presentation.ui.compose.orders.ToastMessage
+import com.nathaniel.carryapp.presentation.utils.CustomToast
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,149 +44,164 @@ fun CustomerRegistrationScreen(
     navController: NavController,
     viewModel: OrderViewModel = hiltViewModel()
 ) {
+    val state by viewModel.uiState.collectAsState()
+    val toastState by viewModel.toastState.collectAsState()
+    val navigateTo by viewModel.navigateTo.collectAsState()
 
-    val state = viewModel.uiState.collectAsState()
+    Box(modifier = Modifier.fillMaxSize()) {
 
-    Scaffold(
-        containerColor = Color.White,
-        topBar = { BackHeader { navController.popBackStack() } },
-        bottomBar = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .navigationBarsPadding()
-                    .background(Color.White)
-                    .padding(16.dp)
-            ) {
-                Button(
-                    onClick = {
-                        val request = CustomerRegistrationRequest(
-                            state.value.userName,
-                            state.value.address,
-                            state.value.mobileNumber,
-                            state.value.email
-                        )
-                        viewModel
-                            .submitCustomer(request)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32))
-                ) {
-                    Text(
-                        "Register Customer",
-                        color = Color.White,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-            }
-        }
-    ) { inner ->
-
-        LazyColumn(
-            modifier = Modifier
-                .padding(inner)
-                .fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 120.dp)
-        ) {
-
-            /** TITLE */
-            item {
+        // =========================
+        // SCREEN CONTENT BELOW
+        // =========================
+        Scaffold(
+            containerColor = Color.White,
+            topBar = { BackHeader { navController.popBackStack() } },
+            bottomBar = {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        .navigationBarsPadding()
+                        .background(Color.White)
+                        .padding(16.dp)
                 ) {
-                    Text(
-                        text = "Customer Registration",
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color.Black
-                    )
-
-                    Spacer(modifier = Modifier.height(6.dp))
-
-                    Text(
-                        text = "Fill out the required details to register your customer.",
-                        fontSize = 14.sp,
-                        color = Color(0xFF4F4F4F),
-                        lineHeight = 20.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(20.dp))
-                }
-            }
-
-
-            /** UPLOAD PHOTO */
-            item {
-                UploadPhotoSection(
-                    imageUri = state.value.photoUri,
-                    onPickImage = { uri ->
-                        viewModel.onEvent(
-                            CustomerRegistrationUIEvent.OnPhotoSelected(
-                                uri
+                    Button(
+                        onClick = {
+                            val request = CustomerRegistrationRequest(
+                                state.userName,
+                                state.address,
+                                state.mobileNumber,
+                                state.email
                             )
+                            viewModel.submitCustomer(request, state.photoUri)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32))
+                    ) {
+                        Text(
+                            "Register Customer",
+                            color = Color.White,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold
                         )
                     }
-                )
-                Spacer(modifier = Modifier.height(20.dp))
+                }
             }
+        ) { innerPadding ->
 
-            /** INPUT FIELDS */
-            item {
-                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+            LazyColumn(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize(),
+                contentPadding = PaddingValues(bottom = 120.dp)
+            ) {
 
-                    RegistrationInputField(
-                        label = "Full Name",
-                        value = state.value.userName,
-                        onValueChange = {
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Customer Registration",
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.Black
+                        )
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        Text(
+                            text = "Fill out the required details to register your customer.",
+                            fontSize = 14.sp,
+                            color = Color(0xFF4F4F4F),
+                            lineHeight = 20.sp
+                        )
+
+                        Spacer(modifier = Modifier.height(20.dp))
+                    }
+                }
+
+                item {
+                    UploadPhotoSection(
+                        imageUri = state.photoUri,
+                        onPickImage = { uri ->
                             viewModel.onEvent(
-                                CustomerRegistrationUIEvent.OnUserNameChanged(
-                                    it
-                                )
+                                CustomerRegistrationUIEvent.OnPhotoSelected(uri)
                             )
                         }
                     )
-
-                    RegistrationInputField(
-                        label = "Email Address",
-                        value = state.value.email,
-                        enabled = !state.value.isEmailDisabled,
-                        onValueChange = {
-                            viewModel.onEvent(
-                                CustomerRegistrationUIEvent.OnEmailChanged(
-                                    it
-                                )
-                            )
-                        }
-                    )
-
-                    RegistrationInputField(
-                        label = "Mobile Number",
-                        value = state.value.mobileNumber,
-                        enabled = !state.value.isMobileDisabled,
-                        onValueChange = {
-                            viewModel.onEvent(
-                                CustomerRegistrationUIEvent.OnMobileChanged(
-                                    it
-                                )
-                            )
-                        },
-                        keyboardType = KeyboardType.Phone
-                    )
-
-                    RegistrationLocationField(
-                        label = "Address",
-                        value = state.value.address
-                    )
-
                     Spacer(modifier = Modifier.height(20.dp))
                 }
+
+                item {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+
+                        RegistrationInputField(
+                            label = "Full Name",
+                            value = state.userName,
+                            onValueChange = {
+                                viewModel.onEvent(
+                                    CustomerRegistrationUIEvent.OnUserNameChanged(it)
+                                )
+                            }
+                        )
+
+                        RegistrationInputField(
+                            label = "Email Address",
+                            value = state.email,
+                            enabled = !state.isEmailDisabled,
+                            onValueChange = {
+                                viewModel.onEvent(
+                                    CustomerRegistrationUIEvent.OnEmailChanged(it)
+                                )
+                            }
+                        )
+
+                        RegistrationInputField(
+                            label = "Mobile Number",
+                            value = state.mobileNumber,
+                            enabled = !state.isMobileDisabled,
+                            onValueChange = {
+                                viewModel.onEvent(
+                                    CustomerRegistrationUIEvent.OnMobileChanged(it)
+                                )
+                            },
+                            keyboardType = KeyboardType.Phone
+                        )
+
+                        RegistrationLocationField(
+                            label = "Address",
+                            value = state.address + ", Philippines"
+                        )
+
+                        Spacer(modifier = Modifier.height(20.dp))
+                    }
+                }
+            }
+        }
+
+        // =========================
+        // TOAST OVERLAY (ALWAYS ON TOP)
+        // =========================
+        CustomToast(
+            toastMessage = toastState,
+            onDismiss = { viewModel.resetToast() },
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 20.dp)
+        )
+
+        // =========================
+        // NAVIGATION EVENT
+        // =========================
+        LaunchedEffect(navigateTo) {
+            navigateTo?.let { route ->
+                navController.navigate(route)
+                viewModel.resetNavigation()
             }
         }
     }
@@ -357,4 +381,3 @@ fun RegistrationInputField(
         Spacer(Modifier.height(16.dp))
     }
 }
-

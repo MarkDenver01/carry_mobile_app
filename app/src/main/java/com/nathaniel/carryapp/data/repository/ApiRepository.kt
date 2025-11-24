@@ -19,6 +19,7 @@ import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
 import com.nathaniel.carryapp.domain.request.LoginResponse
 import com.nathaniel.carryapp.domain.response.CustomerDetailResponse
 import com.nathaniel.carryapp.presentation.utils.NetworkResult
+import okhttp3.MultipartBody
 import retrofit2.Response
 import javax.inject.Inject
 
@@ -200,9 +201,19 @@ class ApiRepository @Inject constructor(
         loginLocalDataSource.logout()
 
     suspend fun updateCustomer(
-        identifier: String,
         request: CustomerDetailRequest
     ): Response<CustomerDetailResponse> {
-        return remote.updateCustomer(identifier, request)
+        return remote.updateCustomer( request)
+    }
+
+    suspend fun uploadCustomerPhoto(file: MultipartBody.Part): String {
+        val response = remote.uploadCustomerPhoto(file)
+
+        if (!response.isSuccessful)
+            throw Exception("Upload failed")
+
+        val body = response.body() ?: throw Exception("No response body")
+
+        return body.url
     }
 }

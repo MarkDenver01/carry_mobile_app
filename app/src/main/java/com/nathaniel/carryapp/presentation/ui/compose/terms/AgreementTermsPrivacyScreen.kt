@@ -52,6 +52,7 @@ fun AgreementTermsPrivacyScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .navigationBarsPadding()
                     .padding(
                         horizontal = sizes.paddingHorizontal,
                         vertical = spacing.md
