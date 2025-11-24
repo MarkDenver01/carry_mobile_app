@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,8 +30,11 @@ import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.ShopSearchB
 @Composable
 fun AccountScreen(
     navController: NavController,
-    viewModel: OrderViewModel = hiltViewModel()
+    customerViewModel: CustomerViewModel = hiltViewModel()
 ) {
+
+    val customer = customerViewModel.customerDetails.collectAsState().value
+
     Scaffold(
         containerColor = Color(0xFFF7F8FA),
         topBar = { ShopHeader(notifications = 12, cartCount = 7) },
@@ -38,7 +42,7 @@ fun AccountScreen(
             ShopBottomBar(
                 onHome = { navController.navigate(Routes.ORDERS) },
                 onCategories = { navController.navigate(Routes.CATEGORIES) },
-                onReorder = { viewModel.onReorderClick() },
+                onReorder = { navController.navigate(Routes.REORDER) },
                 onAccount = {}
             )
         }
@@ -113,11 +117,23 @@ fun AccountScreen(
                             }
 
                             Button(
-                                onClick = {},
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF118B3C)),
+                                onClick = {
+                                    navController.navigate(Routes.CASH_IN) {
+                                        popUpTo(Routes.ACCOUNT) { inclusive = true }
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(
+                                        0xFF118B3C
+                                    )
+                                ),
                                 shape = RoundedCornerShape(10.dp)
                             ) {
-                                Text("Cash in", color = Color.White, fontWeight = FontWeight.SemiBold)
+                                Text(
+                                    "Cash in",
+                                    color = Color.White,
+                                    fontWeight = FontWeight.SemiBold
+                                )
                             }
                         }
                     }
@@ -131,10 +147,10 @@ fun AccountScreen(
             // ================================
             item {
                 SectionCard(title = "My Information") {
-                    InfoRow("Name", "Denver Gregorio")
-                    InfoRow("Mobile Number", "639693342612")
-                    InfoRow("Email Address", "--")
-                    InfoRow("Deliver To", "Poblacion Barangay 6,\nCity of Tanauan")
+                    InfoRow("Name", customer?.userName ?: "")
+                    InfoRow("Mobile Number", customer?.mobileNumber ?: "")
+                    InfoRow("Email Address", customer?.email ?: "")
+                    InfoRow("Deliver To", customer?.address ?: "")
                 }
                 Spacer(Modifier.height(20.dp))
             }

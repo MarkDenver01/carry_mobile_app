@@ -15,6 +15,7 @@ import com.nathaniel.carryapp.presentation.ui.compose.membership.apply.SukiMembe
 import com.nathaniel.carryapp.presentation.ui.compose.membership.payment.SubscriptionScreen
 import com.nathaniel.carryapp.presentation.ui.compose.membership.view.ViewMembershipScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.account.AccountScreen
+import com.nathaniel.carryapp.presentation.ui.compose.orders.account.CashInScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.account.CustomerRegistrationScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.category.CategoriesScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.location.DeliveryAddressScreen
@@ -151,6 +152,10 @@ fun NavGraphBuilder.orderGraph(navController: NavController) {
 
     composable(Routes.ACCOUNT) {
         AccountScreen(navController = navController)
+    }
+
+    composable(Routes.CASH_IN) {
+        CashInScreen(navController = navController)
     }
 
     composable(Routes.CUSTOMER_DETAIL) {

@@ -99,7 +99,6 @@ class OrderViewModel @Inject constructor(
     private val getMobileOrEmailUseCase: GetMobileOrEmailUseCase,
     private val saveMobileOrEmailUseCase: SaveMobileOrEmailUseCase,
     private val saveCustomerDetailsUseCase: SaveCustomerDetailsUseCase,
-    private val getCustomerDetailsUseCase: GetCustomerDetailsUseCase,
     private val updateCustomerUseCase: UpdateCustomerUseCase,
     private val saveUserSessionUseCase: SaveUserSessionUseCase,
     private val getUserSessionUseCase: GetUserSessionUseCase,

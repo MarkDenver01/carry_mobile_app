@@ -23,15 +23,13 @@ object Routes {
     const val FORGOT_PASSWORD = "forgot_password"
     const val OTP = "otp"
     const val AGREEMENT_TERMS_PRIVACY = "agreement_terms_privacy"
-
     const val CATEGORIES = "categories"
     const val REORDER = "reorder"
     const val ACCOUNT = "account"
     const val PRODUCT_DETAIL = "product_detail"
     const val DELIVERY_AREA = "delivery_area"
     const val DELIVERY_ADDRESS = "delivery_address"
-
     const val LOCATION_CONFIRMATION_SCREEN = "location_confirmation_screen"
-
     const val CUSTOMER_DETAIL = "customer_detail"
+    const val CASH_IN = "cash_in"
 }
