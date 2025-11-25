@@ -25,12 +25,12 @@ object ProductMapper {
     // DOMAIN -> UI MAPPER
     fun Product.toShopProduct(): ShopProduct {
         return ShopProduct(
-            id = id.toString(),
+            id = id,
             name = name,
             description = description,
             weight = size,
-            sold = "0",
-            price = "₱$price",
+            sold = stocks,
+            price = price,
             imageUrl = imageUrl,
             category = category
         )

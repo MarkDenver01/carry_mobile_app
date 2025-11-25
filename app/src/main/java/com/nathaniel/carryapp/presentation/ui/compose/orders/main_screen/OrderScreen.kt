@@ -10,35 +10,41 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.nathaniel.carryapp.R
 import com.nathaniel.carryapp.domain.mapper.ProductMapper.toShopProduct
 import com.nathaniel.carryapp.domain.model.ProductRack
 import com.nathaniel.carryapp.navigation.Routes
 import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
+import com.nathaniel.carryapp.presentation.ui.compose.orders.cart.CartViewModel
 import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.*
+import com.nathaniel.carryapp.presentation.ui.sharedViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrderScreen(
     navController: NavController,
-    viewModel: OrderViewModel = hiltViewModel()
 ) {
-    val navigateTo by viewModel.navigateTo.collectAsState()
-    val products by viewModel.products.collectAsState()
-    val error by viewModel.error.collectAsState()
-    val cartCount by viewModel.cartCount.collectAsState()
+    val orderViewModel: OrderViewModel = sharedViewModel()
+    val cartViewModel: CartViewModel = sharedViewModel()
+    val navigateTo by orderViewModel.navigateTo.collectAsState()
+    val products by orderViewModel.products.collectAsState()
+    val error by orderViewModel.error.collectAsState()
+    val cartCount by cartViewModel.cartCount.collectAsState()
     // Convert from domain → UI
     val shopProducts = products.map { it.toShopProduct() }
+
+    LaunchedEffect(products) {
+        cartViewModel.setProducts(products)
+    }
 
     LaunchedEffect(navigateTo) {
         navigateTo?.let { route ->
             navController.navigate(route) {
                 popUpTo(Routes.ORDERS) { inclusive = false }
             }
-            viewModel.resetNavigation()
+            orderViewModel.resetNavigation()
         }
     }
 
@@ -64,9 +70,7 @@ fun OrderScreen(
                 notifications = 12,
                 cartCount = cartCount,
                 onCartClick = {
-                    navController.navigate(Routes.CART) {
-                        popUpTo(Routes.ORDERS) { inclusive = true }
-                    }
+                    navController.navigate(Routes.CART)
                 },
                 onNotificationClick = {
 
@@ -75,10 +79,10 @@ fun OrderScreen(
         },
         bottomBar = {
             ShopBottomBar(
-                onHome = { viewModel.onHomeClick() },
-                onCategories = { viewModel.onCategoriesClick() },
-                onReorder = { viewModel.onReorderClick() },
-                onAccount = { viewModel.onAccountClick() }
+                onHome = { orderViewModel.onHomeClick() },
+                onCategories = { orderViewModel.onCategoriesClick() },
+                onReorder = { orderViewModel.onReorderClick() },
+                onAccount = { orderViewModel.onAccountClick() }
             )
         }
     ) { inner ->
@@ -93,7 +97,7 @@ fun OrderScreen(
                 Column {
                     ShopSearchBar(
                         hint = "I'm looking for…",
-                        onSearch = { viewModel.onSearchClick() }
+                        onSearch = { orderViewModel.onSearchClick() }
                     )
                     Spacer(Modifier.height(8.dp))
                     PromoBanner(
@@ -115,7 +119,7 @@ fun OrderScreen(
                 SectionHeader(
                     title = rack.title,
                     actionText = "View More",
-                    onActionClick = { viewModel.onViewMoreClick() }
+                    onActionClick = { orderViewModel.onViewMoreClick() }
                 )
 
                 // Product grid per rack
@@ -135,8 +139,12 @@ fun OrderScreen(
                             sold = p.sold,
                             price = p.price,
                             onFavorite = {},
-                            onAdd = { viewModel.onAdd(p.id.toLong()) },
-                            onMinus = { viewModel.onMinus(p.id.toLong()) },
+                            onAdd = {
+                                cartViewModel.addProductOriginalDomain(p.id)
+                            },
+                            onMinus = {
+                                cartViewModel.removeProductOriginalDomain(p.id)
+                            },
                             onDetailClick = {
                                 navController.navigate("${Routes.PRODUCT_DETAIL}/${p.id}")
                             }

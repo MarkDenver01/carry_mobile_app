@@ -31,8 +31,8 @@ fun ProductCard(
     imageUrl: String,
     name: String,
     weight: String,
-    sold: String,
-    price: String,
+    sold: Int,
+    price: Double,
     onFavorite: () -> Unit,
     onAdd: () -> Unit,
     onMinus: () -> Unit,
@@ -125,7 +125,7 @@ fun ProductCard(
             Text("$sold items sold", fontSize = 12.sp, color = Color(0xFF118B3C))
             Spacer(Modifier.height(8.dp))
             Text(
-                text = price,
+                text = price.toString(),
                 fontWeight = FontWeight.ExtraBold,
                 fontSize = 18.sp,
                 color = Color(0xFF0E1F22)

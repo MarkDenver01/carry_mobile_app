@@ -22,7 +22,6 @@ import com.nathaniel.carryapp.domain.usecase.GetAllProductsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetBarangaysByCityUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCartCountUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCartSummaryUseCase
-import com.nathaniel.carryapp.domain.usecase.GetCartTotalUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCitiesByProvinceUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCurrentLocationUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCustomerDetailsUseCase
@@ -235,20 +234,14 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideGetCartSummaryUseCase(
-        localRepository: LocalRepository
-    ): GetCartSummaryUseCase = GetCartSummaryUseCase(localRepository)
-
-    @Provides
-    @Singleton
-    fun provideGetCartTotalUseCase(
-        localRepository: LocalRepository
-    ): GetCartTotalUseCase = GetCartTotalUseCase(localRepository)
-
-    @Provides
-    @Singleton
     fun provideGetCartCountUseCase(
         localRepository: LocalRepository
     ): GetCartCountUseCase = GetCartCountUseCase(localRepository)
+
+    @Provides
+    @Singleton
+    fun provideGetCartSummaryUseCase(
+        localRepository: LocalRepository
+    ): GetCartSummaryUseCase = GetCartSummaryUseCase(localRepository)
 
 }

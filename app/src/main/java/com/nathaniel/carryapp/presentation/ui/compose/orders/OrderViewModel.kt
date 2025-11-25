@@ -1,7 +1,6 @@
 package com.nathaniel.carryapp.presentation.ui.compose.orders
 
 import android.content.Context
-import android.location.Location
 import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -10,14 +9,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.google.android.gms.maps.model.LatLng
-import com.nathaniel.carryapp.data.local.room.entity.DeliveryAddressEntity
 import com.nathaniel.carryapp.data.repository.ApiRepository
 import com.nathaniel.carryapp.data.repository.GeocodedAddress
 import com.nathaniel.carryapp.data.repository.LocalRepository
 import com.nathaniel.carryapp.domain.enum.ToastType
 import com.nathaniel.carryapp.domain.mapper.CustomerDetailsMapper
 import com.nathaniel.carryapp.domain.model.Barangay
-import com.nathaniel.carryapp.domain.model.CartSummary
+import com.nathaniel.carryapp.domain.model.CartDisplayItem
 import com.nathaniel.carryapp.domain.model.City
 import com.nathaniel.carryapp.domain.model.Product
 import com.nathaniel.carryapp.domain.model.Province
@@ -35,10 +33,8 @@ import com.nathaniel.carryapp.domain.usecase.GetAllProductsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetBarangaysByCityUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCartCountUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCartSummaryUseCase
-import com.nathaniel.carryapp.domain.usecase.GetCartTotalUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCitiesByProvinceUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCurrentLocationUseCase
-import com.nathaniel.carryapp.domain.usecase.GetCustomerDetailsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetMobileOrEmailUseCase
 import com.nathaniel.carryapp.domain.usecase.GetProvincesByRegionUseCase
 import com.nathaniel.carryapp.domain.usecase.GetUserSessionUseCase
@@ -58,7 +54,6 @@ import com.nathaniel.carryapp.presentation.utils.toMultipart
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -71,6 +66,11 @@ private const val REGION_IV_A = "040000000"
 data class ToastMessage(
     val message: String,
     val type: ToastType
+)
+
+data class CartSummary(
+    val productId: Long,
+    val qty: Int
 )
 
 data class CustomerUIState(
@@ -111,13 +111,7 @@ class OrderViewModel @Inject constructor(
     private val saveUserSessionUseCase: SaveUserSessionUseCase,
     private val getUserSessionUseCase: GetUserSessionUseCase,
     private val updatePhotoUseCase: UploadCustomerPhotoUseCase,
-    private val addToCart: AddToCartUseCase,
-    private val removeFromCart: RemoveFromCartUseCase,
-    private val getSummary: GetCartSummaryUseCase,
-    private val getTotal: GetCartTotalUseCase,
-    private val getCount: GetCartCountUseCase,
     private val apiRepository: ApiRepository,
-    private val localRepository: LocalRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -168,16 +162,6 @@ class OrderViewModel @Inject constructor(
 
     private val _loadAddressLocal = MutableStateFlow<String?>(null)
     val loadAddressLocal: StateFlow<String?> = _loadAddressLocal
-
-    private val _cartCount = MutableStateFlow(0)
-    val cartCount = _cartCount
-
-    private val _cartSummary = MutableStateFlow<List<CartSummary>>(emptyList())
-    val cartSummary = _cartSummary
-
-    private val _total = MutableStateFlow(0.0)
-    val total = _total
-
 
     private val _reverseAddress = MutableStateFlow(
         GeocodedAddress(
@@ -657,31 +641,5 @@ class OrderViewModel @Inject constructor(
 
     fun resetToast() {
         _toastState.value = null
-    }
-
-    fun setProducts(list: List<ShopProduct>) {
-        localRepository.setProducts(list)
-    }
-
-    fun onAdd(id: Long) {
-        viewModelScope.launch {
-            addToCart(id)
-            refresh()
-        }
-    }
-
-    fun onMinus(id: Long) {
-        viewModelScope.launch {
-            removeFromCart(id)
-            refresh()
-        }
-    }
-
-    fun refresh() {
-        viewModelScope.launch {
-            _cartSummary.value = getSummary()
-            _total.value = getTotal()
-            _cartCount.value = getCount()
-        }
     }
 }

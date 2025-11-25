@@ -13,12 +13,12 @@ data class Product(
 )
 
 data class ShopProduct(
-    val id: String,
+    val id: Long,
     val name: String,
     val weight: String,
     val description: String,
-    val sold: String,
-    val price: String,
+    val sold: Int,
+    val price: Double,
     val imageUrl: String,
     val category: String,
 )
@@ -28,7 +28,7 @@ data class ProductRack(
     val products: List<ShopProduct>
 )
 
-data class CartSummary(
+data class CartDisplayItem(
     val productId: Long,
     val name: String,
     val imageUrl: String,

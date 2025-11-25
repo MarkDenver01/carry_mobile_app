@@ -7,9 +7,12 @@ import com.nathaniel.carryapp.domain.datasource.AddressLocalDataSource
 import com.nathaniel.carryapp.domain.datasource.CartLocalDataSource
 import com.nathaniel.carryapp.domain.datasource.LoginLocalDataSource
 import com.nathaniel.carryapp.domain.mapper.CustomerDetailsMapper
-import com.nathaniel.carryapp.domain.model.CartSummary
+import com.nathaniel.carryapp.domain.model.CartDisplayItem
 import com.nathaniel.carryapp.domain.model.ShopProduct
 import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
+import com.nathaniel.carryapp.presentation.ui.compose.orders.CartSummary
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 
 class LocalRepository @Inject constructor(
@@ -49,6 +52,9 @@ class LocalRepository @Inject constructor(
     suspend fun getAddress(): DeliveryAddressEntity? = addressLocalDataSource.get()
 
     suspend fun clearAddress() = addressLocalDataSource.clear()
+    private val _products = MutableStateFlow<List<ShopProduct>>(emptyList())
+    fun getProductsFlow(): StateFlow<List<ShopProduct>> = _products
+
 
     suspend fun updateAddress(
         provinceName: String,
@@ -65,7 +71,7 @@ class LocalRepository @Inject constructor(
     }
 
     fun setProducts(list: List<ShopProduct>) {
-        products = list
+        _products.value = list
     }
 
     suspend fun add(productId: Long) {
@@ -76,27 +82,11 @@ class LocalRepository @Inject constructor(
         cartLocalDataSource.removeLatest(productId)
     }
 
-    suspend fun getSummary(): List<CartSummary> {
-        val grouped = cartLocalDataSource.getGroupedItems()
+    suspend fun getCartCount(): Int = cartLocalDataSource.getTotalCount()
 
-        return grouped.mapNotNull { g ->
-            val p = products.find { it.id.toLong() == g.productId } ?: return@mapNotNull null
-
-            val price = p.price.replace("₱", "").toDouble()
-
-            CartSummary(
-                productId = g.productId,
-                name = p.name,
-                imageUrl = p.imageUrl,
-                weight = p.weight,
-                price = price,
-                qty = g.qty,
-                subtotal = price * g.qty
-            )
+    suspend fun getCartGroups(): List<CartSummary> {
+        return cartLocalDataSource.getGroupedItems().map { g ->
+            CartSummary(productId = g.productId, qty = g.qty)
         }
     }
-
-    suspend fun getTotal(): Double = getSummary().sumOf { it.subtotal }
-
-    suspend fun getCartCount(): Int = cartLocalDataSource.getTotalCount()
 }
