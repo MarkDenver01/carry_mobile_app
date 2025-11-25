@@ -18,11 +18,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.nathaniel.carryapp.navigation.Routes
 import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
 import com.nathaniel.carryapp.presentation.ui.compose.orders.components.BackHeader
 import com.nathaniel.carryapp.presentation.ui.sharedViewModel
 import com.nathaniel.carryapp.presentation.utils.AnimatedLoaderOverlay
 import com.nathaniel.carryapp.presentation.utils.LoadingOverlay
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,11 +39,6 @@ fun CashInScreen(
     val context = LocalContext.current
 
     val isLoading by viewModel.isLoading.collectAsState()
-
-    // 🔥 Refresh balance when opening screen
-    LaunchedEffect(Unit) {
-        viewModel.refreshWallet()
-    }
 
     // open GCash / Xendit URL when available
     LaunchedEffect(cashInUrl) {

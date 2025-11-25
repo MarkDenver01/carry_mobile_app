@@ -39,10 +39,6 @@ fun AccountScreen(navController: NavController) {
     val customer = customerViewModel.customerDetails.collectAsState().value
     val isLoading by customerViewModel.isLoading.collectAsState()
 
-    LaunchedEffect(Unit) {
-        customerViewModel.refreshWallet()
-    }
-
     Scaffold(
         containerColor = Color(0xFFF7F8FA),
         topBar = { ShopHeader(notifications = 12, cartCount = 7) },

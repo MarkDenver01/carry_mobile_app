@@ -37,6 +37,13 @@ class CustomerViewModel @Inject constructor(
 
     init {
         loadSavedCustomerDetails()
+        viewModelScope.launch {
+            customerDetails.collect { details ->
+                if (details != null) {
+                    refreshWallet()
+                }
+            }
+        }
     }
 
     private fun loadSavedCustomerDetails() {
