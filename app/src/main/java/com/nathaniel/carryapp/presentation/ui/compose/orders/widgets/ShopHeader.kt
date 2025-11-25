@@ -1,7 +1,9 @@
 package com.nathaniel.carryapp.presentation.ui.compose.orders.widgets
 
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -31,87 +33,79 @@ fun ShopHeader(
 ) {
     val isCartEmpty = cartCount == 0
 
-    // ⭐ CART Bounce
+    // 🔍 Slight scale change (para may konting bounce / presence)
     val cartScale by animateFloatAsState(
-        targetValue = if (cartCount > 0) 1f else 0.85f,
-        animationSpec = tween(250, easing = FastOutSlowInEasing),
+        targetValue = if (cartCount > 0) 1f else 0.9f,
+        animationSpec = tween(
+            durationMillis = 180,
+            easing = FastOutSlowInEasing
+        ),
         label = "cartScale"
     )
 
-    // ⭐ NOTIFICATION Bounce
-    val notifScale by animateFloatAsState(
-        targetValue = if (notifications > 0) 1f else 0.85f,
-        animationSpec = tween(250, easing = FastOutSlowInEasing),
-        label = "notifScale"
-    )
-
-    // ⭐ SHAKE — CART
-    val previousCart = remember { mutableStateOf(cartCount) }
-    val shouldShakeCart = cartCount > previousCart.value
-
-    val cartShake by animateFloatAsState(
-        targetValue = if (shouldShakeCart) 8f else 0f,
-        animationSpec = tween(300, easing = FastOutSlowInEasing),
-        label = "cartShake"
-    )
+    // 💥 TRUE SHAKE ANIMATION (left-right wiggle)
+    val cartShake = remember { Animatable(0f) }
+    var previousCartCount by remember { mutableStateOf(cartCount) }
 
     LaunchedEffect(cartCount) {
-        if (cartCount > previousCart.value) previousCart.value = cartCount
-    }
+        // Only shake when count **increases** (may bagong item)
+        if (cartCount > previousCartCount) {
+            cartShake.snapTo(0f)
+            cartShake.animateTo(
+                targetValue = 0f,
+                animationSpec = keyframes {
+                    durationMillis = 420
 
-    // ⭐ SHAKE — NOTIFICATION
-    val previousNotif = remember { mutableStateOf(notifications) }
-    val shouldShakeNotif = notifications > previousNotif.value
-
-    val notifShake by animateFloatAsState(
-        targetValue = if (shouldShakeNotif) 8f else 0f,
-        animationSpec = tween(300, easing = FastOutSlowInEasing),
-        label = "notifShake"
-    )
-
-    LaunchedEffect(notifications) {
-        if (notifications > previousNotif.value) previousNotif.value = notifications
+                    // left-right wiggle pattern
+                    -8f at 60
+                    8f at 120
+                    -6f at 180
+                    6f at 240
+                    -3f at 300
+                    3f at 360
+                    0f at 420
+                }
+            )
+        }
+        previousCartCount = cartCount
     }
 
     TopAppBar(
         title = {},
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color(0xFF2F7D32),
+            containerColor = Color(0xFF2F7D32), // 🟩 green header
+            navigationIconContentColor = Color.White,
+            titleContentColor = Color.White,
             actionIconContentColor = Color.White
         ),
         actions = {
 
-            // 🔔 NOTIFICATION WITH SHAKE + SCALE + DOT
-            Box(
-                modifier = Modifier
-                    .graphicsLayer(
-                        translationX = notifShake,
-                        scaleX = notifScale,
-                        scaleY = notifScale
+            // 🔔 NOTIFICATION ICON (steady, no shake)
+            IconButton(onClick = onNotificationClick) {
+                Box {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_notification),
+                        contentDescription = "",
+                        tint = Color.White,
+                        modifier = Modifier.size(26.dp)
                     )
-                    .clickable { onNotificationClick() }
-            ) {
-                Icon(
-                    painterResource(id = R.drawable.ic_notification),
-                    contentDescription = "",
-                    tint = Color.White,
-                    modifier = Modifier.size(26.dp)
-                )
-
-                if (notifications > 0) NotificationDot(notifications)
+                    if (notifications > 0) {
+                        NotificationDot(number = notifications)
+                    }
+                }
             }
 
             Spacer(Modifier.width(10.dp))
 
-            // 🛒 CART WITH SHAKE + SCALE + BADGE
+            // 🛒 CART ICON (with shake + disable logic)
             Box(
                 modifier = Modifier
                     .graphicsLayer(
-                        translationX = if (shouldShakeCart) cartShake else 0f,
+                        translationX = cartShake.value, // 💥 shake offset
                         scaleX = cartScale,
                         scaleY = cartScale
                     )
-                    .alpha(if (isCartEmpty) 0.3f else 1f)
+                    .alpha(if (isCartEmpty) 0.3f else 1f) // dim when empty
                     .clickable(enabled = !isCartEmpty) {
                         if (!isCartEmpty) onCartClick()
                     }
@@ -123,7 +117,9 @@ fun ShopHeader(
                     modifier = Modifier.size(28.dp)
                 )
 
-                if (cartCount > 0) CartBadge(cartCount)
+                if (cartCount > 0) {
+                    CartBadge(count = cartCount)
+                }
             }
 
             Spacer(Modifier.width(14.dp))
