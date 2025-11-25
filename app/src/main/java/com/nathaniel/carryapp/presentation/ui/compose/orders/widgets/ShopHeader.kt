@@ -1,16 +1,20 @@
 package com.nathaniel.carryapp.presentation.ui.compose.orders.widgets
 
-import androidx.compose.foundation.Image
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.outlined.ShoppingCart
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -20,91 +24,147 @@ import com.nathaniel.carryapp.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShopHeader(
-    notifications: Int,
+    notifications: Int = 0,
     cartCount: Int,
-    onCartClick: () -> Unit,
-    onNotificationClick: () -> Unit
+    onCartClick: () -> Unit = {},
+    onNotificationClick: () -> Unit = {}
 ) {
-    Surface(
-        color = Color(0xFF0F8B3B),
-        shadowElevation = 6.dp
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .statusBarsPadding()
-                .height(64.dp)
-                .padding(horizontal = 12.dp),
-            contentAlignment = Alignment.Center
-        ) {
+    val isCartEmpty = cartCount == 0
 
-            // LEFT — Logo + Title
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.align(Alignment.CenterStart)
+    // ⭐ CART Bounce
+    val cartScale by animateFloatAsState(
+        targetValue = if (cartCount > 0) 1f else 0.85f,
+        animationSpec = tween(250, easing = FastOutSlowInEasing),
+        label = "cartScale"
+    )
+
+    // ⭐ NOTIFICATION Bounce
+    val notifScale by animateFloatAsState(
+        targetValue = if (notifications > 0) 1f else 0.85f,
+        animationSpec = tween(250, easing = FastOutSlowInEasing),
+        label = "notifScale"
+    )
+
+    // ⭐ SHAKE — CART
+    val previousCart = remember { mutableStateOf(cartCount) }
+    val shouldShakeCart = cartCount > previousCart.value
+
+    val cartShake by animateFloatAsState(
+        targetValue = if (shouldShakeCart) 8f else 0f,
+        animationSpec = tween(300, easing = FastOutSlowInEasing),
+        label = "cartShake"
+    )
+
+    LaunchedEffect(cartCount) {
+        if (cartCount > previousCart.value) previousCart.value = cartCount
+    }
+
+    // ⭐ SHAKE — NOTIFICATION
+    val previousNotif = remember { mutableStateOf(notifications) }
+    val shouldShakeNotif = notifications > previousNotif.value
+
+    val notifShake by animateFloatAsState(
+        targetValue = if (shouldShakeNotif) 8f else 0f,
+        animationSpec = tween(300, easing = FastOutSlowInEasing),
+        label = "notifShake"
+    )
+
+    LaunchedEffect(notifications) {
+        if (notifications > previousNotif.value) previousNotif.value = notifications
+    }
+
+    TopAppBar(
+        title = {},
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = Color(0xFF2F7D32),
+            actionIconContentColor = Color.White
+        ),
+        actions = {
+
+            // 🔔 NOTIFICATION WITH SHAKE + SCALE + DOT
+            Box(
+                modifier = Modifier
+                    .graphicsLayer(
+                        translationX = notifShake,
+                        scaleX = notifScale,
+                        scaleY = notifScale
+                    )
+                    .clickable { onNotificationClick() }
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.logo_final),
-                    contentDescription = "App Logo",
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .height(38.dp)
-                        .width(40.dp)
+                Icon(
+                    painterResource(id = R.drawable.ic_notification),
+                    contentDescription = "",
+                    tint = Color.White,
+                    modifier = Modifier.size(26.dp)
                 )
 
-                Spacer(modifier = Modifier.width(8.dp))
-
-                Text(
-                    text = "Wrap and Carry",
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(top = 2.dp)
-                )
+                if (notifications > 0) NotificationDot(notifications)
             }
 
-            // RIGHT — Cart + Notification
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier.align(Alignment.CenterEnd)
+            Spacer(Modifier.width(10.dp))
+
+            // 🛒 CART WITH SHAKE + SCALE + BADGE
+            Box(
+                modifier = Modifier
+                    .graphicsLayer(
+                        translationX = if (shouldShakeCart) cartShake else 0f,
+                        scaleX = cartScale,
+                        scaleY = cartScale
+                    )
+                    .alpha(if (isCartEmpty) 0.3f else 1f)
+                    .clickable(enabled = !isCartEmpty) {
+                        if (!isCartEmpty) onCartClick()
+                    }
             ) {
-                // CART ICON
-                BadgedBox(
-                    badge = {
-                        if (cartCount > 0)
-                            Badge(containerColor = Color(0xFFFF6B00)) {
-                                Text(cartCount.toString())
-                            }
-                    }
-                ) {
-                    IconButton(onClick = { onCartClick() }) {
-                        Icon(
-                            imageVector = Icons.Outlined.ShoppingCart,
-                            contentDescription = "Cart",
-                            tint = Color.White
-                        )
-                    }
-                }
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_cart),
+                    contentDescription = "",
+                    tint = Color.White,
+                    modifier = Modifier.size(28.dp)
+                )
 
-                // NOTIFICATION ICON
-                BadgedBox(
-                    badge = {
-                        if (notifications > 0)
-                            Badge(containerColor = Color(0xFFFF6B00)) {
-                                Text(notifications.toString())
-                            }
-                    }
-                ) {
-                    IconButton(onClick = { onNotificationClick() }) {
-                        Icon(
-                            imageVector = Icons.Filled.Notifications,
-                            contentDescription = "Notifications",
-                            tint = Color.White
-                        )
-                    }
-                }
+                if (cartCount > 0) CartBadge(cartCount)
             }
+
+            Spacer(Modifier.width(14.dp))
         }
+    )
+}
+
+@Composable
+fun CartBadge(count: Int) {
+    Box(
+        modifier = Modifier
+            .offset(x = 14.dp, y = (-6).dp)
+            .size(18.dp)
+            .clip(RoundedCornerShape(50))
+            .background(Color(0xFFE53935)),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = count.toString(),
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+            fontSize = 10.sp
+        )
+    }
+}
+
+@Composable
+fun NotificationDot(number: Int) {
+    Box(
+        modifier = Modifier
+            .offset(x = 10.dp, y = (-6).dp)
+            .size(18.dp)
+            .clip(RoundedCornerShape(50))
+            .background(Color(0xFFE53935)),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = number.toString(),
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+            fontSize = 10.sp
+        )
     }
 }
