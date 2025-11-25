@@ -1,6 +1,7 @@
 package com.nathaniel.carryapp.di
 
 import androidx.room.Update
+import com.nathaniel.carryapp.data.local.datasource.CartLocalDataSourceImpl
 import com.nathaniel.carryapp.data.local.datasource.LoginLocalDataSourceImpl
 import com.nathaniel.carryapp.data.local.prefs.TokenManager
 import com.nathaniel.carryapp.data.remote.api.ApiService
@@ -11,12 +12,17 @@ import com.nathaniel.carryapp.data.repository.GeocodingRepository
 import com.nathaniel.carryapp.data.repository.LocalRepository
 import com.nathaniel.carryapp.domain.datasource.AddressLocalDataSource
 import com.nathaniel.carryapp.domain.datasource.AuthRemoteDatasource
+import com.nathaniel.carryapp.domain.datasource.CartLocalDataSource
 import com.nathaniel.carryapp.domain.datasource.LoginLocalDataSource
+import com.nathaniel.carryapp.domain.usecase.AddToCartUseCase
 import com.nathaniel.carryapp.domain.usecase.CashInUseCase
 import com.nathaniel.carryapp.domain.usecase.ForwardGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.GetAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.GetAllProductsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetBarangaysByCityUseCase
+import com.nathaniel.carryapp.domain.usecase.GetCartCountUseCase
+import com.nathaniel.carryapp.domain.usecase.GetCartSummaryUseCase
+import com.nathaniel.carryapp.domain.usecase.GetCartTotalUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCitiesByProvinceUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCurrentLocationUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCustomerDetailsUseCase
@@ -24,6 +30,7 @@ import com.nathaniel.carryapp.domain.usecase.GetMobileOrEmailUseCase
 import com.nathaniel.carryapp.domain.usecase.GetProvincesByRegionUseCase
 import com.nathaniel.carryapp.domain.usecase.GetUserSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.GetWalletBalanceUseCase
+import com.nathaniel.carryapp.domain.usecase.RemoveFromCartUseCase
 import com.nathaniel.carryapp.domain.usecase.ReverseGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveCustomerDetailsUseCase
@@ -60,6 +67,12 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideCartLocalDataSource(
+        impl: CartLocalDataSourceImpl
+    ): CartLocalDataSource = impl
+
+    @Provides
+    @Singleton
     fun provideAuthRepository(
         remote: AuthRemoteDatasource,
         local: LoginLocalDataSource,
@@ -73,8 +86,14 @@ object AppModule {
     fun provideLocalRepository(
         addressLocalDataSource: AddressLocalDataSource,
         loginLocalDataSource: LoginLocalDataSource,
+        cartLocalDataSource: CartLocalDataSource,
         tokenManager: TokenManager
-    ): LocalRepository = LocalRepository(addressLocalDataSource, loginLocalDataSource, tokenManager)
+    ): LocalRepository = LocalRepository(
+        addressLocalDataSource,
+        loginLocalDataSource,
+        cartLocalDataSource,
+        tokenManager
+    )
 
     @Provides
     @Singleton
@@ -201,5 +220,35 @@ object AppModule {
     fun provideGetWalletBalanceUseCase(
         repository: ApiRepository
     ): GetWalletBalanceUseCase = GetWalletBalanceUseCase(repository)
+
+    @Provides
+    @Singleton
+    fun provideAddToCartUseCase(
+        localRepository: LocalRepository
+    ): AddToCartUseCase = AddToCartUseCase(localRepository)
+
+    @Provides
+    @Singleton
+    fun provideRemoveFromCartUseCase(
+        localRepository: LocalRepository
+    ): RemoveFromCartUseCase = RemoveFromCartUseCase(localRepository)
+
+    @Provides
+    @Singleton
+    fun provideGetCartSummaryUseCase(
+        localRepository: LocalRepository
+    ): GetCartSummaryUseCase = GetCartSummaryUseCase(localRepository)
+
+    @Provides
+    @Singleton
+    fun provideGetCartTotalUseCase(
+        localRepository: LocalRepository
+    ): GetCartTotalUseCase = GetCartTotalUseCase(localRepository)
+
+    @Provides
+    @Singleton
+    fun provideGetCartCountUseCase(
+        localRepository: LocalRepository
+    ): GetCartCountUseCase = GetCartCountUseCase(localRepository)
 
 }

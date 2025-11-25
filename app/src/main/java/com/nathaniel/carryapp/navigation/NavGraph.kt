@@ -21,6 +21,7 @@ import com.nathaniel.carryapp.presentation.ui.compose.orders.account.CashInScree
 import com.nathaniel.carryapp.presentation.ui.compose.orders.account.CashInSuccessScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.account.CustomerRegistrationScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.account.CustomerViewModel
+import com.nathaniel.carryapp.presentation.ui.compose.orders.cart.CartScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.category.CategoriesScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.location.DeliveryAddressScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.location.LocationConfirmationScreen
@@ -174,6 +175,10 @@ fun NavGraphBuilder.orderGraph(navController: NavController) {
 
     composable(Routes.CASH_IN_FAILED) {
         CashInFailedScreen(navController = navController)
+    }
+
+    composable(Routes.CART) {
+        CartScreen(navController = navController)
     }
 }
 

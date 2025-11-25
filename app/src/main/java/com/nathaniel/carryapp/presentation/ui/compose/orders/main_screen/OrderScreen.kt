@@ -13,10 +13,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.nathaniel.carryapp.R
+import com.nathaniel.carryapp.domain.mapper.ProductMapper.toShopProduct
+import com.nathaniel.carryapp.domain.model.ProductRack
 import com.nathaniel.carryapp.navigation.Routes
 import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
-import com.nathaniel.carryapp.presentation.ui.compose.orders.model.ProductRack
-import com.nathaniel.carryapp.presentation.ui.compose.orders.model.toShopProduct
 import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.*
 
 
@@ -29,6 +29,7 @@ fun OrderScreen(
     val navigateTo by viewModel.navigateTo.collectAsState()
     val products by viewModel.products.collectAsState()
     val error by viewModel.error.collectAsState()
+    val cartCount by viewModel.cartCount.collectAsState()
     // Convert from domain → UI
     val shopProducts = products.map { it.toShopProduct() }
 
@@ -58,7 +59,20 @@ fun OrderScreen(
 
     Scaffold(
         containerColor = Color(0xFFF7F8FA),
-        topBar = { ShopHeader(notifications = 12, cartCount = 15) },
+        topBar = {
+            ShopHeader(
+                notifications = 12,
+                cartCount = cartCount,
+                onCartClick = {
+                    navController.navigate(Routes.CART) {
+                        popUpTo(Routes.ORDERS) { inclusive = true }
+                    }
+                },
+                onNotificationClick = {
+
+                }
+            )
+        },
         bottomBar = {
             ShopBottomBar(
                 onHome = { viewModel.onHomeClick() },
@@ -121,8 +135,8 @@ fun OrderScreen(
                             sold = p.sold,
                             price = p.price,
                             onFavorite = {},
-                            onAdd = {},
-                            onMinus = {},
+                            onAdd = { viewModel.onAdd(p.id.toLong()) },
+                            onMinus = { viewModel.onMinus(p.id.toLong()) },
                             onDetailClick = {
                                 navController.navigate("${Routes.PRODUCT_DETAIL}/${p.id}")
                             }

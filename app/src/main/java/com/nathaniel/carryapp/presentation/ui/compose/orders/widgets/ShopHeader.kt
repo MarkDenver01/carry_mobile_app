@@ -21,9 +21,10 @@ import com.nathaniel.carryapp.R
 @Composable
 fun ShopHeader(
     notifications: Int,
-    cartCount: Int
+    cartCount: Int,
+    onCartClick: () -> Unit,
+    onNotificationClick: () -> Unit
 ) {
-    // Prevent system bar overlap and add elevation
     Surface(
         color = Color(0xFF0F8B3B),
         shadowElevation = 6.dp
@@ -31,17 +32,17 @@ fun ShopHeader(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .statusBarsPadding() // ✅ fix overlap with system status bar
+                .statusBarsPadding()
                 .height(64.dp)
                 .padding(horizontal = 12.dp),
             contentAlignment = Alignment.Center
         ) {
-            // ✅ Left side: Logo + "Wrap and Carry"
+
+            // LEFT — Logo + Title
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.align(Alignment.CenterStart)
             ) {
-                // Logo slightly taller for visual balance
                 Image(
                     painter = painterResource(id = R.drawable.logo_final),
                     contentDescription = "App Logo",
@@ -53,24 +54,22 @@ fun ShopHeader(
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                // Align text vertically with logo center
                 Text(
                     text = "Wrap and Carry",
                     color = Color.White,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .padding(top = 2.dp) // fine-tune for perfect alignment
+                    modifier = Modifier.padding(top = 2.dp)
                 )
             }
 
-            // ✅ Right side: Cart and Notifications
+            // RIGHT — Cart + Notification
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 modifier = Modifier.align(Alignment.CenterEnd)
             ) {
-                // Cart Icon with Badge
+                // CART ICON
                 BadgedBox(
                     badge = {
                         if (cartCount > 0)
@@ -79,7 +78,7 @@ fun ShopHeader(
                             }
                     }
                 ) {
-                    IconButton(onClick = { /* TODO: cart */ }) {
+                    IconButton(onClick = { onCartClick() }) {
                         Icon(
                             imageVector = Icons.Outlined.ShoppingCart,
                             contentDescription = "Cart",
@@ -88,7 +87,7 @@ fun ShopHeader(
                     }
                 }
 
-                // Notifications Icon with Badge
+                // NOTIFICATION ICON
                 BadgedBox(
                     badge = {
                         if (notifications > 0)
@@ -97,7 +96,7 @@ fun ShopHeader(
                             }
                     }
                 ) {
-                    IconButton(onClick = { /* TODO: notifications */ }) {
+                    IconButton(onClick = { onNotificationClick() }) {
                         Icon(
                             imageVector = Icons.Filled.Notifications,
                             contentDescription = "Notifications",

@@ -55,7 +55,20 @@ fun CategoriesScreen(
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
 
     Scaffold(
-        topBar = { ShopHeader(notifications = 12, cartCount = 15) },
+        topBar = {
+            ShopHeader(
+                notifications = 12,
+                cartCount = 15,
+                onCartClick = {
+                    navController.navigate(Routes.CART) {
+                        popUpTo(Routes.ORDERS) { inclusive = true }
+                    }
+                },
+                onNotificationClick = {
+
+                }
+            )
+        },
         bottomBar = {
             ShopBottomBar(
                 onHome = { navController.navigate(Routes.ORDERS) },

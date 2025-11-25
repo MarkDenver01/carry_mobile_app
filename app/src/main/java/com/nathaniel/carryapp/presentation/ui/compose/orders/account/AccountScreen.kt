@@ -49,7 +49,20 @@ fun AccountScreen(navController: NavController) {
 
     Scaffold(
         containerColor = Color(0xFFF7F8FA),
-        topBar = { ShopHeader(notifications = 12, cartCount = 7) },
+        topBar = {
+            ShopHeader(
+                notifications = 12,
+                cartCount = 15,
+                onCartClick = {
+                    navController.navigate(Routes.CART) {
+                        popUpTo(Routes.ORDERS) { inclusive = true }
+                    }
+                },
+                onNotificationClick = {
+
+                }
+            )
+        },
         bottomBar = {
             ShopBottomBar(
                 onHome = { navController.navigate(Routes.ORDERS) },
@@ -286,7 +299,7 @@ fun AccountScreen(navController: NavController) {
                             pinPosition?.let {
                                 Marker(
                                     state = MarkerState(position = it),
-                                    title = "Your Home Address"
+                                    title = "Your Delivery Address"
                                 )
                             }
                         }
