@@ -107,6 +107,10 @@ fun CartScreen(
                             repeat(item.qty) {
                                 cartViewModel.removeProductOriginalDomain(item.productId)
                             }
+                        },
+                        onRecommend = { selectedItem ->
+                            // TODO: navigation to recommendation screen
+                            navController.navigate("recommend/${selectedItem.productId}")
                         }
                     )
 
@@ -149,12 +153,14 @@ private fun CartHeaderRow(
     }
 }
 
+
 @Composable
 private fun CartItemCard(
     item: CartDisplayItem,
     onIncrement: () -> Unit,
     onDecrement: () -> Unit,
-    onRemove: () -> Unit
+    onRemove: () -> Unit,
+    onRecommend: (CartDisplayItem) -> Unit = {}
 ) {
     Card(
         modifier = Modifier
@@ -206,9 +212,9 @@ private fun CartItemCard(
                     color = Color(0xFF118B3C)
                 )
 
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(14.dp))
 
-                // Increment / Decrement
+                // ⭐ EXACT SAME UI AS ORDER SCREEN (+ / - layout)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -216,26 +222,50 @@ private fun CartItemCard(
                 ) {
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        QuantityButton("-", onDecrement)
+
+                        // MINUS
+                        Box(
+                            modifier = Modifier
+                                .size(30.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0xFFF0F1F3))
+                                .clickable { onDecrement() },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("-", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        }
+
+                        Spacer(Modifier.width(8.dp))
+
                         Text(
-                            item.qty.toString(),
-                            modifier = Modifier.width(32.dp),
-                            fontSize = 16.sp,
+                            text = item.qty.toString(),
+                            fontSize = 18.sp,
                             fontWeight = FontWeight.Medium,
+                            modifier = Modifier.width(26.dp),
                             textAlign = TextAlign.Center
                         )
-                        QuantityButton("+", onIncrement)
+
+                        Spacer(Modifier.width(8.dp))
+
+                        // PLUS
+                        Box(
+                            modifier = Modifier
+                                .size(30.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0xFFF0F1F3))
+                                .clickable { onIncrement() },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("+", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        }
                     }
 
+                    // REMOVE
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.clickable { onRemove() }
                     ) {
-                        Icon(
-                            Icons.Outlined.Delete,
-                            contentDescription = null,
-                            tint = Color.Gray
-                        )
+                        Icon(Icons.Outlined.Delete, contentDescription = null, tint = Color.Gray)
                         Spacer(Modifier.width(6.dp))
                         Text(
                             "Remove",
@@ -244,10 +274,31 @@ private fun CartItemCard(
                         )
                     }
                 }
+
+                Spacer(Modifier.height(10.dp))
+
+                // ⭐ NEW — View Suggestions Button
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(
+                        onClick = { onRecommend(item) }
+                    ) {
+                        Text(
+                            "View Suggestions →",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF118B3C)
+                        )
+                    }
+                }
             }
         }
     }
 }
+
+
 
 @Composable
 private fun QuantityButton(symbol: String, onClick: () -> Unit) {
