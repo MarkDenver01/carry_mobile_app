@@ -21,6 +21,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberCameraPositionState
 import com.nathaniel.carryapp.R
 import com.nathaniel.carryapp.navigation.Routes
 import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
@@ -35,6 +42,7 @@ import com.nathaniel.carryapp.presentation.utils.LoadingOverlay
 @Composable
 fun AccountScreen(navController: NavController) {
     val customerViewModel: CustomerViewModel = sharedViewModel()
+    val orderViewModel: OrderViewModel = sharedViewModel()
     val walletBalance by customerViewModel.walletBalance.collectAsState()
     val customer = customerViewModel.customerDetails.collectAsState().value
     val isLoading by customerViewModel.isLoading.collectAsState()
@@ -236,9 +244,13 @@ fun AccountScreen(navController: NavController) {
             }
 
             // ================================
-            // 📍 DELIVERY ADDRESS
-            // ================================
+            // 📍 DELIVERY ADDRESS — LIVE MAP + REVERSE ADDRESS
             item {
+
+                val reverseAddress by orderViewModel.reverseAddress.collectAsState()
+                val pinPosition by orderViewModel.selectedLatLng.collectAsState()
+
+                // Load map UI
                 SectionCard(title = "Delivery Address") {
 
                     Text(
@@ -249,15 +261,47 @@ fun AccountScreen(navController: NavController) {
 
                     Spacer(Modifier.height(14.dp))
 
-                    Image(
-                        painter = painterResource(R.drawable.maps),
-                        contentDescription = "",
+                    // GOOGLE MAP DISPLAY
+                    val cameraPositionState = rememberCameraPositionState {
+                        position = CameraPosition.fromLatLngZoom(
+                            pinPosition ?: LatLng(14.0645, 121.1460),
+                            16f
+                        )
+                    }
+
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(160.dp)
-                            .clip(RoundedCornerShape(12.dp)),
-                        contentScale = ContentScale.Crop
-                    )
+                            .height(200.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                    ) {
+                        GoogleMap(
+                            modifier = Modifier.fillMaxSize(),
+                            cameraPositionState = cameraPositionState,
+                            uiSettings = MapUiSettings(
+                                zoomControlsEnabled = false,
+                                myLocationButtonEnabled = false
+                            )
+                        ) {
+                            pinPosition?.let {
+                                Marker(
+                                    state = MarkerState(position = it),
+                                    title = "Your Delivery Address"
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(Modifier.height(10.dp))
+
+                    // SHOW EXACT REVERSE GEOCODED ADDRESS
+                    reverseAddress.fullAddressLine?.let {
+                        Text(
+                            it,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
 
                     Spacer(Modifier.height(10.dp))
 
@@ -268,8 +312,10 @@ fun AccountScreen(navController: NavController) {
                         fontWeight = FontWeight.Medium
                     )
                 }
+
                 Spacer(Modifier.height(20.dp))
             }
+
 
             // ================================
             // 💬 SUPPORT
