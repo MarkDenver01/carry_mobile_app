@@ -1,34 +1,31 @@
 package com.nathaniel.carryapp.presentation.ui.compose.orders.cart
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.nathaniel.carryapp.R
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.nathaniel.carryapp.domain.model.CartDisplayItem
 import com.nathaniel.carryapp.presentation.ui.sharedViewModel
 import com.nathaniel.carryapp.presentation.utils.AnimatedLoaderOverlay
@@ -49,13 +46,13 @@ fun CartScreen(
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF2F7D32),
+                    containerColor = Color(0xFF118B3C),
                     titleContentColor = Color.White,
                     navigationIconContentColor = Color.White
                 ),
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "", tint = Color.White)
+                        Icon(Icons.Default.ArrowBack, contentDescription = null)
                     }
                 },
                 title = {
@@ -67,110 +64,58 @@ fun CartScreen(
                 }
             )
         },
-        containerColor = Color.White,
+        containerColor = Color(0xFFF7F8FA),
         bottomBar = {
             CheckoutBottomBar(total = total)
         }
     ) { inner ->
 
-        Box(modifier = Modifier.fillMaxSize()) {
+        if (cartItems.isEmpty()) {
+            EmptyCartState(Modifier.padding(inner))
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .padding(inner)
+                    .fillMaxSize()
+            ) {
 
-            if (cartItems.isEmpty()) {
-                EmptyCartState(modifier = Modifier.padding(inner))
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .padding(inner)
-                        .fillMaxSize()
-                ) {
-
-                    item {
-                        CartHeaderRow(
-                            itemCount = itemsCount,
-                            onClear = {
-                                // optional: pwede kang gumawa ng ClearCartUseCase
-                                // for now loop remove all
-                                cartItems.forEach { item ->
-                                    repeat(item.qty) {
-                                        cartViewModel.decrementProduct(
-                                            product = com.nathaniel.carryapp.domain.model.Product(
-                                                id = item.productId,
-                                                name = item.name,
-                                                code = "",
-                                                size = item.weight,
-                                                price = item.price,
-                                                imageUrl = item.imageUrl,
-                                                description = "",
-                                                stocks = 0,
-                                                category = ""
-                                            )
-                                        )
-                                    }
-                                }
-                            }
-                        )
-                    }
-
-                    items(cartItems.size) { index ->
-                        val item = cartItems[index]
-                        CartItemRow(
-                            item = item,
-                            onIncrement = {
-                                cartViewModel.addProduct(
-                                    product = com.nathaniel.carryapp.domain.model.Product(
-                                        id = item.productId,
-                                        name = item.name,
-                                        code = "",
-                                        size = item.weight,
-                                        price = item.price,
-                                        imageUrl = item.imageUrl,
-                                        description = "",
-                                        stocks = 0,
-                                        category = ""
-                                    )
-                                )
-                            },
-                            onDecrement = {
-                                cartViewModel.decrementProduct(
-                                    product = com.nathaniel.carryapp.domain.model.Product(
-                                        id = item.productId,
-                                        name = item.name,
-                                        code = "",
-                                        size = item.weight,
-                                        price = item.price,
-                                        imageUrl = item.imageUrl,
-                                        description = "",
-                                        stocks = 0,
-                                        category = ""
-                                    )
-                                )
-                            },
-                            onRemove = {
-                                // remove lahat ng qty
+                // Header
+                item {
+                    CartHeaderRow(
+                        itemCount = itemsCount,
+                        onClear = {
+                            cartItems.forEach { item ->
                                 repeat(item.qty) {
-                                    cartViewModel.decrementProduct(
-                                        product = com.nathaniel.carryapp.domain.model.Product(
-                                            id = item.productId,
-                                            name = item.name,
-                                            code = "",
-                                            size = item.weight,
-                                            price = item.price,
-                                            imageUrl = item.imageUrl,
-                                            description = "",
-                                            stocks = 0,
-                                            category = ""
-                                        )
-                                    )
+                                    cartViewModel.removeProductOriginalDomain(item.productId)
                                 }
                             }
-                        )
-                        Spacer(Modifier.height(12.dp))
-                    }
+                        }
+                    )
+                }
+
+                item { Spacer(Modifier.height(4.dp)) }
+
+                // EACH ITEM CARD
+                items(cartItems.size) { index ->
+                    val item = cartItems[index]
+
+                    CartItemCard(
+                        item = item,
+                        onIncrement = { cartViewModel.addProductOriginalDomain(item.productId) },
+                        onDecrement = { cartViewModel.removeProductOriginalDomain(item.productId) },
+                        onRemove = {
+                            repeat(item.qty) {
+                                cartViewModel.removeProductOriginalDomain(item.productId)
+                            }
+                        }
+                    )
+
+                    Spacer(Modifier.height(16.dp))
                 }
             }
-
-            AnimatedLoaderOverlay(isLoading)
         }
+
+        AnimatedLoaderOverlay(isLoading)
     }
 }
 
@@ -182,116 +127,141 @@ private fun CartHeaderRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 16.dp),
+            .padding(horizontal = 16.dp, vertical = 18.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = "$itemCount items",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Medium
-            )
-        }
 
         Text(
-            text = "Clear all items",
+            text = "$itemCount items",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF0E1F22)
+        )
+
+        Text(
+            text = "Clear all",
             color = Color(0xFFE74C3C),
-            fontWeight = FontWeight.Medium,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold,
             modifier = Modifier.clickable { onClear() }
         )
     }
 }
 
 @Composable
-private fun CartItemRow(
+private fun CartItemCard(
     item: CartDisplayItem,
     onIncrement: () -> Unit,
     onDecrement: () -> Unit,
     onRemove: () -> Unit
 ) {
-    Row(
+    Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 16.dp)
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(4.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
 
-        // ⭐ EXACT SAME IMAGE LOADING STYLE AS ORDER SCREEN ⭐
-        AsyncImage(
-            model = item.imageUrl,
-            contentDescription = null,
-            modifier = Modifier
-                .size(85.dp)
-                .clip(RoundedCornerShape(14.dp)),
-            contentScale = ContentScale.Crop
-        )
-
-        Spacer(Modifier.width(12.dp))
-
-        Column(
-            modifier = Modifier.weight(1f)
+        Row(
+            modifier = Modifier.padding(14.dp),
+            verticalAlignment = Alignment.Top
         ) {
 
-            Text(
-                text = item.name,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF1D1D1D)
+            // Product Image
+            AsyncImage(
+                model = item.imageUrl,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(90.dp)
+                    .clip(RoundedCornerShape(14.dp)),
+                contentScale = ContentScale.Crop
             )
 
-            Text(
-                text = item.weight,
-                fontSize = 14.sp,
-                color = Color.Gray
-            )
+            Spacer(Modifier.width(12.dp))
 
-            Spacer(Modifier.height(6.dp))
+            Column(modifier = Modifier.weight(1f)) {
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = "₱${"%,.0f".format(item.price)}",
-                    color = Color(0xFF118B3C),
+                    item.name,
                     fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF0E1F22)
                 )
-            }
 
-            Spacer(Modifier.height(10.dp))
+                Text(
+                    item.weight,
+                    fontSize = 14.sp,
+                    color = Color(0xFF6F7F85)
+                )
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+                Spacer(Modifier.height(6.dp))
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = onDecrement) {
-                        Text("-", fontSize = 18.sp)
-                    }
-                    Text(
-                        text = item.qty.toString(),
-                        modifier = Modifier.width(24.dp),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                    )
-                    IconButton(onClick = onIncrement) {
-                        Text("+", fontSize = 18.sp)
-                    }
-                }
+                Text(
+                    "₱${"%,.2f".format(item.price)}",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF118B3C)
+                )
 
+                Spacer(Modifier.height(12.dp))
+
+                // Increment / Decrement
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable { onRemove() }
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(Icons.Outlined.Delete, contentDescription = "", tint = Color.Gray)
-                    Spacer(Modifier.width(4.dp))
-                    Text("Remove", color = Color.Gray, fontSize = 14.sp)
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        QuantityButton("-", onDecrement)
+                        Text(
+                            item.qty.toString(),
+                            modifier = Modifier.width(32.dp),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            textAlign = TextAlign.Center
+                        )
+                        QuantityButton("+", onIncrement)
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.clickable { onRemove() }
+                    ) {
+                        Icon(
+                            Icons.Outlined.Delete,
+                            contentDescription = null,
+                            tint = Color.Gray
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        Text(
+                            "Remove",
+                            fontSize = 14.sp,
+                            color = Color.Gray
+                        )
+                    }
                 }
             }
         }
     }
 }
 
+@Composable
+private fun QuantityButton(symbol: String, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .size(32.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(Color(0xFFF0F1F3))
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Text(symbol, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+    }
+}
 
 @Composable
 private fun CheckoutBottomBar(total: Double) {
@@ -310,10 +280,10 @@ private fun CheckoutBottomBar(total: Double) {
             Text("₱${"%,.2f".format(total)}", fontSize = 17.sp, fontWeight = FontWeight.Bold)
         }
 
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(12.dp))
 
         Button(
-            onClick = { /* TODO: place order */ },
+            onClick = { /* checkout */ },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),
@@ -332,10 +302,47 @@ private fun CheckoutBottomBar(total: Double) {
 
 @Composable
 private fun EmptyCartState(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Your cart is empty.", color = Color.Gray)
+
+        val composition by rememberLottieComposition(
+            LottieCompositionSpec.RawRes(com.nathaniel.carryapp.R.raw.empty_cart)
+        )
+
+        val progress by animateLottieCompositionAsState(
+            composition,
+            iterations = LottieConstants.IterateForever
+        )
+
+        // ⭐ Lottie animation
+        LottieAnimation(
+            composition = composition,
+            progress = { progress },
+            modifier = Modifier.size(220.dp)
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        Text(
+            "Your cart is empty",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = Color(0xFF1D1D1D)
+        )
+
+        Spacer(Modifier.height(4.dp))
+
+        Text(
+            "You haven't added any products yet.\nStart shopping now!",
+            fontSize = 14.sp,
+            color = Color(0xFF75828A),
+            textAlign = TextAlign.Center
+        )
     }
 }
+
