@@ -286,7 +286,7 @@ fun AccountScreen(navController: NavController) {
                             pinPosition?.let {
                                 Marker(
                                     state = MarkerState(position = it),
-                                    title = "Your Delivery Address"
+                                    title = "Your Home Address"
                                 )
                             }
                         }
