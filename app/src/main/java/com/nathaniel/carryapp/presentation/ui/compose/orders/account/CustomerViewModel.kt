@@ -33,6 +33,8 @@ class CustomerViewModel @Inject constructor(
     private val _walletBalance = MutableStateFlow(0.0)
     val walletBalance = _walletBalance
 
+    val isLoading = MutableStateFlow(false)
+
     init {
         loadSavedCustomerDetails()
     }
@@ -49,6 +51,8 @@ class CustomerViewModel @Inject constructor(
         val email = customerDetails.value?.email ?: "user@gmail.com"
 
         viewModelScope.launch {
+            isLoading.value = true
+
             val req = CashInRequest(
                 mobileNumber = mobile,
                 amount = amount.toLong(),
@@ -61,6 +65,7 @@ class CustomerViewModel @Inject constructor(
                     // TODO: Add toast
                 }
             }
+            isLoading.value = false
         }
     }
 
@@ -71,13 +76,23 @@ class CustomerViewModel @Inject constructor(
     fun refreshWallet() {
         val mobile = customerDetails.value?.mobileNumber ?: return
 
-        viewModelScope.launch {
-            when (val result = getWalletBalanceUseCase(mobile)) {
-                is GetWalletBalanceResult.Success ->
-                    _walletBalance.value = result.walletResponse.balance.toDouble()
+        Timber.tag("WALLET").i("Refreshing wallet for $mobile")
 
-                else -> {}
+        viewModelScope.launch {
+            isLoading.value = true
+            when (val result = getWalletBalanceUseCase(mobile)) {
+
+                is GetWalletBalanceResult.Success -> {
+                    Timber.tag("WALLET").i("New balance: ${result.walletResponse.balance}")
+                    _walletBalance.value = result.walletResponse.balance.toDouble()
+                }
+
+                is GetWalletBalanceResult.Failed -> {
+                    Timber.tag("WALLET").e("Failed getting wallet")
+                }
             }
+            isLoading.value = false
         }
     }
+
 }

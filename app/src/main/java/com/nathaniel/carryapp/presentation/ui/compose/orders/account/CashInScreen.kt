@@ -20,20 +20,28 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
 import com.nathaniel.carryapp.presentation.ui.compose.orders.components.BackHeader
+import com.nathaniel.carryapp.presentation.ui.sharedViewModel
+import com.nathaniel.carryapp.presentation.utils.AnimatedLoaderOverlay
+import com.nathaniel.carryapp.presentation.utils.LoadingOverlay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CashInScreen(
-    navController: NavController,
-    viewModel: CustomerViewModel = hiltViewModel()
-) {
+    navController: NavController) {
+    val viewModel: CustomerViewModel = sharedViewModel()
     var amount by remember { mutableStateOf("") }
     var isFocused by remember { mutableStateOf(false) }
 
     val cashInUrl by viewModel.cashInUrl.collectAsState()
-  //  val toastState by viewModel.toastState.collectAsState()
     val walletBalance by viewModel.walletBalance.collectAsState()
     val context = LocalContext.current
+
+    val isLoading by viewModel.isLoading.collectAsState()
+
+    // 🔥 Refresh balance when opening screen
+    LaunchedEffect(Unit) {
+        viewModel.refreshWallet()
+    }
 
     // open GCash / Xendit URL when available
     LaunchedEffect(cashInUrl) {
@@ -43,10 +51,6 @@ fun CashInScreen(
             viewModel.clearCashInUrl()
         }
     }
-
-    // Optionally, on resume of this screen, you can refresh wallet
-    // (or add a "Refresh balance" button on Account screen)
-    // LaunchedEffect(Unit) { viewModel.refreshWallet() }
 
     Scaffold(
         topBar = {
@@ -109,7 +113,6 @@ fun CashInScreen(
                             value = amount,
                             onValueChange = { newValue ->
                                 val noCommas = newValue.replace(",", "")
-
                                 if (noCommas.matches(Regex("^\\d{0,9}(\\.\\d{0,2})?$"))) {
                                     amount = formatAmountInput(newValue)
                                 }
@@ -172,8 +175,7 @@ fun CashInScreen(
             }
         }
 
-        // Optional: show toasts using your CustomToast overlay
-        // (If you want on this screen as well)
+        AnimatedLoaderOverlay(isLoading)
     }
 }
 

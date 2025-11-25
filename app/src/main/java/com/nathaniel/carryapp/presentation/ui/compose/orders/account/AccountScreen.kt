@@ -6,7 +6,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,15 +27,21 @@ import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
 import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.ShopBottomBar
 import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.ShopHeader
 import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.ShopSearchBar
+import com.nathaniel.carryapp.presentation.ui.sharedViewModel
+import com.nathaniel.carryapp.presentation.utils.AnimatedLoaderOverlay
+import com.nathaniel.carryapp.presentation.utils.LoadingOverlay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AccountScreen(
-    navController: NavController,
-    customerViewModel: CustomerViewModel = hiltViewModel()
-) {
-
+fun AccountScreen(navController: NavController) {
+    val customerViewModel: CustomerViewModel = sharedViewModel()
+    val walletBalance by customerViewModel.walletBalance.collectAsState()
     val customer = customerViewModel.customerDetails.collectAsState().value
+    val isLoading by customerViewModel.isLoading.collectAsState()
+
+    LaunchedEffect(Unit) {
+        customerViewModel.refreshWallet()
+    }
 
     Scaffold(
         containerColor = Color(0xFFF7F8FA),
@@ -109,7 +117,7 @@ fun AccountScreen(
                                 )
 
                                 Text(
-                                    "₱0.00",
+                                    "₱${"%,.2f".format(walletBalance)}",
                                     fontSize = 28.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFF0E1F22)
@@ -331,6 +339,8 @@ fun AccountScreen(
                 )
             }
         }
+
+        AnimatedLoaderOverlay(isLoading)
     }
 }
 

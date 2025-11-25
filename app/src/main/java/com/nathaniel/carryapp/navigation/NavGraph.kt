@@ -167,12 +167,8 @@ fun NavGraphBuilder.orderGraph(navController: NavController) {
     }
 
     composable(Routes.CASH_IN_SUCCESS) {
-        val customerViewModel = hiltViewModel<CustomerViewModel>()
         CashInSuccessScreen(
-            navController = navController,
-            onDone = {
-                customerViewModel.refreshWallet()   // <-- REFRESH WALLET!
-            }
+            navController = navController
         )
     }
 
