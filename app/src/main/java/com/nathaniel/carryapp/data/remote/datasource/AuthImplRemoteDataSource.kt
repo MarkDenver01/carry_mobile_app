@@ -3,15 +3,18 @@ package com.nathaniel.carryapp.data.remote.datasource
 import com.nathaniel.carryapp.data.remote.api.ApiService
 import com.nathaniel.carryapp.data.remote.api.PsgcApiService
 import com.nathaniel.carryapp.domain.datasource.AuthRemoteDatasource
+import com.nathaniel.carryapp.domain.request.CashInRequest
 import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
 import com.nathaniel.carryapp.domain.request.LoginResponse
 import com.nathaniel.carryapp.domain.request.MobileRequest
 import com.nathaniel.carryapp.domain.response.BarangayResponse
+import com.nathaniel.carryapp.domain.response.CashInInitResponse
 import com.nathaniel.carryapp.domain.response.CityResponse
 import com.nathaniel.carryapp.domain.response.CustomerDetailResponse
 import com.nathaniel.carryapp.domain.response.ProductResponse
 import com.nathaniel.carryapp.domain.response.ProvinceResponse
 import com.nathaniel.carryapp.domain.response.UploadPhotoResponse
+import com.nathaniel.carryapp.domain.response.WalletResponse
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
 import retrofit2.Response
@@ -48,4 +51,12 @@ class AuthImplRemoteDataSource @Inject constructor(
     override suspend fun uploadCustomerPhoto(
         file: MultipartBody.Part
     ): Response<UploadPhotoResponse> = apiService.uploadCustomerPhoto(file)
+
+    override suspend fun cashIn(cashInRequest: CashInRequest): Response<CashInInitResponse> {
+        return apiService.cashIn(cashInRequest)
+    }
+
+    override suspend fun getWalletBalance(mobileNumber: String): Response<WalletResponse> {
+        return apiService.getWallet(mobileNumber)
+    }
 }

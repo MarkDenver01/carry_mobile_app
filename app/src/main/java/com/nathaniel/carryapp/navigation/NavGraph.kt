@@ -1,5 +1,6 @@
 package com.nathaniel.carryapp.navigation
 
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
@@ -15,8 +16,11 @@ import com.nathaniel.carryapp.presentation.ui.compose.membership.apply.SukiMembe
 import com.nathaniel.carryapp.presentation.ui.compose.membership.payment.SubscriptionScreen
 import com.nathaniel.carryapp.presentation.ui.compose.membership.view.ViewMembershipScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.account.AccountScreen
+import com.nathaniel.carryapp.presentation.ui.compose.orders.account.CashInFailedScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.account.CashInScreen
+import com.nathaniel.carryapp.presentation.ui.compose.orders.account.CashInSuccessScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.account.CustomerRegistrationScreen
+import com.nathaniel.carryapp.presentation.ui.compose.orders.account.CustomerViewModel
 import com.nathaniel.carryapp.presentation.ui.compose.orders.category.CategoriesScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.location.DeliveryAddressScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.location.LocationConfirmationScreen
@@ -160,6 +164,20 @@ fun NavGraphBuilder.orderGraph(navController: NavController) {
 
     composable(Routes.CUSTOMER_DETAIL) {
         CustomerRegistrationScreen(navController = navController)
+    }
+
+    composable(Routes.CASH_IN_SUCCESS) {
+        val customerViewModel = hiltViewModel<CustomerViewModel>()
+        CashInSuccessScreen(
+            navController = navController,
+            onDone = {
+                customerViewModel.refreshWallet()   // <-- REFRESH WALLET!
+            }
+        )
+    }
+
+    composable(Routes.CASH_IN_FAILED) {
+        CashInFailedScreen(navController = navController)
     }
 }
 

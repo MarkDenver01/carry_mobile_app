@@ -1,13 +1,16 @@
 package com.nathaniel.carryapp.domain.datasource
 
+import com.nathaniel.carryapp.domain.request.CashInRequest
 import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
 import com.nathaniel.carryapp.domain.request.LoginResponse
 import com.nathaniel.carryapp.domain.response.BarangayResponse
+import com.nathaniel.carryapp.domain.response.CashInInitResponse
 import com.nathaniel.carryapp.domain.response.CityResponse
 import com.nathaniel.carryapp.domain.response.CustomerDetailResponse
 import com.nathaniel.carryapp.domain.response.ProductResponse
 import com.nathaniel.carryapp.domain.response.ProvinceResponse
 import com.nathaniel.carryapp.domain.response.UploadPhotoResponse
+import com.nathaniel.carryapp.domain.response.WalletResponse
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
 import retrofit2.Response
@@ -28,4 +31,7 @@ interface AuthRemoteDatasource {
 
     suspend fun uploadCustomerPhoto(file: MultipartBody.Part): Response<UploadPhotoResponse>
 
+    suspend fun cashIn(cashInRequest: CashInRequest): Response<CashInInitResponse>
+
+    suspend fun getWalletBalance(mobileNumber: String): Response<WalletResponse>
 }

@@ -12,6 +12,7 @@ import com.nathaniel.carryapp.data.repository.LocalRepository
 import com.nathaniel.carryapp.domain.datasource.AddressLocalDataSource
 import com.nathaniel.carryapp.domain.datasource.AuthRemoteDatasource
 import com.nathaniel.carryapp.domain.datasource.LoginLocalDataSource
+import com.nathaniel.carryapp.domain.usecase.CashInUseCase
 import com.nathaniel.carryapp.domain.usecase.ForwardGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.GetAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.GetAllProductsUseCase
@@ -22,6 +23,7 @@ import com.nathaniel.carryapp.domain.usecase.GetCustomerDetailsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetMobileOrEmailUseCase
 import com.nathaniel.carryapp.domain.usecase.GetProvincesByRegionUseCase
 import com.nathaniel.carryapp.domain.usecase.GetUserSessionUseCase
+import com.nathaniel.carryapp.domain.usecase.GetWalletBalanceUseCase
 import com.nathaniel.carryapp.domain.usecase.ReverseGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveCustomerDetailsUseCase
@@ -187,4 +189,17 @@ object AppModule {
     fun provideUploadCustomerPhotoUseCase(
         repository: ApiRepository
     ): UploadCustomerPhotoUseCase = UploadCustomerPhotoUseCase(repository)
+
+    @Provides
+    @Singleton
+    fun provideCashInUseCase(
+        repository: ApiRepository
+    ): CashInUseCase = CashInUseCase(repository)
+
+    @Provides
+    @Singleton
+    fun provideGetWalletBalanceUseCase(
+        repository: ApiRepository
+    ): GetWalletBalanceUseCase = GetWalletBalanceUseCase(repository)
+
 }

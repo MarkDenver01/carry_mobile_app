@@ -1,5 +1,7 @@
 package com.nathaniel.carryapp.presentation.ui.compose.orders.account
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -9,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -22,10 +25,28 @@ import com.nathaniel.carryapp.presentation.ui.compose.orders.components.BackHead
 @Composable
 fun CashInScreen(
     navController: NavController,
-    viewModel: OrderViewModel = hiltViewModel()
+    viewModel: CustomerViewModel = hiltViewModel()
 ) {
     var amount by remember { mutableStateOf("") }
     var isFocused by remember { mutableStateOf(false) }
+
+    val cashInUrl by viewModel.cashInUrl.collectAsState()
+  //  val toastState by viewModel.toastState.collectAsState()
+    val walletBalance by viewModel.walletBalance.collectAsState()
+    val context = LocalContext.current
+
+    // open GCash / Xendit URL when available
+    LaunchedEffect(cashInUrl) {
+        cashInUrl?.let { url ->
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            context.startActivity(intent)
+            viewModel.clearCashInUrl()
+        }
+    }
+
+    // Optionally, on resume of this screen, you can refresh wallet
+    // (or add a "Refresh balance" button on Account screen)
+    // LaunchedEffect(Unit) { viewModel.refreshWallet() }
 
     Scaffold(
         topBar = {
@@ -36,7 +57,10 @@ fun CashInScreen(
         },
         containerColor = Color(0xFFF5F6F8),
         bottomBar = {
-            CashInBottomBar(amount.ifBlank { "0.00" })
+            CashInBottomBar(
+                amount = amount.ifBlank { "0.00" },
+                onCashIn = { viewModel.onCashInClicked(amount) }
+            )
         }
     ) { inner ->
 
@@ -48,7 +72,6 @@ fun CashInScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // EXACT elevated card look
             Card(
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
@@ -64,12 +87,11 @@ fun CashInScreen(
                         text = "How much will you cash in?",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color(0xFF7A7A7A) // grey like screenshot
+                        color = Color(0xFF7A7A7A)
                     )
 
                     Spacer(Modifier.height(16.dp))
 
-                    // EXACT screenshot peso + input layout
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
@@ -89,14 +111,13 @@ fun CashInScreen(
                                 val noCommas = newValue.replace(",", "")
 
                                 if (noCommas.matches(Regex("^\\d{0,9}(\\.\\d{0,2})?$"))) {
-                                    amount = formatAmountInput(newValue)   // your live formatter
+                                    amount = formatAmountInput(newValue)
                                 }
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .onFocusChanged { focusState ->
                                     if (isFocused && !focusState.isFocused) {
-                                        // LOST FOCUS → auto-add .00
                                         if (amount.isNotBlank()) {
                                             amount = enforceTwoDecimalPlaces(amount)
                                         }
@@ -107,7 +128,7 @@ fun CashInScreen(
                                 Text(
                                     "0.00",
                                     fontSize = 28.sp,
-                                    color = Color(0xFFBDBDBD) // light grey like screenshot
+                                    color = Color(0xFFBDBDBD)
                                 )
                             },
                             textStyle = LocalTextStyle.current.copy(
@@ -121,14 +142,13 @@ fun CashInScreen(
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = Color.Transparent,
                                 unfocusedContainerColor = Color.Transparent,
-
                                 focusedIndicatorColor = Color.Transparent,
                                 unfocusedIndicatorColor = Color.Transparent,
-
                                 cursorColor = Color.Black
                             )
                         )
                     }
+
                     Divider(color = Color(0xFFE0E0E0), thickness = 1.dp)
                     Spacer(Modifier.height(14.dp))
 
@@ -142,7 +162,7 @@ fun CashInScreen(
                             fontSize = 14.sp
                         )
                         Text(
-                            "₱0.00",
+                            "₱${"%,.2f".format(walletBalance)}",
                             color = Color.Black,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 14.sp
@@ -151,8 +171,44 @@ fun CashInScreen(
                 }
             }
         }
+
+        // Optional: show toasts using your CustomToast overlay
+        // (If you want on this screen as well)
     }
 }
+
+@Composable
+fun CashInBottomBar(
+    amount: String,
+    onCashIn: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()
+            .padding(16.dp)
+    ) {
+
+        Button(
+            onClick = onCashIn,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF118B3C)
+            ),
+            shape = RoundedCornerShape(10.dp)
+        ) {
+            Text(
+                "Cash in ₱$amount",
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            )
+        }
+    }
+}
+
 
 fun enforceTwoDecimalPlaces(input: String): String {
     if (input.isBlank()) return ""

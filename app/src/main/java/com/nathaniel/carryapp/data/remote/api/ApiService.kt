@@ -1,11 +1,14 @@
 package com.nathaniel.carryapp.data.remote.api
 
+import com.nathaniel.carryapp.domain.request.CashInRequest
 import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
 import com.nathaniel.carryapp.domain.request.LoginResponse
 import com.nathaniel.carryapp.domain.request.MobileRequest
+import com.nathaniel.carryapp.domain.response.CashInInitResponse
 import com.nathaniel.carryapp.domain.response.CustomerDetailResponse
 import com.nathaniel.carryapp.domain.response.ProductResponse
 import com.nathaniel.carryapp.domain.response.UploadPhotoResponse
+import com.nathaniel.carryapp.domain.response.WalletResponse
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
 import retrofit2.Response
@@ -16,6 +19,7 @@ import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Part
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface ApiService {
     @POST("/user/public/send_otp")
@@ -45,4 +49,14 @@ interface ApiService {
     suspend fun uploadCustomerPhoto(
         @Part file: MultipartBody.Part
     ): Response<UploadPhotoResponse>
+
+    @POST("api/wallet/cash-in")
+    suspend fun cashIn(
+        @Body req: CashInRequest
+    ): Response<CashInInitResponse>
+
+    @GET("api/wallet/balance")
+    suspend fun getWallet(
+        @Query("mobileNumber") mobileNumber: String
+    ): Response<WalletResponse>
 }

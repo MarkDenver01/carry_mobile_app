@@ -15,11 +15,15 @@ import com.nathaniel.carryapp.domain.model.Barangay
 import com.nathaniel.carryapp.domain.model.City
 import com.nathaniel.carryapp.domain.model.Product
 import com.nathaniel.carryapp.domain.model.Province
+import com.nathaniel.carryapp.domain.request.CashInRequest
 import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
 import com.nathaniel.carryapp.domain.request.LoginResponse
+import com.nathaniel.carryapp.domain.response.CashInInitResponse
 import com.nathaniel.carryapp.domain.response.CustomerDetailResponse
+import com.nathaniel.carryapp.domain.response.WalletResponse
 import com.nathaniel.carryapp.presentation.utils.NetworkResult
 import okhttp3.MultipartBody
+import okhttp3.internal.http.hasBody
 import retrofit2.Response
 import javax.inject.Inject
 
@@ -203,7 +207,7 @@ class ApiRepository @Inject constructor(
     suspend fun updateCustomer(
         request: CustomerDetailRequest
     ): Response<CustomerDetailResponse> {
-        return remote.updateCustomer( request)
+        return remote.updateCustomer(request)
     }
 
     suspend fun uploadCustomerPhoto(file: MultipartBody.Part): String {
@@ -215,5 +219,33 @@ class ApiRepository @Inject constructor(
         val body = response.body() ?: throw Exception("No response body")
 
         return body.url
+    }
+
+    suspend fun cashIn(req: CashInRequest): NetworkResult<CashInInitResponse> {
+        return try {
+            val response = remote.cashIn(req)
+            if (response.isSuccessful) {
+                val body = response.body()!!
+                NetworkResult.Success(HttpStatus.SUCCESS, body)
+            } else {
+                NetworkResult.Error(HttpStatus.ERROR, "Cash In failed")
+            }
+        } catch (e: Exception) {
+            NetworkResult.Error(HttpStatus.ERROR, e.message ?: "Network error")
+        }
+    }
+
+    suspend fun getWalletBalance(mobileNumber: String): NetworkResult<WalletResponse> {
+        return try {
+            val response = remote.getWalletBalance(mobileNumber)
+            if (response.isSuccessful) {
+                val body = response.body()!!
+                NetworkResult.Success(HttpStatus.SUCCESS, body)
+            } else {
+                NetworkResult.Error(HttpStatus.ERROR, "Failed to load wallet")
+            }
+        } catch (e: Exception) {
+            NetworkResult.Error(HttpStatus.ERROR, e.message ?: "Network error")
+        }
     }
 }

@@ -32,4 +32,6 @@ object Routes {
     const val LOCATION_CONFIRMATION_SCREEN = "location_confirmation_screen"
     const val CUSTOMER_DETAIL = "customer_detail"
     const val CASH_IN = "cash_in"
+    const val CASH_IN_SUCCESS = "cash_in_success"
+    const val CASH_IN_FAILED = "cash_in_failed"
 }

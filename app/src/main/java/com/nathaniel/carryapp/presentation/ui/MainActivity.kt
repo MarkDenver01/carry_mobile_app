@@ -1,5 +1,6 @@
 package com.nathaniel.carryapp.presentation.ui
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -11,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -31,6 +33,9 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    private lateinit var navController: NavController
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -52,6 +57,26 @@ class MainActivity : ComponentActivity() {
                     //membershipGraph(navController)
                     orderGraph(navController)
                     //shoppingGraph(navController)
+                }
+            }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+
+        intent.data?.let { uri ->
+            when (uri.host) {
+                "cashin_success" -> {
+                    navController.navigate(Routes.CASH_IN_SUCCESS) {
+                        launchSingleTop = true
+                    }
+                }
+
+                "cashin_failed" -> {
+                    navController.navigate(Routes.CASH_IN_FAILED) {
+                        launchSingleTop = true
+                    }
                 }
             }
         }
