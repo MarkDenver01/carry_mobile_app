@@ -26,6 +26,8 @@ import com.nathaniel.carryapp.domain.response.CustomerDetailResponse
 import com.nathaniel.carryapp.domain.response.UserHistoryResponse
 import com.nathaniel.carryapp.domain.response.WalletResponse
 import com.nathaniel.carryapp.presentation.utils.NetworkResult
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okhttp3.MultipartBody
 import okhttp3.internal.http.hasBody
 import retrofit2.Response
@@ -259,54 +261,57 @@ class ApiRepository @Inject constructor(
         return try {
             val response = remote.getRecommendations(customerId)
             if (response.isSuccessful) {
-                val body = response.body()
-                if (body != null) {
-                    val mapped = ProductMapper.toDomainList(body)
-                    NetworkResult.Success(HttpStatus.SUCCESS, mapped)
-                } else {
-                    NetworkResult.Error(HttpStatus.ERROR, "Empty response from server")
-                }
+                val body = response.body().orEmpty()
+                NetworkResult.Success(
+                    HttpStatus.SUCCESS,
+                    body.map { ProductMapper.toDomain(it) }
+                )
             } else {
-                NetworkResult.Error(HttpStatus.ERROR, "Failed to fetch recommendations")
+                NetworkResult.Error(HttpStatus.ERROR, "Failed to load recommendations")
             }
         } catch (e: Exception) {
-            NetworkResult.Error(HttpStatus.ERROR, e.message ?: "Network error")
+            NetworkResult.Error(HttpStatus.ERROR, e.message ?: "Network error (reco)")
         }
     }
 
+    // 🔹 Save user history
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun saveUserHistory(customerId: Long, keyword: String): NetworkResult<Unit> {
         return try {
+            val now = LocalDateTime.now()
             val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
-            val request = UserHistoryRequest(
+
+            val body = UserHistoryRequest(
                 customerId = customerId,
                 productKeyword = keyword,
-                dateTime = LocalDateTime.now().format(formatter)
+                dateTime = now.format(formatter) // string: 2025-11-26T14:34:02
             )
 
-            val response = remote.saveUserHistory(request)
+            val response = remote.saveUserHistory(body)
             if (response.isSuccessful) {
                 NetworkResult.Success(HttpStatus.SUCCESS, Unit)
             } else {
-                NetworkResult.Error(HttpStatus.ERROR, response.errorBody()?.string() ?: "Save failed")
+                NetworkResult.Error(HttpStatus.ERROR, "Failed to save history")
             }
         } catch (e: Exception) {
-            NetworkResult.Error(HttpStatus.ERROR, e.message ?: "Network or server error")
+            NetworkResult.Error(HttpStatus.ERROR, e.message ?: "Network error (save history)")
         }
     }
 
+    // 🔹 Get user history
     suspend fun getUserHistory(customerId: Long): NetworkResult<List<UserHistoryResponse>> {
         return try {
             val response = remote.getUserHistory(customerId)
             if (response.isSuccessful) {
-                NetworkResult.Success(HttpStatus.SUCCESS, response.body() ?: emptyList())
+                NetworkResult.Success(
+                    HttpStatus.SUCCESS,
+                    response.body().orEmpty()
+                )
             } else {
                 NetworkResult.Error(HttpStatus.ERROR, "Failed to load history")
             }
         } catch (e: Exception) {
-            NetworkResult.Error(HttpStatus.ERROR, e.message ?: "Network error")
+            NetworkResult.Error(HttpStatus.ERROR, e.message ?: "Network error (get history)")
         }
     }
-
-
 }

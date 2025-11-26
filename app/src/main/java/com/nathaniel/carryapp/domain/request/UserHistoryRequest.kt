@@ -5,5 +5,6 @@ import java.time.LocalDateTime
 data class UserHistoryRequest(
     val customerId: Long,
     val productKeyword: String,
-    val dateTime: String,
+    // ISO string: 2025-11-26T14:34:02
+    val dateTime: String
 )

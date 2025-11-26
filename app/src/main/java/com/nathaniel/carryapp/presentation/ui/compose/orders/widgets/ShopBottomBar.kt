@@ -106,9 +106,9 @@ fun ShopBottomBar(
         Box(
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .offset(y = (-30).dp)
+                .offset(y = (-10).dp)
         ) {
-            FloatingSnowballButton(
+            GreenFloatingButton(
                 count = 12,
                 onClick = { /* navigate to offers */ },
                 modifier = Modifier.align(Alignment.TopCenter)

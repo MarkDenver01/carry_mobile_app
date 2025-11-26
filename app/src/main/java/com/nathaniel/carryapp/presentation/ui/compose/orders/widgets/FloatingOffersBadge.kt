@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.*
@@ -15,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.*
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import com.nathaniel.carryapp.R
@@ -162,3 +164,99 @@ fun FloatingSnowballButton(
         }
     }
 }
+
+@Composable
+fun GreenFloatingButton(
+    modifier: Modifier = Modifier,
+    count: Int = 5,
+    onClick: () -> Unit
+) {
+    val interaction = remember { MutableInteractionSource() }
+
+    Box(
+        modifier = modifier
+            .size(100.dp)
+            .offset(y = (-28).dp) // floating elevation
+            .clickable(
+                interactionSource = interaction,
+                indication = ripple(
+                    bounded = false,
+                    radius = 70.dp,
+                    color = Color.White.copy(alpha = 0.25f)
+                ),
+                onClick = onClick
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+
+        // 🌟 OUTER MINT GLOW
+        Box(
+            modifier = Modifier
+                .size(120.dp)
+                .blur(35.dp)
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            Color(0xFFB2F7C1).copy(alpha = 0.55f), // mint glow
+                            Color.Transparent
+                        )
+                    ),
+                    shape = CircleShape
+                )
+        )
+
+        // 🟢 OUTER RING (dark premium gray-mint gradient)
+        Box(
+            modifier = Modifier
+                .size(94.dp)
+                .clip(CircleShape)
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            Color(0xFFA7B3AD),  // darker gray w/ mint undertone
+                            Color(0xFFD9E2DE)   // soft fade inner gray-mint
+                        )
+                    )
+                )
+        )
+
+        // 💚 INNER BUTTON (Green gradient)
+        Box(
+            modifier = Modifier
+                .size(78.dp)
+                .clip(CircleShape)
+                .background(
+                    Brush.linearGradient(
+                        listOf(
+                            Color(0xFF2F7D32),  // main dark green (header color)
+                            Color(0xFF4CAF50)   // lighter green highlight
+                        )
+                    )
+                )
+                .shadow(
+                    elevation = 10.dp,
+                    shape = CircleShape,
+                    ambientColor = Color(0x552F7D32),
+                    spotColor = Color(0x772F7D32)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "$count",
+                    color = Color.White,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 28.sp
+                )
+                Text(
+                    text = "OFFERS",
+                    color = Color.White,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 11.sp,
+                    letterSpacing = 1.sp
+                )
+            }
+        }
+    }
+}
+

@@ -342,53 +342,58 @@ class OrderViewModel @Inject constructor(
         }
     }
 
+    // 🔥 Main brain: pipili kung AI reco or normal products
     fun decideProductSource() {
         viewModelScope.launch {
             val customerId = _customerSession.value?.customer?.customerId
 
             Timber.e("customer id: $customerId")
+
             if (customerId == null) {
-                // Guest → load normal
+                // Guest user → walang history, walang AI → default products
+                Timber.d("Guest user → loading default product catalog")
                 loadProducts()
                 return@launch
             }
 
-            // STEP 1: Check history
+            // STEP 1: check user history sa backend
             when (val historyResult = getUserHistoryUseCase(customerId)) {
 
                 is GetUserHistoryResult.Success -> {
                     val historyList = historyResult.history
+                    Timber.d("History entries for $customerId: ${historyList.size}")
 
                     if (historyList.isNotEmpty()) {
-                        Timber.d("📌 History found → using RECOMMENDATIONS")
+                        Timber.d("📌 History found → using AI RECOMMENDATIONS")
 
-                        // STEP 2: Call recommendations
+                        // STEP 2: call recommendations API
                         when (val reco = getRecommendationsUseCase(customerId)) {
                             is RecommendationResult.Success -> {
                                 _products.value = reco.products
                                 _error.value = null
+                                Timber.d("✅ Loaded ${reco.products.size} recommended products")
                             }
 
                             is RecommendationResult.Error -> {
                                 Timber.e("Reco failed: ${reco.message}")
+                                _error.value = "AI temporarily unavailable. Showing default products."
                                 loadProducts() // fallback
                             }
                         }
                     } else {
-                        Timber.d("⭕ No history → loading default products")
+                        Timber.d("⭕ No history yet → loading default products")
                         loadProducts()
                     }
                 }
 
                 is GetUserHistoryResult.Error -> {
-                    Timber.e("History load failed → fallback to default")
+                    Timber.e("History load failed → ${historyResult.message}")
+                    _error.value = "Could not fetch history. Showing default products."
                     loadProducts()
                 }
             }
         }
     }
-
-
 
     private fun loadProducts() {
         viewModelScope.launch {
@@ -772,22 +777,26 @@ class OrderViewModel @Inject constructor(
         Timber.d("🧹 ViewModel cleared — auto-refresh stopped")
     }
 
+    // 🔥 recording user interactions (search, add-to-cart, view detail)
     @RequiresApi(Build.VERSION_CODES.O)
     fun recordUserInteraction(customerId: Long, keyword: String) {
         viewModelScope.launch {
             when (val result = saveUserHistoryUseCase(customerId, keyword)) {
-                is SaveHistoryResult.Success -> Timber.d("History saved ✅")
-                is SaveHistoryResult.Error -> Timber.e("Error saving history: ${result.message}")
+                is SaveHistoryResult.Success ->
+                    Timber.d("History saved ✅ ($customerId / $keyword)")
+                is SaveHistoryResult.Error ->
+                    Timber.e("Error saving history: ${result.message}")
             }
         }
     }
+
 
     fun loadCustomerSession() {
         viewModelScope.launch {
             val session = apiRepository.getCustomerSession()
             _customerSession.value = session
 
-            // ⭐ NOW LOAD PRODUCTS AFTER SESSION IS READY
+            // ⭐ After ma-load session, decide kung default products o AI recommendations
             decideProductSource()
         }
     }

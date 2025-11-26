@@ -62,18 +62,21 @@ interface ApiService {
         @Query("mobileNumber") mobileNumber: String
     ): Response<WalletResponse>
 
+    // 🔹 NEW – AI recommendations based on history
     @GET("/user/public/recommendations/{customerId}")
     suspend fun getRecommendations(
         @Path("customerId") customerId: Long
     ): Response<List<ProductResponse>>
 
-    @POST("/user/public/history/save")
-    suspend fun saveUserHistory(
-        @Body request: UserHistoryRequest
-    ): Response<UserHistoryResponse>
-
+    // 🔹 GET user history
     @GET("/user/public/history/{customerId}")
     suspend fun getUserHistory(
         @Path("customerId") customerId: Long
     ): Response<List<UserHistoryResponse>>
+
+    // 🔹 SAVE user history (search/click/etc.)
+    @POST("/user/public/history/save")
+    suspend fun saveUserHistory(
+        @Body body: UserHistoryRequest
+    ): Response<UserHistoryResponse>
 }
