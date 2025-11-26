@@ -110,7 +110,7 @@ fun CartScreen(
                         },
                         onRecommend = { selectedItem ->
                             // TODO: navigation to recommendation screen
-                            navController.navigate("recommend/${selectedItem.productId}")
+                            //navController.navigate("recommend/${selectedItem.productId}")
                         }
                     )
 

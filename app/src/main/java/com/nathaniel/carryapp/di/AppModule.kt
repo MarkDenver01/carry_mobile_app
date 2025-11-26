@@ -27,6 +27,8 @@ import com.nathaniel.carryapp.domain.usecase.GetCurrentLocationUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCustomerDetailsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetMobileOrEmailUseCase
 import com.nathaniel.carryapp.domain.usecase.GetProvincesByRegionUseCase
+import com.nathaniel.carryapp.domain.usecase.GetRecommendationsUseCase
+import com.nathaniel.carryapp.domain.usecase.GetUserHistoryUseCase
 import com.nathaniel.carryapp.domain.usecase.GetUserSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.GetWalletBalanceUseCase
 import com.nathaniel.carryapp.domain.usecase.RemoveFromCartUseCase
@@ -34,6 +36,7 @@ import com.nathaniel.carryapp.domain.usecase.ReverseGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveCustomerDetailsUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveMobileOrEmailUseCase
+import com.nathaniel.carryapp.domain.usecase.SaveUserHistoryUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveUserSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.UpdateAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.UpdateCustomerUseCase
@@ -243,5 +246,22 @@ object AppModule {
     fun provideGetCartSummaryUseCase(
         localRepository: LocalRepository
     ): GetCartSummaryUseCase = GetCartSummaryUseCase(localRepository)
+
+    @Provides
+    @Singleton
+    fun provideGetRecommendationsUseCase(
+        apiRepository: ApiRepository
+    ): GetRecommendationsUseCase = GetRecommendationsUseCase(apiRepository)
+
+    @Provides
+    @Singleton
+    fun provideSaveUserHistoryUseCase(apiRepository: ApiRepository): SaveUserHistoryUseCase =
+        SaveUserHistoryUseCase(apiRepository)
+
+    @Provides
+    @Singleton
+    fun provideGetUserHistoryUseCase(
+        apiRepository: ApiRepository
+    ): GetUserHistoryUseCase = GetUserHistoryUseCase(apiRepository)
 
 }

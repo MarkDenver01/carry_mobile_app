@@ -4,10 +4,12 @@ import com.nathaniel.carryapp.domain.request.CashInRequest
 import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
 import com.nathaniel.carryapp.domain.request.LoginResponse
 import com.nathaniel.carryapp.domain.request.MobileRequest
+import com.nathaniel.carryapp.domain.request.UserHistoryRequest
 import com.nathaniel.carryapp.domain.response.CashInInitResponse
 import com.nathaniel.carryapp.domain.response.CustomerDetailResponse
 import com.nathaniel.carryapp.domain.response.ProductResponse
 import com.nathaniel.carryapp.domain.response.UploadPhotoResponse
+import com.nathaniel.carryapp.domain.response.UserHistoryResponse
 import com.nathaniel.carryapp.domain.response.WalletResponse
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
@@ -59,4 +61,19 @@ interface ApiService {
     suspend fun getWallet(
         @Query("mobileNumber") mobileNumber: String
     ): Response<WalletResponse>
+
+    @GET("/user/public/recommendations/{customerId}")
+    suspend fun getRecommendations(
+        @Path("customerId") customerId: Long
+    ): Response<List<ProductResponse>>
+
+    @POST("/user/public/history/save")
+    suspend fun saveUserHistory(
+        @Body request: UserHistoryRequest
+    ): Response<UserHistoryResponse>
+
+    @GET("/user/public/history/{customerId}")
+    suspend fun getUserHistory(
+        @Path("customerId") customerId: Long
+    ): Response<List<UserHistoryResponse>>
 }

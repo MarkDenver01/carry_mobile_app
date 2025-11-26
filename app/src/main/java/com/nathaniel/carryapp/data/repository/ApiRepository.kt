@@ -1,5 +1,7 @@
 package com.nathaniel.carryapp.data.repository
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.nathaniel.carryapp.data.local.prefs.TokenManager
 import com.nathaniel.carryapp.data.local.room.entity.CustomerEntity
 import com.nathaniel.carryapp.data.local.room.entity.DriverEntity
@@ -18,13 +20,17 @@ import com.nathaniel.carryapp.domain.model.Province
 import com.nathaniel.carryapp.domain.request.CashInRequest
 import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
 import com.nathaniel.carryapp.domain.request.LoginResponse
+import com.nathaniel.carryapp.domain.request.UserHistoryRequest
 import com.nathaniel.carryapp.domain.response.CashInInitResponse
 import com.nathaniel.carryapp.domain.response.CustomerDetailResponse
+import com.nathaniel.carryapp.domain.response.UserHistoryResponse
 import com.nathaniel.carryapp.domain.response.WalletResponse
 import com.nathaniel.carryapp.presentation.utils.NetworkResult
 import okhttp3.MultipartBody
 import okhttp3.internal.http.hasBody
 import retrofit2.Response
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 class ApiRepository @Inject constructor(
@@ -248,4 +254,59 @@ class ApiRepository @Inject constructor(
             NetworkResult.Error(HttpStatus.ERROR, e.message ?: "Network error")
         }
     }
+
+    suspend fun getRecommendations(customerId: Long): NetworkResult<List<Product>> {
+        return try {
+            val response = remote.getRecommendations(customerId)
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body != null) {
+                    val mapped = ProductMapper.toDomainList(body)
+                    NetworkResult.Success(HttpStatus.SUCCESS, mapped)
+                } else {
+                    NetworkResult.Error(HttpStatus.ERROR, "Empty response from server")
+                }
+            } else {
+                NetworkResult.Error(HttpStatus.ERROR, "Failed to fetch recommendations")
+            }
+        } catch (e: Exception) {
+            NetworkResult.Error(HttpStatus.ERROR, e.message ?: "Network error")
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    suspend fun saveUserHistory(customerId: Long, keyword: String): NetworkResult<Unit> {
+        return try {
+            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
+            val request = UserHistoryRequest(
+                customerId = customerId,
+                productKeyword = keyword,
+                dateTime = LocalDateTime.now().format(formatter)
+            )
+
+            val response = remote.saveUserHistory(request)
+            if (response.isSuccessful) {
+                NetworkResult.Success(HttpStatus.SUCCESS, Unit)
+            } else {
+                NetworkResult.Error(HttpStatus.ERROR, response.errorBody()?.string() ?: "Save failed")
+            }
+        } catch (e: Exception) {
+            NetworkResult.Error(HttpStatus.ERROR, e.message ?: "Network or server error")
+        }
+    }
+
+    suspend fun getUserHistory(customerId: Long): NetworkResult<List<UserHistoryResponse>> {
+        return try {
+            val response = remote.getUserHistory(customerId)
+            if (response.isSuccessful) {
+                NetworkResult.Success(HttpStatus.SUCCESS, response.body() ?: emptyList())
+            } else {
+                NetworkResult.Error(HttpStatus.ERROR, "Failed to load history")
+            }
+        } catch (e: Exception) {
+            NetworkResult.Error(HttpStatus.ERROR, e.message ?: "Network error")
+        }
+    }
+
+
 }

@@ -2,6 +2,8 @@ package com.nathaniel.carryapp.presentation.ui.compose.orders
 
 import android.content.Context
 import android.net.Uri
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -9,6 +11,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.google.android.gms.maps.model.LatLng
+import com.nathaniel.carryapp.data.local.room.relations.LoginWithCustomer
 import com.nathaniel.carryapp.data.repository.ApiRepository
 import com.nathaniel.carryapp.data.repository.GeocodedAddress
 import com.nathaniel.carryapp.data.repository.LocalRepository
@@ -37,14 +40,20 @@ import com.nathaniel.carryapp.domain.usecase.GetCitiesByProvinceUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCurrentLocationUseCase
 import com.nathaniel.carryapp.domain.usecase.GetMobileOrEmailUseCase
 import com.nathaniel.carryapp.domain.usecase.GetProvincesByRegionUseCase
+import com.nathaniel.carryapp.domain.usecase.GetRecommendationsUseCase
+import com.nathaniel.carryapp.domain.usecase.GetUserHistoryResult
+import com.nathaniel.carryapp.domain.usecase.GetUserHistoryUseCase
 import com.nathaniel.carryapp.domain.usecase.GetUserSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.ProductResult
 import com.nathaniel.carryapp.domain.usecase.ProvinceResult
+import com.nathaniel.carryapp.domain.usecase.RecommendationResult
 import com.nathaniel.carryapp.domain.usecase.RemoveFromCartUseCase
 import com.nathaniel.carryapp.domain.usecase.ReverseGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveCustomerDetailsUseCase
+import com.nathaniel.carryapp.domain.usecase.SaveHistoryResult
 import com.nathaniel.carryapp.domain.usecase.SaveMobileOrEmailUseCase
+import com.nathaniel.carryapp.domain.usecase.SaveUserHistoryUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveUserSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.UpdateAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.UpdateCustomerUseCase
@@ -53,10 +62,12 @@ import com.nathaniel.carryapp.navigation.Routes
 import com.nathaniel.carryapp.presentation.utils.toMultipart
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -111,6 +122,9 @@ class OrderViewModel @Inject constructor(
     private val saveUserSessionUseCase: SaveUserSessionUseCase,
     private val getUserSessionUseCase: GetUserSessionUseCase,
     private val updatePhotoUseCase: UploadCustomerPhotoUseCase,
+    private val getRecommendationsUseCase: GetRecommendationsUseCase,
+    private val saveUserHistoryUseCase: SaveUserHistoryUseCase,
+    private val getUserHistoryUseCase: GetUserHistoryUseCase,
     private val apiRepository: ApiRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
@@ -120,6 +134,9 @@ class OrderViewModel @Inject constructor(
 
     private val _isLoggedIn = MutableStateFlow<Boolean?>(null)
     val isLoggedIn: StateFlow<Boolean?> = _isLoggedIn
+
+    private val _customerSession = MutableStateFlow<LoginWithCustomer?>(null)
+    val customerSession: StateFlow<LoginWithCustomer?> = _customerSession
 
     private val _products = MutableStateFlow<List<Product>>(emptyList())
     val products: StateFlow<List<Product>> = _products
@@ -181,11 +198,11 @@ class OrderViewModel @Inject constructor(
 
     init {
         checkLoginStatus()
-        loadProducts()
         loadRegions()
         loadProvinces()
         loadSavedAddress()
         loadSavedMobileOrEmail()
+        loadCustomerSession()
     }
 
     private fun loadSavedMobileOrEmail() {
@@ -267,12 +284,119 @@ class OrderViewModel @Inject constructor(
         }
     }
 
+    fun loadDynamicProducts() {
+        viewModelScope.launch {
+            try {
+                // ✅ Use cached session from StateFlow (faster, no DB I/O every 30s)
+                val customerId = _customerSession.value?.customer?.customerId
+
+                if (customerId != null) {
+                    Timber.d("🧠 Logged-in user ($customerId): loading AI products...")
+
+                    // ✅ Step 1: Get user history first
+                    when (val historyResult = getUserHistoryUseCase(customerId)) {
+
+                        is GetUserHistoryResult.Success -> {
+                            val historyList = historyResult.history
+
+                            if (historyList.isNotEmpty()) {
+                                Timber.d("📜 Found ${historyList.size} history entries for user $customerId")
+
+                                // ✅ Step 2: Request AI recommendations based on history
+                                when (val recoResult = getRecommendationsUseCase(customerId)) {
+                                    is RecommendationResult.Success -> {
+                                        _products.value = recoResult.products
+                                        _error.value = null
+                                        Timber.d("✅ Loaded ${recoResult.products.size} AI recommendations")
+                                    }
+
+                                    is RecommendationResult.Error -> {
+                                        Timber.w("⚠️ AI recommendation failed: ${recoResult.message}")
+                                        _error.value = "AI temporarily unavailable. Showing top products."
+                                        loadProducts() // fallback
+                                    }
+                                }
+                            } else {
+                                Timber.d("⚪ No history yet for user $customerId → loading default products")
+                                loadProducts()
+                            }
+                        }
+
+                        is GetUserHistoryResult.Error -> {
+                            Timber.e("❌ Failed to load user history: ${historyResult.message}")
+                            _error.value = "Could not fetch history. Showing top products."
+                            loadProducts() // fallback
+                        }
+                    }
+
+                } else {
+                    Timber.d("🟡 Guest user — loading default product list")
+                    loadProducts()
+                }
+
+            } catch (e: Exception) {
+                Timber.e("💥 Unexpected error in loadDynamicProducts: ${e.message}")
+                _error.value = "Connection error. Showing top products."
+                loadProducts()
+            }
+        }
+    }
+
+    fun decideProductSource() {
+        viewModelScope.launch {
+            val customerId = _customerSession.value?.customer?.customerId
+
+            Timber.e("customer id: $customerId")
+            if (customerId == null) {
+                // Guest → load normal
+                loadProducts()
+                return@launch
+            }
+
+            // STEP 1: Check history
+            when (val historyResult = getUserHistoryUseCase(customerId)) {
+
+                is GetUserHistoryResult.Success -> {
+                    val historyList = historyResult.history
+
+                    if (historyList.isNotEmpty()) {
+                        Timber.d("📌 History found → using RECOMMENDATIONS")
+
+                        // STEP 2: Call recommendations
+                        when (val reco = getRecommendationsUseCase(customerId)) {
+                            is RecommendationResult.Success -> {
+                                _products.value = reco.products
+                                _error.value = null
+                            }
+
+                            is RecommendationResult.Error -> {
+                                Timber.e("Reco failed: ${reco.message}")
+                                loadProducts() // fallback
+                            }
+                        }
+                    } else {
+                        Timber.d("⭕ No history → loading default products")
+                        loadProducts()
+                    }
+                }
+
+                is GetUserHistoryResult.Error -> {
+                    Timber.e("History load failed → fallback to default")
+                    loadProducts()
+                }
+            }
+        }
+    }
+
+
 
     private fun loadProducts() {
         viewModelScope.launch {
             when (val result = productsUseCase()) {
                 is ProductResult.Success -> {
                     _products.value = result.products
+                    _error.value = null
+                    Timber.d("Loaded default product catalog (${result.products.size} items)")
                 }
 
                 is ProductResult.Error -> {
@@ -641,5 +765,30 @@ class OrderViewModel @Inject constructor(
 
     fun resetToast() {
         _toastState.value = null
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        Timber.d("🧹 ViewModel cleared — auto-refresh stopped")
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun recordUserInteraction(customerId: Long, keyword: String) {
+        viewModelScope.launch {
+            when (val result = saveUserHistoryUseCase(customerId, keyword)) {
+                is SaveHistoryResult.Success -> Timber.d("History saved ✅")
+                is SaveHistoryResult.Error -> Timber.e("Error saving history: ${result.message}")
+            }
+        }
+    }
+
+    fun loadCustomerSession() {
+        viewModelScope.launch {
+            val session = apiRepository.getCustomerSession()
+            _customerSession.value = session
+
+            // ⭐ NOW LOAD PRODUCTS AFTER SESSION IS READY
+            decideProductSource()
+        }
     }
 }

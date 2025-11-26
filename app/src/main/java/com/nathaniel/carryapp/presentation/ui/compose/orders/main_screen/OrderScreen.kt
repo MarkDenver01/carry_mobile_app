@@ -1,5 +1,7 @@
 package com.nathaniel.carryapp.presentation.ui.compose.orders.main_screen
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -10,6 +12,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.nathaniel.carryapp.R
 import com.nathaniel.carryapp.domain.mapper.ProductMapper.toShopProduct
@@ -19,8 +24,10 @@ import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
 import com.nathaniel.carryapp.presentation.ui.compose.orders.cart.CartViewModel
 import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.*
 import com.nathaniel.carryapp.presentation.ui.sharedViewModel
+import timber.log.Timber
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrderScreen(
@@ -32,6 +39,7 @@ fun OrderScreen(
     val products by orderViewModel.products.collectAsState()
     val error by orderViewModel.error.collectAsState()
     val cartCount by cartViewModel.cartCount.collectAsState()
+    val customerSession by orderViewModel.customerSession.collectAsState()
     // Convert from domain → UI
     val shopProducts = products.map { it.toShopProduct() }
 
@@ -96,8 +104,14 @@ fun OrderScreen(
             item {
                 Column {
                     ShopSearchBar(
-                        hint = "I'm looking for…",
-                        onSearch = { orderViewModel.onSearchClick() }
+                        hint = "I'm Smart Search AI, looking for…",
+                        onSearch = { query ->
+                            val customerId = customerSession?.customer?.customerId
+                            if (customerId != null && query.isNotBlank()) {
+                                orderViewModel.recordUserInteraction(customerId, query)
+                                Timber.d("🔍 Search recorded: $query")
+                            }
+                        }
                     )
                     Spacer(Modifier.height(8.dp))
                     PromoBanner(
@@ -141,12 +155,26 @@ fun OrderScreen(
                             onFavorite = {},
                             onAdd = {
                                 cartViewModel.addProductOriginalDomain(p.id)
+
+                                // ✅ Record user interaction when product is added
+                                val customerId = customerSession?.customer?.customerId
+                                if (customerId != null) {
+                                    orderViewModel.recordUserInteraction(customerId, p.name)
+                                    Timber.d("🛒 Recorded add-to-cart interaction for: ${p.name}")
+                                }
                             },
                             onMinus = {
                                 cartViewModel.removeProductOriginalDomain(p.id)
                             },
                             onDetailClick = {
                                 navController.navigate("${Routes.PRODUCT_DETAIL}/${p.id}")
+
+                                // ✅ Optionally record when a product detail is viewed
+                                val customerId = customerSession?.customer?.customerId
+                                if (customerId != null) {
+                                    orderViewModel.recordUserInteraction(customerId, p.name)
+                                    Timber.d("👀 Recorded product view for: ${p.name}")
+                                }
                             }
                         )
                     }

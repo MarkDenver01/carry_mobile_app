@@ -7,6 +7,7 @@ import com.nathaniel.carryapp.domain.request.CashInRequest
 import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
 import com.nathaniel.carryapp.domain.request.LoginResponse
 import com.nathaniel.carryapp.domain.request.MobileRequest
+import com.nathaniel.carryapp.domain.request.UserHistoryRequest
 import com.nathaniel.carryapp.domain.response.BarangayResponse
 import com.nathaniel.carryapp.domain.response.CashInInitResponse
 import com.nathaniel.carryapp.domain.response.CityResponse
@@ -14,6 +15,7 @@ import com.nathaniel.carryapp.domain.response.CustomerDetailResponse
 import com.nathaniel.carryapp.domain.response.ProductResponse
 import com.nathaniel.carryapp.domain.response.ProvinceResponse
 import com.nathaniel.carryapp.domain.response.UploadPhotoResponse
+import com.nathaniel.carryapp.domain.response.UserHistoryResponse
 import com.nathaniel.carryapp.domain.response.WalletResponse
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
@@ -59,4 +61,13 @@ class AuthImplRemoteDataSource @Inject constructor(
     override suspend fun getWalletBalance(mobileNumber: String): Response<WalletResponse> {
         return apiService.getWallet(mobileNumber)
     }
+
+    override suspend fun getRecommendations(customerId: Long): Response<List<ProductResponse>> =
+        apiService.getRecommendations(customerId)
+
+    override suspend fun saveUserHistory(request: UserHistoryRequest): Response<UserHistoryResponse> =
+        apiService.saveUserHistory(request)
+
+    override suspend fun getUserHistory(customerId: Long): Response<List<UserHistoryResponse>> =
+        apiService.getUserHistory(customerId)
 }
