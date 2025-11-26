@@ -1,5 +1,7 @@
 package com.nathaniel.carryapp.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -132,6 +134,7 @@ fun NavGraphBuilder.membershipGraph(navController: NavController) {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 fun NavGraphBuilder.orderGraph(navController: NavController) {
     composable(Routes.ORDERS) {
         OrderScreen(navController = navController)

@@ -314,4 +314,21 @@ class ApiRepository @Inject constructor(
             NetworkResult.Error(HttpStatus.ERROR, e.message ?: "Network error (get history)")
         }
     }
+
+    suspend fun getRelatedProducts(productId: Long): NetworkResult<List<Product>> {
+        return try {
+            val res = remote.getRelatedProducts(productId)
+            if (res.isSuccessful) {
+                val body = res.body().orEmpty()
+                NetworkResult.Success(
+                    HttpStatus.SUCCESS,
+                    body.map { ProductMapper.toDomain(it) }
+                )
+            } else {
+                NetworkResult.Error(HttpStatus.ERROR, "Failed to load related products")
+            }
+        } catch (e: Exception) {
+            NetworkResult.Error(HttpStatus.ERROR, e.message ?: "Network error (related)")
+        }
+    }
 }

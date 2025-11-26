@@ -70,4 +70,7 @@ class AuthImplRemoteDataSource @Inject constructor(
 
     override suspend fun getUserHistory(customerId: Long): Response<List<UserHistoryResponse>> =
         apiService.getUserHistory(customerId)
+
+    override suspend fun getRelatedProducts(productId: Long): Response<List<ProductResponse>> =
+        apiService.getRelatedProducts(productId)
 }

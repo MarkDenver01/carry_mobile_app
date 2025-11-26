@@ -41,12 +41,14 @@ import com.nathaniel.carryapp.domain.usecase.GetCurrentLocationUseCase
 import com.nathaniel.carryapp.domain.usecase.GetMobileOrEmailUseCase
 import com.nathaniel.carryapp.domain.usecase.GetProvincesByRegionUseCase
 import com.nathaniel.carryapp.domain.usecase.GetRecommendationsUseCase
+import com.nathaniel.carryapp.domain.usecase.GetRelatedProductsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetUserHistoryResult
 import com.nathaniel.carryapp.domain.usecase.GetUserHistoryUseCase
 import com.nathaniel.carryapp.domain.usecase.GetUserSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.ProductResult
 import com.nathaniel.carryapp.domain.usecase.ProvinceResult
 import com.nathaniel.carryapp.domain.usecase.RecommendationResult
+import com.nathaniel.carryapp.domain.usecase.RelatedProductsResult
 import com.nathaniel.carryapp.domain.usecase.RemoveFromCartUseCase
 import com.nathaniel.carryapp.domain.usecase.ReverseGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveAddressUseCase
@@ -125,6 +127,7 @@ class OrderViewModel @Inject constructor(
     private val getRecommendationsUseCase: GetRecommendationsUseCase,
     private val saveUserHistoryUseCase: SaveUserHistoryUseCase,
     private val getUserHistoryUseCase: GetUserHistoryUseCase,
+    private val getRelatedProductsUseCase: GetRelatedProductsUseCase,
     private val apiRepository: ApiRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
@@ -180,6 +183,13 @@ class OrderViewModel @Inject constructor(
     private val _loadAddressLocal = MutableStateFlow<String?>(null)
     val loadAddressLocal: StateFlow<String?> = _loadAddressLocal
 
+    // ⭐ LOADING STATES
+    private val _isProductsLoading = MutableStateFlow(false)
+    val isProductsLoading: StateFlow<Boolean> = _isProductsLoading
+
+    private val _isRelatedLoading = MutableStateFlow(false)
+    val isRelatedLoading: StateFlow<Boolean> = _isRelatedLoading
+
     private val _reverseAddress = MutableStateFlow(
         GeocodedAddress(
             fullAddressLine = "",
@@ -195,6 +205,9 @@ class OrderViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(CustomerUIState())
     val uiState: StateFlow<CustomerUIState> = _uiState
+
+    private val _related = MutableStateFlow<List<Product>>(emptyList())
+    val related: StateFlow<List<Product>> = _related
 
     init {
         checkLoginStatus()
@@ -397,19 +410,24 @@ class OrderViewModel @Inject constructor(
 
     private fun loadProducts() {
         viewModelScope.launch {
-            when (val result = productsUseCase()) {
-                is ProductResult.Success -> {
-                    _products.value = result.products
-                    _error.value = null
-                    Timber.d("Loaded default product catalog (${result.products.size} items)")
-                }
+            _isProductsLoading.value = true
+            try {
+                when (val result = productsUseCase()) {
+                    is ProductResult.Success -> {
+                        _products.value = result.products
+                        _error.value = null
+                    }
 
-                is ProductResult.Error -> {
-                    _error.value = result.message
+                    is ProductResult.Error -> {
+                        _error.value = result.message
+                    }
                 }
+            } finally {
+                _isProductsLoading.value = false
             }
         }
     }
+
 
     private fun loadRegions() {
         viewModelScope.launch {
@@ -799,5 +817,31 @@ class OrderViewModel @Inject constructor(
             // ⭐ After ma-load session, decide kung default products o AI recommendations
             decideProductSource()
         }
+    }
+
+    fun loadRelatedProducts(productId: Long) {
+        viewModelScope.launch {
+            _isRelatedLoading.value = true
+            _related.value = emptyList()
+
+            try {
+                when (val result = getRelatedProductsUseCase(productId)) {
+                    is RelatedProductsResult.Success -> {
+                        _related.value = result.products!!
+                        Timber.d("🎯 Loaded ${result.products.size} related products")
+                    }
+                    is RelatedProductsResult.Error -> {
+                        Timber.e("❌ Related product error: ${result.message}")
+                    }
+                }
+            } finally {
+                _isRelatedLoading.value = false
+            }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun onRecommendedProductAdded(customerId: Long?, keyword: String) {
+        recordUserInteraction(customerId ?: 0L, keyword)
     }
 }

@@ -9,7 +9,11 @@ data class ProductResponse(
     val productCode: String,
     val productSize: String,
     val productImgUrl: String,
-    val produceDescription: String,
+    val productDescription: String,
+    val productStatus: String?,
+    val expiryDate: String?,
+    val productInDate: String?,
     val stocks: Int,
+    val categoryId: Long?,
     val categoryName: String
 )

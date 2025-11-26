@@ -12,9 +12,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.nathaniel.carryapp.R
 import com.nathaniel.carryapp.domain.mapper.ProductMapper.toShopProduct
@@ -63,7 +60,7 @@ fun OrderScreen(
 
     // Dynamic category groups
     val racks = shopProducts
-        .groupBy { it.category } // GROUP BY CATEGORY
+        .groupBy { it.categoryName } // GROUP BY CATEGORY
         .map { (categoryName, productList) ->
             ProductRack(
                 title = categoryName,
@@ -77,12 +74,8 @@ fun OrderScreen(
             ShopHeader(
                 notifications = 12,
                 cartCount = cartCount,
-                onCartClick = {
-                    navController.navigate(Routes.CART)
-                },
-                onNotificationClick = {
-
-                }
+                onCartClick = { navController.navigate(Routes.CART) },
+                onNotificationClick = {}
             )
         },
         bottomBar = {
@@ -167,14 +160,14 @@ fun OrderScreen(
                                 cartViewModel.removeProductOriginalDomain(p.id)
                             },
                             onDetailClick = {
-                                navController.navigate("${Routes.PRODUCT_DETAIL}/${p.id}")
-
                                 // ✅ Optionally record when a product detail is viewed
                                 val customerId = customerSession?.customer?.customerId
                                 if (customerId != null) {
                                     orderViewModel.recordUserInteraction(customerId, p.name)
                                     Timber.d("👀 Recorded product view for: ${p.name}")
                                 }
+
+                                navController.navigate("${Routes.PRODUCT_DETAIL}/${p.id}")
                             }
                         )
                     }

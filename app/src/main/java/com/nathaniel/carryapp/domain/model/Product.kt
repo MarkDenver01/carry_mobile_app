@@ -7,20 +7,20 @@ data class Product(
     val size: String,
     val price: Double,
     val imageUrl: String,
-    val description: String,
+    val productDescription: String,
     val stocks: Int,
-    val category: String
+    val categoryName: String
 )
 
 data class ShopProduct(
     val id: Long,
     val name: String,
     val weight: String,
-    val description: String,
+    val productDescription: String,
     val sold: Int,
     val price: Double,
     val imageUrl: String,
-    val category: String,
+    val categoryName: String,
 )
 
 data class ProductRack(

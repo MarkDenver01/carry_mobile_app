@@ -42,4 +42,6 @@ interface AuthRemoteDatasource {
     suspend fun saveUserHistory(request: UserHistoryRequest): Response<UserHistoryResponse>
 
     suspend fun getUserHistory(customerId: Long): Response<List<UserHistoryResponse>>
+
+    suspend fun getRelatedProducts(productId: Long): Response<List<ProductResponse>>
 }

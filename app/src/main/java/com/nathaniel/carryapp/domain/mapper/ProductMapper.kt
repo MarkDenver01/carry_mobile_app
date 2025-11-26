@@ -13,9 +13,9 @@ object ProductMapper {
             size = dto.productSize,
             price = dto.basePrice,
             imageUrl = dto.productImgUrl,
-            description = dto.produceDescription,
+            productDescription = dto.productDescription,
             stocks = dto.stocks,
-            category = dto.categoryName
+            categoryName = dto.categoryName
         )
     }
 
@@ -27,12 +27,12 @@ object ProductMapper {
         return ShopProduct(
             id = id,
             name = name,
-            description = description,
+            productDescription = productDescription,
             weight = size,
             sold = stocks,
             price = price,
             imageUrl = imageUrl,
-            category = category
+            categoryName = categoryName
         )
     }
 }

@@ -63,7 +63,7 @@ interface ApiService {
     ): Response<WalletResponse>
 
     // 🔹 NEW – AI recommendations based on history
-    @GET("/user/public/recommendations/{customerId}")
+    @GET("/user/public/recommend/{customerId}")
     suspend fun getRecommendations(
         @Path("customerId") customerId: Long
     ): Response<List<ProductResponse>>
@@ -79,4 +79,9 @@ interface ApiService {
     suspend fun saveUserHistory(
         @Body body: UserHistoryRequest
     ): Response<UserHistoryResponse>
+
+    @GET("/user/public/product/{productId}/related")
+    suspend fun getRelatedProducts(
+        @Path("productId") productId: Long
+    ): Response<List<ProductResponse>>
 }
