@@ -107,3 +107,54 @@ All changes will be documented in this file.
 - update delivery address screen
 - update changes for location delivery area
 - update delivery
+## v4.0.4 - 2025-11-26
+- chore: bump version to v4.0.4
+- Merge remote-tracking branch 'origin/impl/tani'
+- update checkout screen
+- update categories screen
+- update android
+- update
+- update
+- update AI for product recommendation
+- add product recommendatio button
+- update shake animation
+- update animation
+- update lottie files
+- update cart screen
+- update shop product
+- update delivery address
+- update delivery address
+- fix real time update of wallet
+- update balance
+- add wallet
+- update cash in screen
+- update customer toast at bottom end
+- update customer
+- Merge remote-tracking branch 'origin/impl/tani' into impl/tani
+- update
+- update sign in
+- update CustomerRegistrationScreen.kt
+- update CustomerRegistrationScreen.kt
+- docs: update changelog
+- chore: bump version to v4.0.3
+- Merge remote-tracking branch 'origin/master'
+- update carry
+- docs: update changelog
+- chore: bump version to v4.0.2
+- update api key
+- docs: update changelog
+- chore: bump version to v4.0.1
+- Merge pull request #5 from MarkDenver01/impl/phase2
+- update api key
+- update
+- update customer registration
+- update customer request
+- update CustomerRegistrationScreen.kt
+- update address
+- update geofence
+- update delivery address
+- update db version
+- update
+- update delivery address screen
+- update changes for location delivery area
+- update delivery
