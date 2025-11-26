@@ -5,6 +5,7 @@ import com.nathaniel.carryapp.domain.request.CheckoutRequest
 import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
 import com.nathaniel.carryapp.domain.request.LoginResponse
 import com.nathaniel.carryapp.domain.request.MobileRequest
+import com.nathaniel.carryapp.domain.request.UpdateWalletBalanceRequest
 import com.nathaniel.carryapp.domain.request.UserHistoryRequest
 import com.nathaniel.carryapp.domain.response.CashInInitResponse
 import com.nathaniel.carryapp.domain.response.CustomerDetailResponse
@@ -65,6 +66,19 @@ interface ApiService {
     suspend fun getWallet(
         @Query("mobileNumber") mobileNumber: String
     ): Response<WalletResponse>
+
+
+    @GET("api/wallet/balance/{mobile}")
+    suspend fun getCustomerWalletBalance(
+        @Query("mobileNumber") mobileNumber: String
+    ): Response<WalletResponse>
+
+
+    @POST("api/wallet/update")
+    suspend fun updateCustomerWalletBalance(
+        @Body body: UpdateWalletBalanceRequest
+    ): Response<WalletResponse>
+
 
     // 🔹 NEW – AI recommendations based on history
     @GET("/user/public/recommend/{customerId}")

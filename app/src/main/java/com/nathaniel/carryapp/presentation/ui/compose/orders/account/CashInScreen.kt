@@ -29,7 +29,8 @@ import kotlinx.coroutines.delay
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CashInScreen(
-    navController: NavController) {
+    navController: NavController
+) {
     val viewModel: CustomerViewModel = sharedViewModel()
     var amount by remember { mutableStateOf("") }
     var isFocused by remember { mutableStateOf(false) }

@@ -8,6 +8,7 @@ import com.nathaniel.carryapp.domain.request.CheckoutRequest
 import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
 import com.nathaniel.carryapp.domain.request.LoginResponse
 import com.nathaniel.carryapp.domain.request.MobileRequest
+import com.nathaniel.carryapp.domain.request.UpdateWalletBalanceRequest
 import com.nathaniel.carryapp.domain.request.UserHistoryRequest
 import com.nathaniel.carryapp.domain.response.BarangayResponse
 import com.nathaniel.carryapp.domain.response.CashInInitResponse
@@ -82,6 +83,14 @@ class AuthImplRemoteDataSource @Inject constructor(
 
     override suspend fun checkOUt(request: CheckoutRequest): Response<OrderResponse> =
         apiService.checkout(request)
+
+    override suspend fun updateWallet(request: UpdateWalletBalanceRequest): Response<WalletResponse>{
+        return apiService.updateCustomerWalletBalance(request)
+    }
+
+    override suspend fun getCustomerWalletBalance(mobileNumber: String): Response<WalletResponse> {
+        return apiService.getCustomerWalletBalance(mobileNumber)
+    }
 
 
 }

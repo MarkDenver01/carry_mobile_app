@@ -334,7 +334,8 @@ class OrderViewModel @Inject constructor(
 
                                     is RecommendationResult.Error -> {
                                         Timber.w("⚠️ AI recommendation failed: ${recoResult.message}")
-                                        _error.value = "AI temporarily unavailable. Showing top products."
+                                        _error.value =
+                                            "AI temporarily unavailable. Showing top products."
                                         loadProducts() // fallback
                                     }
                                 }
@@ -398,7 +399,8 @@ class OrderViewModel @Inject constructor(
 
                             is RecommendationResult.Error -> {
                                 Timber.e("Reco failed: ${reco.message}")
-                                _error.value = "AI temporarily unavailable. Showing default products."
+                                _error.value =
+                                    "AI temporarily unavailable. Showing default products."
                                 loadProducts() // fallback
                             }
                         }
@@ -811,6 +813,7 @@ class OrderViewModel @Inject constructor(
             when (val result = saveUserHistoryUseCase(customerId, keyword)) {
                 is SaveHistoryResult.Success ->
                     Timber.d("History saved ✅ ($customerId / $keyword)")
+
                 is SaveHistoryResult.Error ->
                     Timber.e("Error saving history: ${result.message}")
             }
@@ -824,7 +827,8 @@ class OrderViewModel @Inject constructor(
             _customerSession.value = session
 
             // ⭐ After ma-load session, decide kung default products o AI recommendations
-            decideProductSource()
+            // decideProductSource()
+            loadProducts()
         }
     }
 
@@ -839,6 +843,7 @@ class OrderViewModel @Inject constructor(
                         _related.value = result.products!!
                         Timber.d("🎯 Loaded ${result.products.size} related products")
                     }
+
                     is RelatedProductsResult.Error -> {
                         Timber.e("❌ Related product error: ${result.message}")
                     }

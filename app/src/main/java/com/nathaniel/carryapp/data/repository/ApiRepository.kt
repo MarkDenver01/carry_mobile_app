@@ -21,6 +21,7 @@ import com.nathaniel.carryapp.domain.request.CashInRequest
 import com.nathaniel.carryapp.domain.request.CheckoutRequest
 import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
 import com.nathaniel.carryapp.domain.request.LoginResponse
+import com.nathaniel.carryapp.domain.request.UpdateWalletBalanceRequest
 import com.nathaniel.carryapp.domain.request.UserHistoryRequest
 import com.nathaniel.carryapp.domain.response.CashInInitResponse
 import com.nathaniel.carryapp.domain.response.CustomerDetailResponse
@@ -249,6 +250,34 @@ class ApiRepository @Inject constructor(
     suspend fun getWalletBalance(mobileNumber: String): NetworkResult<WalletResponse> {
         return try {
             val response = remote.getWalletBalance(mobileNumber)
+            if (response.isSuccessful) {
+                val body = response.body()!!
+                NetworkResult.Success(HttpStatus.SUCCESS, body)
+            } else {
+                NetworkResult.Error(HttpStatus.ERROR, "Failed to load wallet")
+            }
+        } catch (e: Exception) {
+            NetworkResult.Error(HttpStatus.ERROR, e.message ?: "Network error")
+        }
+    }
+
+    suspend fun getCustomerWalletBalance(mobileNumber: String): NetworkResult<WalletResponse> {
+        return try {
+            val response = remote.getCustomerWalletBalance(mobileNumber)
+            if (response.isSuccessful) {
+                val body = response.body()!!
+                NetworkResult.Success(HttpStatus.SUCCESS, body)
+            } else {
+                NetworkResult.Error(HttpStatus.ERROR, "Failed to load wallet")
+            }
+        } catch (e: Exception) {
+            NetworkResult.Error(HttpStatus.ERROR, e.message ?: "Network error")
+        }
+    }
+
+    suspend fun updateWalletBalance(request: UpdateWalletBalanceRequest): NetworkResult<WalletResponse> {
+        return try {
+            val response = remote.updateWallet(request)
             if (response.isSuccessful) {
                 val body = response.body()!!
                 NetworkResult.Success(HttpStatus.SUCCESS, body)

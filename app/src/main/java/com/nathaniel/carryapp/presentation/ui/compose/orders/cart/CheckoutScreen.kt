@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.nathaniel.carryapp.domain.enum.AlertType
 import com.nathaniel.carryapp.domain.model.CartDisplayItem
 import com.nathaniel.carryapp.domain.request.CheckoutItemRequest
 import com.nathaniel.carryapp.domain.request.CheckoutRequest
@@ -31,6 +32,7 @@ import com.nathaniel.carryapp.presentation.ui.compose.orders.account.CustomerVie
 import com.nathaniel.carryapp.presentation.ui.compose.orders.cart.CartViewModel
 import com.nathaniel.carryapp.presentation.ui.sharedViewModel
 import com.nathaniel.carryapp.presentation.utils.NetworkResult
+import com.nathaniel.carryapp.presentation.utils.SweetAlertDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,6 +48,7 @@ fun CheckoutScreen(
     var selectedPayment by remember { mutableStateOf("COD") }
     val walletBalance by customerViewModel.walletBalance.collectAsState()
     var showConfirmDialog by remember { mutableStateOf(false) }
+    var showDialog by remember { mutableStateOf(false) }
 
     val total = cartItems.sumOf { it.subtotal }
 
@@ -60,7 +63,7 @@ fun CheckoutScreen(
 
                 is NetworkResult.Success -> {
                     // Wallet deduction
-                    if (selectedPayment == "EWallet") {
+                    if (selectedPayment == "WALLET") {
                         customerViewModel.refreshWallet()
                     }
 
@@ -74,7 +77,7 @@ fun CheckoutScreen(
                 }
 
                 is NetworkResult.Error -> {
-                    // TODO: Show error dialog/toast
+                    showDialog = true
                 }
 
                 else -> Unit
@@ -185,8 +188,8 @@ fun CheckoutScreen(
                     PaymentOption(
                         title = "₱${"%,.2f".format(walletBalance)}",
                         sub = "Wallet Balance",
-                        isSelected = selectedPayment == "online",
-                        onClick = { selectedPayment = "online" }
+                        isSelected = selectedPayment == "WALLET",
+                        onClick = { selectedPayment = "WALLET" }
                     )
 
                     Spacer(Modifier.height(10.dp))
@@ -201,6 +204,24 @@ fun CheckoutScreen(
 
             item { Spacer(Modifier.height(100.dp)) } // SPACE ABOVE BOTTOM BUTTON
         }
+    }
+
+    if (showDialog) {
+        SweetAlertDialog(
+            type = AlertType.WARNING,
+            title = "Error",
+            message = "There is an error encounter. Please try again.",
+            show = showDialog,
+            confirmText = "Yes",
+            dismissText = "Cancel",
+            isSingleButton = false,
+            onConfirm = {
+                showDialog = false
+                // Perform your action here
+            },
+            onDismiss = {
+                showDialog = false
+            })
     }
 
     // ⭐ BOTTOM CONFIRMATION POPUP
@@ -258,6 +279,17 @@ fun CheckoutScreen(
                                 // TODO: Show error dialog
                                 return@Button
                             }
+
+                            val amount = String.format("%.2f", walletBalance)
+                            customerViewModel.updateWalletBalance(amount)
+
+                            if (selectedPayment == "WALLET" && walletBalance < total) {
+                                showConfirmDialog = false
+                                // YOUR ALERT
+                                println("Insufficient Wallet Balance")
+                                return@Button
+                            }
+
 
                             // Build checkout items from cart
                             val checkoutItems = cartItems.map {
