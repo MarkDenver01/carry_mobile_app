@@ -14,11 +14,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.nathaniel.carryapp.domain.model.CartDisplayItem
 import com.nathaniel.carryapp.presentation.ui.compose.orders.cart.CartViewModel
 import com.nathaniel.carryapp.presentation.ui.sharedViewModel
 
@@ -71,45 +73,6 @@ fun CheckoutScreen(
 
             cartItems.forEach { item ->
                 CheckoutItemCard(item)
-            }
-
-            Spacer(Modifier.height(12.dp))
-
-            // ===========================
-            // VOUCHER SECTION
-            // ===========================
-            Text(
-                "Voucher Code",
-                modifier = Modifier.padding(horizontal = 16.dp),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Row(
-                Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-
-                OutlinedTextField(
-                    value = voucherCode,
-                    onValueChange = { voucherCode = it },
-                    modifier = Modifier.weight(1f),
-                    placeholder = { Text("Enter voucher code") },
-                    shape = RoundedCornerShape(12.dp),
-                    singleLine = true
-                )
-
-                Spacer(Modifier.width(8.dp))
-
-                Button(
-                    onClick = { /* apply voucher logic */ },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF118B3C)),
-                    modifier = Modifier.height(55.dp)
-                ) {
-                    Text("Apply")
-                }
             }
 
             Spacer(Modifier.height(8.dp))
@@ -192,51 +155,82 @@ fun CheckoutScreen(
 }
 
 @Composable
-fun CheckoutItemCard(item: com.nathaniel.carryapp.domain.model.CartDisplayItem) {
+fun CheckoutItemCard(
+    item: CartDisplayItem
+) {
     Card(
         modifier = Modifier
-            .fillMaxWidth()
             .padding(horizontal = 16.dp)
-            .padding(bottom = 12.dp),
-        shape = RoundedCornerShape(18.dp)
+            .padding(top = 8.dp)
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(4.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
-        Row(modifier = Modifier.padding(14.dp)) {
+
+        Row(
+            modifier = Modifier
+                .padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            // Product Image
             AsyncImage(
                 model = item.imageUrl,
                 contentDescription = null,
                 modifier = Modifier
-                    .size(80.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .size(90.dp)
+                    .clip(RoundedCornerShape(14.dp)),
+                contentScale = ContentScale.Crop
             )
 
             Spacer(Modifier.width(12.dp))
 
-            Column(Modifier.weight(1f)) {
-                Text(item.name, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                Text(item.weight, color = Color.Gray)
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+
+                Text(
+                    text = item.name,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF0E1F22)
+                )
+
+                Text(
+                    text = item.weight,
+                    fontSize = 14.sp,
+                    color = Color(0xFF6F7F85)
+                )
 
                 Spacer(Modifier.height(6.dp))
 
                 Text(
-                    "₱${"%,.2f".format(item.price)}",
+                    text = "₱${"%,.2f".format(item.price)}",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF118B3C)
                 )
             }
 
+            // Qty Box
             Box(
                 modifier = Modifier
                     .size(32.dp)
                     .clip(RoundedCornerShape(10.dp))
-                    .background(Color(0xFFF0F0F0)),
+                    .background(Color(0xFFF0F1F3)),
                 contentAlignment = Alignment.Center
             ) {
-                Text("${item.qty}", fontWeight = FontWeight.Bold)
+                Text(
+                    text = "${item.qty}",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
             }
         }
     }
 }
+
 
 @Composable
 fun PaymentOption(
