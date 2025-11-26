@@ -21,6 +21,8 @@ data class ShopProduct(
     val price: Double,
     val imageUrl: String,
     val categoryName: String,
+
+    val enabled: Boolean = true
 )
 
 data class ProductRack(

@@ -25,6 +25,7 @@ import com.nathaniel.carryapp.presentation.ui.compose.orders.account.CustomerReg
 import com.nathaniel.carryapp.presentation.ui.compose.orders.account.CustomerViewModel
 import com.nathaniel.carryapp.presentation.ui.compose.orders.cart.CartScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.category.CategoriesScreen
+import com.nathaniel.carryapp.presentation.ui.compose.orders.category.CategoryFilteredProductScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.location.DeliveryAddressScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.location.LocationConfirmationScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.shopping.ShoppingScreen
@@ -156,6 +157,18 @@ fun NavGraphBuilder.orderGraph(navController: NavController) {
 
     composable(Routes.CATEGORIES) {
         CategoriesScreen(navController = navController)
+    }
+
+    composable(
+        route = "${Routes.SORT_PRODUCT_BY_CATEGORY}/{categoryName}"
+    ) { backStackEntry ->
+
+        val categoryName = backStackEntry.arguments?.getString("categoryName") ?: ""
+
+        CategoryFilteredProductScreen(
+            navController = navController,
+            categoryName = categoryName
+        )
     }
 
     composable(Routes.ACCOUNT) {

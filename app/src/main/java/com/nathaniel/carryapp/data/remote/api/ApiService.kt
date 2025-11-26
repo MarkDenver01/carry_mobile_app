@@ -7,6 +7,7 @@ import com.nathaniel.carryapp.domain.request.MobileRequest
 import com.nathaniel.carryapp.domain.request.UserHistoryRequest
 import com.nathaniel.carryapp.domain.response.CashInInitResponse
 import com.nathaniel.carryapp.domain.response.CustomerDetailResponse
+import com.nathaniel.carryapp.domain.response.ProductCategoryResponse
 import com.nathaniel.carryapp.domain.response.ProductResponse
 import com.nathaniel.carryapp.domain.response.UploadPhotoResponse
 import com.nathaniel.carryapp.domain.response.UserHistoryResponse
@@ -43,7 +44,8 @@ interface ApiService {
     ): Response<ResponseBody>
 
     @PUT("/user/public/customer/update")
-    suspend fun updateCustomer(@Body request: CustomerDetailRequest
+    suspend fun updateCustomer(
+        @Body request: CustomerDetailRequest
     ): Response<CustomerDetailResponse>
 
     @Multipart
@@ -84,4 +86,8 @@ interface ApiService {
     suspend fun getRelatedProducts(
         @Path("productId") productId: Long
     ): Response<List<ProductResponse>>
+
+    @GET("/user/public/all/product_category")
+    suspend fun getAllCategories(): Response<ProductCategoryResponse>
+
 }

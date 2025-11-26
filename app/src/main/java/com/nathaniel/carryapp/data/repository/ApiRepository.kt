@@ -23,6 +23,7 @@ import com.nathaniel.carryapp.domain.request.LoginResponse
 import com.nathaniel.carryapp.domain.request.UserHistoryRequest
 import com.nathaniel.carryapp.domain.response.CashInInitResponse
 import com.nathaniel.carryapp.domain.response.CustomerDetailResponse
+import com.nathaniel.carryapp.domain.response.ProductCategoryResponse
 import com.nathaniel.carryapp.domain.response.UserHistoryResponse
 import com.nathaniel.carryapp.domain.response.WalletResponse
 import com.nathaniel.carryapp.presentation.utils.NetworkResult
@@ -331,4 +332,31 @@ class ApiRepository @Inject constructor(
             NetworkResult.Error(HttpStatus.ERROR, e.message ?: "Network error (related)")
         }
     }
+
+    suspend fun getAllCategory(): NetworkResult<ProductCategoryResponse> {
+        return try {
+            val res = remote.getAllCategory()   // this calls apiService.getAllCategories()
+
+            if (res.isSuccessful) {
+                val body = res.body()
+                if (body != null) {
+                    NetworkResult.Success(
+                        HttpStatus.SUCCESS,
+                        body
+                    )
+                } else {
+                    NetworkResult.Error(HttpStatus.ERROR, "Empty response body")
+                }
+            } else {
+                NetworkResult.Error(HttpStatus.ERROR, "Failed to load categories (HTTP ${res.code()})")
+            }
+
+        } catch (e: Exception) {
+            NetworkResult.Error(
+                HttpStatus.ERROR,
+                e.message ?: "Network error while loading categories"
+            )
+        }
+    }
+
 }

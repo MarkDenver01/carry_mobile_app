@@ -24,6 +24,8 @@ object Routes {
     const val OTP = "otp"
     const val AGREEMENT_TERMS_PRIVACY = "agreement_terms_privacy"
     const val CATEGORIES = "categories"
+
+    const val SORT_PRODUCT_BY_CATEGORY = "sort_product_by_category"
     const val REORDER = "reorder"
     const val ACCOUNT = "account"
     const val PRODUCT_DETAIL = "product_detail"

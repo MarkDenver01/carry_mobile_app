@@ -8,6 +8,7 @@ import com.nathaniel.carryapp.domain.response.BarangayResponse
 import com.nathaniel.carryapp.domain.response.CashInInitResponse
 import com.nathaniel.carryapp.domain.response.CityResponse
 import com.nathaniel.carryapp.domain.response.CustomerDetailResponse
+import com.nathaniel.carryapp.domain.response.ProductCategoryResponse
 import com.nathaniel.carryapp.domain.response.ProductResponse
 import com.nathaniel.carryapp.domain.response.ProvinceResponse
 import com.nathaniel.carryapp.domain.response.UploadPhotoResponse
@@ -44,4 +45,6 @@ interface AuthRemoteDatasource {
     suspend fun getUserHistory(customerId: Long): Response<List<UserHistoryResponse>>
 
     suspend fun getRelatedProducts(productId: Long): Response<List<ProductResponse>>
+
+    suspend fun getAllCategory(): Response<ProductCategoryResponse>
 }

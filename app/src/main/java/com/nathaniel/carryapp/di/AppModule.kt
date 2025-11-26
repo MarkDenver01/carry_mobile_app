@@ -18,6 +18,7 @@ import com.nathaniel.carryapp.domain.usecase.AddToCartUseCase
 import com.nathaniel.carryapp.domain.usecase.CashInUseCase
 import com.nathaniel.carryapp.domain.usecase.ForwardGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.GetAddressUseCase
+import com.nathaniel.carryapp.domain.usecase.GetAllCategoryUseCase
 import com.nathaniel.carryapp.domain.usecase.GetAllProductsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetBarangaysByCityUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCartCountUseCase
@@ -264,4 +265,9 @@ object AppModule {
         apiRepository: ApiRepository
     ): GetUserHistoryUseCase = GetUserHistoryUseCase(apiRepository)
 
+    @Provides
+    @Singleton
+    fun provideGetAllCategoryUseCase(
+        apiRepository: ApiRepository
+    ): GetAllCategoryUseCase = GetAllCategoryUseCase(apiRepository)
 }

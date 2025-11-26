@@ -1,5 +1,6 @@
 package com.nathaniel.carryapp.presentation.ui.compose.orders.category
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -8,10 +9,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -115,12 +118,9 @@ fun CategoriesScreen(
                         title = category.name,
                         imageUrl = category.imageUrl,
                         onClick = {
-                            navController.navigate(
-                                Routes.CATEGORIES.replace(
-                                    "{categoryName}",
-                                    category.name
-                                )
-                            )
+                            navController.navigate("${Routes.SORT_PRODUCT_BY_CATEGORY}/${category.name}") {
+                                popUpTo(Routes.CATEGORIES) { inclusive = true }
+                            }
                         }
                     )
                 }
@@ -139,7 +139,10 @@ fun CategoryCard(
         modifier = Modifier
             .width(100.dp)
             .padding(4.dp)
+            .clickable { onClick() },
+        horizontalAlignment = Alignment.CenterHorizontally // <-- CENTER CONTENT
     ) {
+
         AsyncImage(
             model = imageUrl,
             contentDescription = title,
@@ -154,8 +157,9 @@ fun CategoryCard(
             text = title,
             fontSize = 12.sp,
             fontWeight = FontWeight.SemiBold,
-            color = Color.Black
+            color = Color.Black,
+            textAlign = TextAlign.Center,        // <-- CENTER TEXT
+            modifier = Modifier.fillMaxWidth()   // <-- REQUIRED FOR TEXTALIGN
         )
     }
 }
-

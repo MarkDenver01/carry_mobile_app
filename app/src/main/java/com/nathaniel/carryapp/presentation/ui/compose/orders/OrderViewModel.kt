@@ -26,12 +26,15 @@ import com.nathaniel.carryapp.domain.model.ShopProduct
 import com.nathaniel.carryapp.domain.request.CustomerRegistrationRequest
 import com.nathaniel.carryapp.domain.request.DeliveryAddressMapper
 import com.nathaniel.carryapp.domain.request.DeliveryAddressRequest
+import com.nathaniel.carryapp.domain.response.ProductCategoryResponse
 import com.nathaniel.carryapp.domain.usecase.AddToCartUseCase
 import com.nathaniel.carryapp.domain.usecase.BarangayResult
+import com.nathaniel.carryapp.domain.usecase.CategoryResult
 import com.nathaniel.carryapp.domain.usecase.CityResult
 import com.nathaniel.carryapp.domain.usecase.ForwardGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.GeocodeResult
 import com.nathaniel.carryapp.domain.usecase.GetAddressUseCase
+import com.nathaniel.carryapp.domain.usecase.GetAllCategoryUseCase
 import com.nathaniel.carryapp.domain.usecase.GetAllProductsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetBarangaysByCityUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCartCountUseCase
@@ -132,6 +135,9 @@ class OrderViewModel @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
+    private val _selectedCategory = MutableStateFlow<String?>(null)
+    val selectedCategory = _selectedCategory
+
     private val _navigateTo = MutableStateFlow<String?>(null)
     val navigateTo: StateFlow<String?> = _navigateTo
 
@@ -143,6 +149,9 @@ class OrderViewModel @Inject constructor(
 
     private val _products = MutableStateFlow<List<Product>>(emptyList())
     val products: StateFlow<List<Product>> = _products
+
+    private val _category = MutableStateFlow<ProductCategoryResponse?>(null)
+    val categories: StateFlow<ProductCategoryResponse?> = _category
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
@@ -844,4 +853,9 @@ class OrderViewModel @Inject constructor(
     fun onRecommendedProductAdded(customerId: Long?, keyword: String) {
         recordUserInteraction(customerId ?: 0L, keyword)
     }
+
+    fun selectCategory(category: String) {
+        _selectedCategory.value = category
+    }
+
 }
