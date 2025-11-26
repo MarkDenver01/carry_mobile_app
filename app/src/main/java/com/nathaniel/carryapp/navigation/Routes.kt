@@ -37,4 +37,6 @@ object Routes {
     const val CASH_IN_SUCCESS = "cash_in_success"
     const val CASH_IN_FAILED = "cash_in_failed"
     const val CART = "my_cart"
+
+    const val CHECKOUT = "check_out"
 }

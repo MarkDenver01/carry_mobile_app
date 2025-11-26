@@ -27,6 +27,7 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.nathaniel.carryapp.domain.model.CartDisplayItem
+import com.nathaniel.carryapp.navigation.Routes
 import com.nathaniel.carryapp.presentation.ui.sharedViewModel
 import com.nathaniel.carryapp.presentation.utils.AnimatedLoaderOverlay
 
@@ -66,7 +67,14 @@ fun CartScreen(
         },
         containerColor = Color(0xFFF7F8FA),
         bottomBar = {
-            CheckoutBottomBar(total = total)
+            CheckoutBottomBar(
+                total = total,
+                onClick = {
+                    navController.navigate(Routes.CHECKOUT) {
+                        popUpTo(Routes.CATEGORIES) { inclusive = true }
+                    }
+                }
+            )
         }
     ) { inner ->
 
@@ -299,7 +307,6 @@ private fun CartItemCard(
 }
 
 
-
 @Composable
 private fun QuantityButton(symbol: String, onClick: () -> Unit) {
     Box(
@@ -315,7 +322,10 @@ private fun QuantityButton(symbol: String, onClick: () -> Unit) {
 }
 
 @Composable
-private fun CheckoutBottomBar(total: Double) {
+private fun CheckoutBottomBar(
+    total: Double,
+    onClick: () -> Unit
+) {
     Column(
         modifier = Modifier
             .background(Color.White)
@@ -334,7 +344,7 @@ private fun CheckoutBottomBar(total: Double) {
         Spacer(Modifier.height(12.dp))
 
         Button(
-            onClick = { /* checkout */ },
+            onClick = { onClick() },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),
