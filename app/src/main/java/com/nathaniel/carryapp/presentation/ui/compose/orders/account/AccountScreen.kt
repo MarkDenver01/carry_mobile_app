@@ -6,6 +6,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -18,27 +21,53 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberCameraPositionState
 import com.nathaniel.carryapp.R
 import com.nathaniel.carryapp.navigation.Routes
 import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
 import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.ShopBottomBar
 import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.ShopHeader
 import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.ShopSearchBar
+import com.nathaniel.carryapp.presentation.ui.sharedViewModel
+import com.nathaniel.carryapp.presentation.utils.AnimatedLoaderOverlay
+import com.nathaniel.carryapp.presentation.utils.LoadingOverlay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AccountScreen(
-    navController: NavController,
-    viewModel: OrderViewModel = hiltViewModel()
-) {
+fun AccountScreen(navController: NavController) {
+    val customerViewModel: CustomerViewModel = sharedViewModel()
+    val orderViewModel: OrderViewModel = sharedViewModel()
+    val walletBalance by customerViewModel.walletBalance.collectAsState()
+    val customer = customerViewModel.customerDetails.collectAsState().value
+    val isLoading by customerViewModel.isLoading.collectAsState()
+
     Scaffold(
         containerColor = Color(0xFFF7F8FA),
-        topBar = { ShopHeader(notifications = 12, cartCount = 7) },
+        topBar = {
+            ShopHeader(
+                notifications = 12,
+                cartCount = 15,
+                onCartClick = {
+                    navController.navigate(Routes.CART) {
+                        popUpTo(Routes.ORDERS) { inclusive = true }
+                    }
+                },
+                onNotificationClick = {
+
+                }
+            )
+        },
         bottomBar = {
             ShopBottomBar(
                 onHome = { navController.navigate(Routes.ORDERS) },
                 onCategories = { navController.navigate(Routes.CATEGORIES) },
-                onReorder = { viewModel.onReorderClick() },
+                onReorder = { navController.navigate(Routes.REORDER) },
                 onAccount = {}
             )
         }
@@ -105,7 +134,7 @@ fun AccountScreen(
                                 )
 
                                 Text(
-                                    "₱0.00",
+                                    "₱${"%,.2f".format(walletBalance)}",
                                     fontSize = 28.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFF0E1F22)
@@ -113,11 +142,23 @@ fun AccountScreen(
                             }
 
                             Button(
-                                onClick = {},
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF118B3C)),
+                                onClick = {
+                                    navController.navigate(Routes.CASH_IN) {
+                                        popUpTo(Routes.ACCOUNT) { inclusive = true }
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(
+                                        0xFF118B3C
+                                    )
+                                ),
                                 shape = RoundedCornerShape(10.dp)
                             ) {
-                                Text("Cash in", color = Color.White, fontWeight = FontWeight.SemiBold)
+                                Text(
+                                    "Cash in",
+                                    color = Color.White,
+                                    fontWeight = FontWeight.SemiBold
+                                )
                             }
                         }
                     }
@@ -131,10 +172,10 @@ fun AccountScreen(
             // ================================
             item {
                 SectionCard(title = "My Information") {
-                    InfoRow("Name", "Denver Gregorio")
-                    InfoRow("Mobile Number", "639693342612")
-                    InfoRow("Email Address", "--")
-                    InfoRow("Deliver To", "Poblacion Barangay 6,\nCity of Tanauan")
+                    InfoRow("Name", customer?.userName ?: "")
+                    InfoRow("Mobile Number", customer?.mobileNumber ?: "")
+                    InfoRow("Email Address", customer?.email ?: "")
+                    InfoRow("Deliver To", customer?.address ?: "")
                 }
                 Spacer(Modifier.height(20.dp))
             }
@@ -216,9 +257,13 @@ fun AccountScreen(
             }
 
             // ================================
-            // 📍 DELIVERY ADDRESS
-            // ================================
+            // 📍 DELIVERY ADDRESS — LIVE MAP + REVERSE ADDRESS
             item {
+
+                val reverseAddress by orderViewModel.reverseAddress.collectAsState()
+                val pinPosition by orderViewModel.selectedLatLng.collectAsState()
+
+                // Load map UI
                 SectionCard(title = "Delivery Address") {
 
                     Text(
@@ -229,15 +274,47 @@ fun AccountScreen(
 
                     Spacer(Modifier.height(14.dp))
 
-                    Image(
-                        painter = painterResource(R.drawable.maps),
-                        contentDescription = "",
+                    // GOOGLE MAP DISPLAY
+                    val cameraPositionState = rememberCameraPositionState {
+                        position = CameraPosition.fromLatLngZoom(
+                            pinPosition ?: LatLng(14.0645, 121.1460),
+                            16f
+                        )
+                    }
+
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(160.dp)
-                            .clip(RoundedCornerShape(12.dp)),
-                        contentScale = ContentScale.Crop
-                    )
+                            .height(200.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                    ) {
+                        GoogleMap(
+                            modifier = Modifier.fillMaxSize(),
+                            cameraPositionState = cameraPositionState,
+                            uiSettings = MapUiSettings(
+                                zoomControlsEnabled = false,
+                                myLocationButtonEnabled = false
+                            )
+                        ) {
+                            pinPosition?.let {
+                                Marker(
+                                    state = MarkerState(position = it),
+                                    title = "Your Delivery Address"
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(Modifier.height(10.dp))
+
+                    // SHOW EXACT REVERSE GEOCODED ADDRESS
+                    reverseAddress.fullAddressLine?.let {
+                        Text(
+                            it,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
 
                     Spacer(Modifier.height(10.dp))
 
@@ -248,8 +325,10 @@ fun AccountScreen(
                         fontWeight = FontWeight.Medium
                     )
                 }
+
                 Spacer(Modifier.height(20.dp))
             }
+
 
             // ================================
             // 💬 SUPPORT
@@ -315,6 +394,8 @@ fun AccountScreen(
                 )
             }
         }
+
+        AnimatedLoaderOverlay(isLoading)
     }
 }
 

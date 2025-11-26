@@ -71,7 +71,7 @@ fun ShopBottomBar(
                 )
             )
 
-            Spacer(modifier = Modifier.width(56.dp))
+            //Spacer(modifier = Modifier.width(36.dp))
 
             NavigationBarItem(
                 selected = selectedIndex == 2,
@@ -103,16 +103,16 @@ fun ShopBottomBar(
         }
 
         // 🎅 Floating Festive Offers Button (non-overlapping, same baseline)
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .offset(y = (-30).dp)
-        ) {
-            FloatingSnowballButton(
-                count = 12,
-                onClick = { /* navigate to offers */ },
-                modifier = Modifier.align(Alignment.TopCenter)
-            )
-        }
+//        Box(
+//            modifier = Modifier
+//                .align(Alignment.TopCenter)
+//                .offset(y = (-10).dp)
+//        ) {
+//            GreenFloatingButton(
+//                count = 12,
+//                onClick = { /* navigate to offers */ },
+//                modifier = Modifier.align(Alignment.TopCenter)
+//            )
+//        }
     }
 }

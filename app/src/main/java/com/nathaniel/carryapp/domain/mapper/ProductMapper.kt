@@ -1,6 +1,7 @@
 package com.nathaniel.carryapp.domain.mapper
 
 import com.nathaniel.carryapp.domain.model.Product
+import com.nathaniel.carryapp.domain.model.ShopProduct
 import com.nathaniel.carryapp.domain.response.ProductResponse
 
 object ProductMapper {
@@ -12,12 +13,26 @@ object ProductMapper {
             size = dto.productSize,
             price = dto.basePrice,
             imageUrl = dto.productImgUrl,
-            description = dto.produceDescription,
+            productDescription = dto.productDescription,
             stocks = dto.stocks,
-            category = dto.categoryName
+            categoryName = dto.categoryName
         )
     }
 
     fun toDomainList(list: List<ProductResponse>) =
         list.map { toDomain(it) }
+
+    // DOMAIN -> UI MAPPER
+    fun Product.toShopProduct(): ShopProduct {
+        return ShopProduct(
+            id = id,
+            name = name,
+            productDescription = productDescription,
+            weight = size,
+            sold = stocks,
+            price = price,
+            imageUrl = imageUrl,
+            categoryName = categoryName
+        )
+    }
 }

@@ -1,7 +1,9 @@
 package com.nathaniel.carryapp.presentation.ui.compose.orders
 
-import android.location.Location
+import android.content.Context
 import android.net.Uri
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -9,47 +11,83 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.google.android.gms.maps.model.LatLng
-import com.nathaniel.carryapp.data.local.room.entity.DeliveryAddressEntity
+import com.nathaniel.carryapp.data.local.room.relations.LoginWithCustomer
 import com.nathaniel.carryapp.data.repository.ApiRepository
 import com.nathaniel.carryapp.data.repository.GeocodedAddress
+import com.nathaniel.carryapp.data.repository.LocalRepository
+import com.nathaniel.carryapp.domain.enum.ToastType
 import com.nathaniel.carryapp.domain.mapper.CustomerDetailsMapper
 import com.nathaniel.carryapp.domain.model.Barangay
+import com.nathaniel.carryapp.domain.model.CartDisplayItem
 import com.nathaniel.carryapp.domain.model.City
 import com.nathaniel.carryapp.domain.model.Product
 import com.nathaniel.carryapp.domain.model.Province
+import com.nathaniel.carryapp.domain.model.ShopProduct
 import com.nathaniel.carryapp.domain.request.CustomerRegistrationRequest
 import com.nathaniel.carryapp.domain.request.DeliveryAddressMapper
 import com.nathaniel.carryapp.domain.request.DeliveryAddressRequest
+import com.nathaniel.carryapp.domain.response.ProductCategoryResponse
+import com.nathaniel.carryapp.domain.usecase.AddToCartUseCase
 import com.nathaniel.carryapp.domain.usecase.BarangayResult
+import com.nathaniel.carryapp.domain.usecase.CategoryResult
 import com.nathaniel.carryapp.domain.usecase.CityResult
 import com.nathaniel.carryapp.domain.usecase.ForwardGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.GeocodeResult
 import com.nathaniel.carryapp.domain.usecase.GetAddressUseCase
+import com.nathaniel.carryapp.domain.usecase.GetAllCategoryUseCase
 import com.nathaniel.carryapp.domain.usecase.GetAllProductsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetBarangaysByCityUseCase
+import com.nathaniel.carryapp.domain.usecase.GetCartCountUseCase
+import com.nathaniel.carryapp.domain.usecase.GetCartSummaryUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCitiesByProvinceUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCurrentLocationUseCase
-import com.nathaniel.carryapp.domain.usecase.GetCustomerDetailsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetMobileOrEmailUseCase
 import com.nathaniel.carryapp.domain.usecase.GetProvincesByRegionUseCase
+import com.nathaniel.carryapp.domain.usecase.GetRecommendationsUseCase
+import com.nathaniel.carryapp.domain.usecase.GetRelatedProductsUseCase
+import com.nathaniel.carryapp.domain.usecase.GetUserHistoryResult
+import com.nathaniel.carryapp.domain.usecase.GetUserHistoryUseCase
+import com.nathaniel.carryapp.domain.usecase.GetUserSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.ProductResult
 import com.nathaniel.carryapp.domain.usecase.ProvinceResult
+import com.nathaniel.carryapp.domain.usecase.RecommendationResult
+import com.nathaniel.carryapp.domain.usecase.RelatedProductsResult
+import com.nathaniel.carryapp.domain.usecase.RemoveFromCartUseCase
 import com.nathaniel.carryapp.domain.usecase.ReverseGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveCustomerDetailsUseCase
+import com.nathaniel.carryapp.domain.usecase.SaveHistoryResult
 import com.nathaniel.carryapp.domain.usecase.SaveMobileOrEmailUseCase
+import com.nathaniel.carryapp.domain.usecase.SaveUserHistoryUseCase
+import com.nathaniel.carryapp.domain.usecase.SaveUserSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.UpdateAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.UpdateCustomerUseCase
+import com.nathaniel.carryapp.domain.usecase.UploadCustomerPhotoUseCase
 import com.nathaniel.carryapp.navigation.Routes
+import com.nathaniel.carryapp.presentation.utils.toMultipart
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
 private const val REGION_IV_A = "040000000"
+
+data class ToastMessage(
+    val message: String,
+    val type: ToastType
+)
+
+data class CartSummary(
+    val productId: Long,
+    val qty: Int
+)
 
 data class CustomerUIState(
     val userName: String = "",
@@ -85,10 +123,20 @@ class OrderViewModel @Inject constructor(
     private val getMobileOrEmailUseCase: GetMobileOrEmailUseCase,
     private val saveMobileOrEmailUseCase: SaveMobileOrEmailUseCase,
     private val saveCustomerDetailsUseCase: SaveCustomerDetailsUseCase,
-    private val getCustomerDetailsUseCase: GetCustomerDetailsUseCase,
     private val updateCustomerUseCase: UpdateCustomerUseCase,
-    private val apiRepository: ApiRepository
+    private val saveUserSessionUseCase: SaveUserSessionUseCase,
+    private val getUserSessionUseCase: GetUserSessionUseCase,
+    private val updatePhotoUseCase: UploadCustomerPhotoUseCase,
+    private val getRecommendationsUseCase: GetRecommendationsUseCase,
+    private val saveUserHistoryUseCase: SaveUserHistoryUseCase,
+    private val getUserHistoryUseCase: GetUserHistoryUseCase,
+    private val getRelatedProductsUseCase: GetRelatedProductsUseCase,
+    private val apiRepository: ApiRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
+
+    private val _selectedCategory = MutableStateFlow<String?>(null)
+    val selectedCategory = _selectedCategory
 
     private val _navigateTo = MutableStateFlow<String?>(null)
     val navigateTo: StateFlow<String?> = _navigateTo
@@ -96,8 +144,14 @@ class OrderViewModel @Inject constructor(
     private val _isLoggedIn = MutableStateFlow<Boolean?>(null)
     val isLoggedIn: StateFlow<Boolean?> = _isLoggedIn
 
+    private val _customerSession = MutableStateFlow<LoginWithCustomer?>(null)
+    val customerSession: StateFlow<LoginWithCustomer?> = _customerSession
+
     private val _products = MutableStateFlow<List<Product>>(emptyList())
     val products: StateFlow<List<Product>> = _products
+
+    private val _category = MutableStateFlow<ProductCategoryResponse?>(null)
+    val categories: StateFlow<ProductCategoryResponse?> = _category
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
@@ -117,6 +171,9 @@ class OrderViewModel @Inject constructor(
     private val _barangays = MutableStateFlow<List<Barangay>>(emptyList())
     val barangays: StateFlow<List<Barangay>> = _barangays
 
+    private val _toastState = MutableStateFlow<ToastMessage?>(null)
+    val toastState: StateFlow<ToastMessage?> = _toastState
+
     var selectedProvince by mutableStateOf<Province?>(null)
         private set
 
@@ -135,6 +192,13 @@ class OrderViewModel @Inject constructor(
     private val _loadAddressLocal = MutableStateFlow<String?>(null)
     val loadAddressLocal: StateFlow<String?> = _loadAddressLocal
 
+    // ⭐ LOADING STATES
+    private val _isProductsLoading = MutableStateFlow(false)
+    val isProductsLoading: StateFlow<Boolean> = _isProductsLoading
+
+    private val _isRelatedLoading = MutableStateFlow(false)
+    val isRelatedLoading: StateFlow<Boolean> = _isRelatedLoading
+
     private val _reverseAddress = MutableStateFlow(
         GeocodedAddress(
             fullAddressLine = "",
@@ -151,13 +215,16 @@ class OrderViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(CustomerUIState())
     val uiState: StateFlow<CustomerUIState> = _uiState
 
+    private val _related = MutableStateFlow<List<Product>>(emptyList())
+    val related: StateFlow<List<Product>> = _related
+
     init {
         checkLoginStatus()
-        loadProducts()
         loadRegions()
         loadProvinces()
         loadSavedAddress()
         loadSavedMobileOrEmail()
+        loadCustomerSession()
     }
 
     private fun loadSavedMobileOrEmail() {
@@ -239,20 +306,137 @@ class OrderViewModel @Inject constructor(
         }
     }
 
-
-    private fun loadProducts() {
+    fun loadDynamicProducts() {
         viewModelScope.launch {
-            when (val result = productsUseCase()) {
-                is ProductResult.Success -> {
-                    _products.value = result.products
+            try {
+                // ✅ Use cached session from StateFlow (faster, no DB I/O every 30s)
+                val customerId = _customerSession.value?.customer?.customerId
+
+                if (customerId != null) {
+                    Timber.d("🧠 Logged-in user ($customerId): loading AI products...")
+
+                    // ✅ Step 1: Get user history first
+                    when (val historyResult = getUserHistoryUseCase(customerId)) {
+
+                        is GetUserHistoryResult.Success -> {
+                            val historyList = historyResult.history
+
+                            if (historyList.isNotEmpty()) {
+                                Timber.d("📜 Found ${historyList.size} history entries for user $customerId")
+
+                                // ✅ Step 2: Request AI recommendations based on history
+                                when (val recoResult = getRecommendationsUseCase(customerId)) {
+                                    is RecommendationResult.Success -> {
+                                        _products.value = recoResult.products
+                                        _error.value = null
+                                        Timber.d("✅ Loaded ${recoResult.products.size} AI recommendations")
+                                    }
+
+                                    is RecommendationResult.Error -> {
+                                        Timber.w("⚠️ AI recommendation failed: ${recoResult.message}")
+                                        _error.value = "AI temporarily unavailable. Showing top products."
+                                        loadProducts() // fallback
+                                    }
+                                }
+                            } else {
+                                Timber.d("⚪ No history yet for user $customerId → loading default products")
+                                loadProducts()
+                            }
+                        }
+
+                        is GetUserHistoryResult.Error -> {
+                            Timber.e("❌ Failed to load user history: ${historyResult.message}")
+                            _error.value = "Could not fetch history. Showing top products."
+                            loadProducts() // fallback
+                        }
+                    }
+
+                } else {
+                    Timber.d("🟡 Guest user — loading default product list")
+                    loadProducts()
                 }
 
-                is ProductResult.Error -> {
-                    _error.value = result.message
+            } catch (e: Exception) {
+                Timber.e("💥 Unexpected error in loadDynamicProducts: ${e.message}")
+                _error.value = "Connection error. Showing top products."
+                loadProducts()
+            }
+        }
+    }
+
+    // 🔥 Main brain: pipili kung AI reco or normal products
+    fun decideProductSource() {
+        viewModelScope.launch {
+            val customerId = _customerSession.value?.customer?.customerId
+
+            Timber.e("customer id: $customerId")
+
+            if (customerId == null) {
+                // Guest user → walang history, walang AI → default products
+                Timber.d("Guest user → loading default product catalog")
+                loadProducts()
+                return@launch
+            }
+
+            // STEP 1: check user history sa backend
+            when (val historyResult = getUserHistoryUseCase(customerId)) {
+
+                is GetUserHistoryResult.Success -> {
+                    val historyList = historyResult.history
+                    Timber.d("History entries for $customerId: ${historyList.size}")
+
+                    if (historyList.isNotEmpty()) {
+                        Timber.d("📌 History found → using AI RECOMMENDATIONS")
+
+                        // STEP 2: call recommendations API
+                        when (val reco = getRecommendationsUseCase(customerId)) {
+                            is RecommendationResult.Success -> {
+                                _products.value = reco.products
+                                _error.value = null
+                                Timber.d("✅ Loaded ${reco.products.size} recommended products")
+                            }
+
+                            is RecommendationResult.Error -> {
+                                Timber.e("Reco failed: ${reco.message}")
+                                _error.value = "AI temporarily unavailable. Showing default products."
+                                loadProducts() // fallback
+                            }
+                        }
+                    } else {
+                        Timber.d("⭕ No history yet → loading default products")
+                        loadProducts()
+                    }
+                }
+
+                is GetUserHistoryResult.Error -> {
+                    Timber.e("History load failed → ${historyResult.message}")
+                    _error.value = "Could not fetch history. Showing default products."
+                    loadProducts()
                 }
             }
         }
     }
+
+    private fun loadProducts() {
+        viewModelScope.launch {
+            _isProductsLoading.value = true
+            try {
+                when (val result = productsUseCase()) {
+                    is ProductResult.Success -> {
+                        _products.value = result.products
+                        _error.value = null
+                    }
+
+                    is ProductResult.Error -> {
+                        _error.value = result.message
+                    }
+                }
+            } finally {
+                _isProductsLoading.value = false
+            }
+        }
+    }
+
 
     private fun loadRegions() {
         viewModelScope.launch {
@@ -369,45 +553,43 @@ class OrderViewModel @Inject constructor(
     // ---------- BUTTON ACTIONS ----------
 
     fun onHomeClick() {
-//        if (_isLoggedIn.value == true) {
-//            _navigateTo.value = Routes.ORDERS
-//        } else {
-//            _navigateTo.value = Routes.SIGN_IN
-//        }
-        _navigateTo.value = Routes.ORDERS
+        Timber.d("onHomeClick ${_isLoggedIn.value}")
+        if (_isLoggedIn.value == true) {
+            _navigateTo.value = Routes.ORDERS
+        } else {
+            _navigateTo.value = Routes.SIGN_IN
+        }
     }
 
     fun onCategoriesClick() {
-//        val a = _isLoggedIn.value
-//        Timber.e("xxxxxxx: $a" )
-//        if (_isLoggedIn.value == true) {
-//            _navigateTo.value = Routes.CATEGORIES
-//        } else {
-//            _navigateTo.value = Routes.SIGN_IN
-//        }
-        _navigateTo.value = Routes.CATEGORIES
+        Timber.d("onCategoriesClick ${_isLoggedIn.value}")
+        if (_isLoggedIn.value == true) {
+            _navigateTo.value = Routes.CATEGORIES
+        } else {
+            _navigateTo.value = Routes.SIGN_IN
+        }
     }
 
     fun onReorderClick() {
-//        if (_isLoggedIn.value == true) {
-//            //_navigateTo.value = Routes.REORDER
-//        } else {
-//            _navigateTo.value = Routes.SIGN_IN
-//        }
-        //_navigateTo.value = Routes.REORDER // TODO <--- GAWAN MO UI ITO
+        Timber.d("onReorderClick ${_isLoggedIn.value}")
+        if (_isLoggedIn.value == true) {
+            //_navigateTo.value = Routes.REORDER
+        } else {
+            _navigateTo.value = Routes.SIGN_IN
+        }
     }
 
     fun onAccountClick() {
-//        if (_isLoggedIn.value == true) {
-//            _navigateTo.value = Routes.ACCOUNT
-//        } else {
-//            _navigateTo.value = Routes.SIGN_IN
-//        }
-        _navigateTo.value = Routes.ACCOUNT
-
+        Timber.d("onAccountClick ${_isLoggedIn.value}")
+        if (_isLoggedIn.value == true) {
+            _navigateTo.value = Routes.ACCOUNT
+        } else {
+            _navigateTo.value = Routes.SIGN_IN
+        }
     }
 
     fun onSearchClick() {
+        Timber.d("onSearchClick ${_isLoggedIn.value}")
         if (_isLoggedIn.value == true) {
             // do nothing for now
         } else {
@@ -416,6 +598,7 @@ class OrderViewModel @Inject constructor(
     }
 
     fun onViewMoreClick() {
+        Timber.d("onViewMoreClick ${_isLoggedIn.value}")
         if (_isLoggedIn.value == true) {
             // do nothing for now
         } else {
@@ -560,19 +743,119 @@ class OrderViewModel @Inject constructor(
         }
     }
 
+    fun submitCustomer(
+        request: CustomerRegistrationRequest,
+        photoUri: Uri?
+    ) = viewModelScope.launch {
 
-    fun submitCustomer(customerRegistrationRequest: CustomerRegistrationRequest) = viewModelScope.launch {
-        Timber.d("submit customer...")
-//        val details = CustomerDetailsMapper.toCustomerRequest(customerRegistrationRequest)
-//
-//        val identifier = details.mobileNumber.ifBlank { details.email }
-//        val response = updateCustomerUseCase(identifier, details)
-//        if (response.isSuccessful) {
-//            saveCustomerDetailsUseCase.invoke(details) // saved to local
-//            _navigateTo.value = Routes.ORDERS
-//        }
-        _navigateTo.value = Routes.ORDERS
+        try {
+
+            var uploadedUrl: String? = null
+
+            // Upload photo first (if may file)
+            if (photoUri != null) {
+                val filePart = photoUri.toMultipart(context)
+                uploadedUrl = updatePhotoUseCase(filePart)
+            }
+
+            val details = CustomerDetailsMapper.toCustomerRequest(request)
+            details.photoUrl = uploadedUrl ?: ""
+
+            val response = updateCustomerUseCase(details)
+
+            if (response.isSuccessful) {
+
+                saveUserSessionUseCase(true)
+                saveCustomerDetailsUseCase(details)
+
+                _toastState.value = ToastMessage(
+                    "Registration successful",
+                    ToastType.SUCCESS
+                )
+
+                delay(2000)
+                _navigateTo.value = Routes.ORDERS
+            }
+
+        } catch (e: Exception) {
+            val msg = e.message ?: ""
+
+            _toastState.value = when {
+                msg.contains("Customer not found", true) ->
+                    ToastMessage("Customer not found", ToastType.DANGER)
+
+                msg.contains("Email already in use", true) ->
+                    ToastMessage("Email already in use", ToastType.WARNING)
+
+                msg.contains("Mobile number already in use", true) ->
+                    ToastMessage("Mobile number already in use", ToastType.WARNING)
+
+                else -> ToastMessage("Unknown error!", ToastType.DANGER)
+            }
+        }
     }
 
+    fun resetToast() {
+        _toastState.value = null
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        Timber.d("🧹 ViewModel cleared — auto-refresh stopped")
+    }
+
+    // 🔥 recording user interactions (search, add-to-cart, view detail)
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun recordUserInteraction(customerId: Long, keyword: String) {
+        viewModelScope.launch {
+            when (val result = saveUserHistoryUseCase(customerId, keyword)) {
+                is SaveHistoryResult.Success ->
+                    Timber.d("History saved ✅ ($customerId / $keyword)")
+                is SaveHistoryResult.Error ->
+                    Timber.e("Error saving history: ${result.message}")
+            }
+        }
+    }
+
+
+    fun loadCustomerSession() {
+        viewModelScope.launch {
+            val session = apiRepository.getCustomerSession()
+            _customerSession.value = session
+
+            // ⭐ After ma-load session, decide kung default products o AI recommendations
+            decideProductSource()
+        }
+    }
+
+    fun loadRelatedProducts(productId: Long) {
+        viewModelScope.launch {
+            _isRelatedLoading.value = true
+            _related.value = emptyList()
+
+            try {
+                when (val result = getRelatedProductsUseCase(productId)) {
+                    is RelatedProductsResult.Success -> {
+                        _related.value = result.products!!
+                        Timber.d("🎯 Loaded ${result.products.size} related products")
+                    }
+                    is RelatedProductsResult.Error -> {
+                        Timber.e("❌ Related product error: ${result.message}")
+                    }
+                }
+            } finally {
+                _isRelatedLoading.value = false
+            }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun onRecommendedProductAdded(customerId: Long?, keyword: String) {
+        recordUserInteraction(customerId ?: 0L, keyword)
+    }
+
+    fun selectCategory(category: String) {
+        _selectedCategory.value = category
+    }
 
 }

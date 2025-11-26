@@ -3,6 +3,7 @@ package com.nathaniel.carryapp.presentation.ui.compose.signin
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nathaniel.carryapp.data.repository.ApiRepository
+import com.nathaniel.carryapp.domain.usecase.GetUserSessionUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,6 +36,7 @@ data class AutoLoginState(
 
 @HiltViewModel
 class AutoLoginViewModel @Inject constructor(
+    private val getUserSessionUseCase: GetUserSessionUseCase,
     private val repository: ApiRepository
 ) : ViewModel() {
 
@@ -54,9 +56,9 @@ class AutoLoginViewModel @Inject constructor(
             _uiState.update { it.copy(isChecking = true) }
 
             try {
-                val login = repository.getCurrentSession()
+                val userSession = getUserSessionUseCase.invoke()
 
-                if (login == null) {
+                if (!userSession) {
                     // No saved login → go to sign in
                     _uiState.update { it.copy(isChecking = false, isLoggedIn = false) }
                     _eventFlow.emit(AutoLoginEvent.NavigateToSignIn)

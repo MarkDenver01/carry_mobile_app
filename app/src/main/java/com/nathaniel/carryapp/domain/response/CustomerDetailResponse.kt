@@ -10,3 +10,7 @@ data class CustomerDetailResponse(
     val createdDate: String?,
     val accountStatus: String?
 )
+
+data class UploadPhotoResponse(
+    val url: String
+)

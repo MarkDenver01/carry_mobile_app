@@ -4,6 +4,7 @@ import com.nathaniel.carryapp.data.repository.LocalRepository
 import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
 import jakarta.inject.Inject
 
+
 class SaveCustomerDetailsUseCase @Inject constructor(
     private val localRepository: LocalRepository
 ) {

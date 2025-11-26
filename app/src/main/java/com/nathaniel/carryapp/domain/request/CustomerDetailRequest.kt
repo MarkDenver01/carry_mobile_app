@@ -4,6 +4,6 @@ data class CustomerDetailRequest(
     val userName: String,
     val email: String,
     val mobileNumber: String,
-    val photoUrl: String,
+    var photoUrl: String,
     val address: String
 )

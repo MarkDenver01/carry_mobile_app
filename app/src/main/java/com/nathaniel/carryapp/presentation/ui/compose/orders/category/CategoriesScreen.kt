@@ -1,67 +1,78 @@
 package com.nathaniel.carryapp.presentation.ui.compose.orders.category
 
-import com.nathaniel.carryapp.R
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import com.nathaniel.carryapp.domain.mapper.ProductMapper.toShopProduct
 import com.nathaniel.carryapp.domain.model.Category
 import com.nathaniel.carryapp.navigation.Routes
 import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
 import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.ShopBottomBar
 import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.ShopHeader
 import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.ShopSearchBar
+import com.nathaniel.carryapp.presentation.ui.sharedViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoriesScreen(
-    navController: NavController,
-    viewModel: OrderViewModel = hiltViewModel()
+    navController: NavController
 ) {
+    val orderViewModel: OrderViewModel = sharedViewModel()
+    val products by orderViewModel.products.collectAsState()
 
-    // EXAMPLE categories
-    val categories = listOf(
-        Category("Chilled & Frozen", R.drawable.logo_final),
-        Category("Fruits & Vegetables", R.drawable.logo_final),
-        Category("Rice", R.drawable.logo_final),
-        Category("Beverages", R.drawable.logo_final),
-        Category("Snacks & Candies", R.drawable.logo_final),
-        Category("Laundry & Cleaning", R.drawable.logo_final),
-        Category("Cooking & Baking", R.drawable.logo_final),
-        Category("Oats, Cereals, ...", R.drawable.logo_final),
-        Category("Pasta & Noodles", R.drawable.logo_final),
-        Category("Personal Care & Hygiene", R.drawable.logo_final),
-        Category("Eggs & Milk", R.drawable.logo_final),
-        Category("General Supplies", R.drawable.logo_final),
-        Category("Alcohol", R.drawable.logo_final),
-        Category("Baby Needs", R.drawable.logo_final),
-        Category("Bread & Spread", R.drawable.logo_final),
-        Category("Canned Goods", R.drawable.logo_final)
-    )
+    // Convert DOMAIN → UI
+    val shopProducts = products.map { it.toShopProduct() }
+
+    // -------------------------------------
+    // BUILD CATEGORIES FROM REAL PRODUCT DATA
+    // -------------------------------------
+    val categories: List<Category> = shopProducts
+        .groupBy { it.categoryName }
+        .map { (categoryName, items) ->
+            Category(
+                name = categoryName ?: "Others",
+                imageUrl = items.firstOrNull()?.imageUrl
+            )
+        }
+        .sortedBy { it.name }
 
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
 
     Scaffold(
-        topBar = { ShopHeader(notifications = 12, cartCount = 15) },
+        topBar = {
+            ShopHeader(
+                notifications = 12,
+                cartCount = 15,
+                onCartClick = {
+                    navController.navigate(Routes.CART) {
+                        popUpTo(Routes.ORDERS) { inclusive = true }
+                    }
+                },
+                onNotificationClick = {}
+            )
+        },
         bottomBar = {
             ShopBottomBar(
                 onHome = { navController.navigate(Routes.ORDERS) },
                 onCategories = {},
-                onReorder = { viewModel.onReorderClick() },
-                onAccount = { viewModel.onAccountClick() }
+                onReorder = { orderViewModel.onReorderClick() },
+                onAccount = { orderViewModel.onAccountClick() }
             )
         },
         containerColor = Color.White
@@ -73,19 +84,13 @@ fun CategoriesScreen(
                 .fillMaxSize()
         ) {
 
-            // ----------------------------
-            // SEARCH BAR (aligned same as OrderScreen)
-            // ----------------------------
             ShopSearchBar(
                 hint = "I'm looking for…",
                 onSearch = {}
             )
 
-            Spacer(Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-            // ----------------------------
-            // HEADER
-            // ----------------------------
             Text(
                 text = "All Categories",
                 fontSize = 24.sp,
@@ -94,14 +99,11 @@ fun CategoriesScreen(
                 modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
             )
 
-            // ----------------------------
-            // GRID — WITH SAFE HEIGHT
-            // ----------------------------
             LazyVerticalGrid(
                 columns = GridCells.Fixed(3),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = screenHeight * 2), // ⭐ safe, prevents crash
+                    .heightIn(max = screenHeight * 2),
                 contentPadding = PaddingValues(
                     start = 12.dp,
                     end = 12.dp,
@@ -110,16 +112,54 @@ fun CategoriesScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+
                 items(categories) { category ->
                     CategoryCard(
                         title = category.name,
-                        imageRes = category.imageRes,
+                        imageUrl = category.imageUrl,
                         onClick = {
-                            // TODO: Navigate to category list
+                            navController.navigate("${Routes.SORT_PRODUCT_BY_CATEGORY}/${category.name}") {
+                                popUpTo(Routes.CATEGORIES) { inclusive = true }
+                            }
                         }
                     )
                 }
             }
         }
+    }
+}
+
+@Composable
+fun CategoryCard(
+    title: String,
+    imageUrl: String?,
+    onClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .width(100.dp)
+            .padding(4.dp)
+            .clickable { onClick() },
+        horizontalAlignment = Alignment.CenterHorizontally // <-- CENTER CONTENT
+    ) {
+
+        AsyncImage(
+            model = imageUrl,
+            contentDescription = title,
+            modifier = Modifier
+                .height(80.dp)
+                .fillMaxWidth()
+        )
+
+        Spacer(Modifier.height(6.dp))
+
+        Text(
+            text = title,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = Color.Black,
+            textAlign = TextAlign.Center,        // <-- CENTER TEXT
+            modifier = Modifier.fillMaxWidth()   // <-- REQUIRED FOR TEXTALIGN
+        )
     }
 }

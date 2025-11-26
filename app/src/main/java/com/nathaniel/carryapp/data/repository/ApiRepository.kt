@@ -1,5 +1,7 @@
 package com.nathaniel.carryapp.data.repository
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.nathaniel.carryapp.data.local.prefs.TokenManager
 import com.nathaniel.carryapp.data.local.room.entity.CustomerEntity
 import com.nathaniel.carryapp.data.local.room.entity.DriverEntity
@@ -15,11 +17,23 @@ import com.nathaniel.carryapp.domain.model.Barangay
 import com.nathaniel.carryapp.domain.model.City
 import com.nathaniel.carryapp.domain.model.Product
 import com.nathaniel.carryapp.domain.model.Province
+import com.nathaniel.carryapp.domain.request.CashInRequest
 import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
 import com.nathaniel.carryapp.domain.request.LoginResponse
+import com.nathaniel.carryapp.domain.request.UserHistoryRequest
+import com.nathaniel.carryapp.domain.response.CashInInitResponse
 import com.nathaniel.carryapp.domain.response.CustomerDetailResponse
+import com.nathaniel.carryapp.domain.response.ProductCategoryResponse
+import com.nathaniel.carryapp.domain.response.UserHistoryResponse
+import com.nathaniel.carryapp.domain.response.WalletResponse
 import com.nathaniel.carryapp.presentation.utils.NetworkResult
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import okhttp3.MultipartBody
+import okhttp3.internal.http.hasBody
 import retrofit2.Response
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 class ApiRepository @Inject constructor(
@@ -200,9 +214,149 @@ class ApiRepository @Inject constructor(
         loginLocalDataSource.logout()
 
     suspend fun updateCustomer(
-        identifier: String,
         request: CustomerDetailRequest
     ): Response<CustomerDetailResponse> {
-        return remote.updateCustomer(identifier, request)
+        return remote.updateCustomer(request)
     }
+
+    suspend fun uploadCustomerPhoto(file: MultipartBody.Part): String {
+        val response = remote.uploadCustomerPhoto(file)
+
+        if (!response.isSuccessful)
+            throw Exception("Upload failed")
+
+        val body = response.body() ?: throw Exception("No response body")
+
+        return body.url
+    }
+
+    suspend fun cashIn(req: CashInRequest): NetworkResult<CashInInitResponse> {
+        return try {
+            val response = remote.cashIn(req)
+            if (response.isSuccessful) {
+                val body = response.body()!!
+                NetworkResult.Success(HttpStatus.SUCCESS, body)
+            } else {
+                NetworkResult.Error(HttpStatus.ERROR, "Cash In failed")
+            }
+        } catch (e: Exception) {
+            NetworkResult.Error(HttpStatus.ERROR, e.message ?: "Network error")
+        }
+    }
+
+    suspend fun getWalletBalance(mobileNumber: String): NetworkResult<WalletResponse> {
+        return try {
+            val response = remote.getWalletBalance(mobileNumber)
+            if (response.isSuccessful) {
+                val body = response.body()!!
+                NetworkResult.Success(HttpStatus.SUCCESS, body)
+            } else {
+                NetworkResult.Error(HttpStatus.ERROR, "Failed to load wallet")
+            }
+        } catch (e: Exception) {
+            NetworkResult.Error(HttpStatus.ERROR, e.message ?: "Network error")
+        }
+    }
+
+    suspend fun getRecommendations(customerId: Long): NetworkResult<List<Product>> {
+        return try {
+            val response = remote.getRecommendations(customerId)
+            if (response.isSuccessful) {
+                val body = response.body().orEmpty()
+                NetworkResult.Success(
+                    HttpStatus.SUCCESS,
+                    body.map { ProductMapper.toDomain(it) }
+                )
+            } else {
+                NetworkResult.Error(HttpStatus.ERROR, "Failed to load recommendations")
+            }
+        } catch (e: Exception) {
+            NetworkResult.Error(HttpStatus.ERROR, e.message ?: "Network error (reco)")
+        }
+    }
+
+    // 🔹 Save user history
+    @RequiresApi(Build.VERSION_CODES.O)
+    suspend fun saveUserHistory(customerId: Long, keyword: String): NetworkResult<Unit> {
+        return try {
+            val now = LocalDateTime.now()
+            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
+
+            val body = UserHistoryRequest(
+                customerId = customerId,
+                productKeyword = keyword,
+                dateTime = now.format(formatter) // string: 2025-11-26T14:34:02
+            )
+
+            val response = remote.saveUserHistory(body)
+            if (response.isSuccessful) {
+                NetworkResult.Success(HttpStatus.SUCCESS, Unit)
+            } else {
+                NetworkResult.Error(HttpStatus.ERROR, "Failed to save history")
+            }
+        } catch (e: Exception) {
+            NetworkResult.Error(HttpStatus.ERROR, e.message ?: "Network error (save history)")
+        }
+    }
+
+    // 🔹 Get user history
+    suspend fun getUserHistory(customerId: Long): NetworkResult<List<UserHistoryResponse>> {
+        return try {
+            val response = remote.getUserHistory(customerId)
+            if (response.isSuccessful) {
+                NetworkResult.Success(
+                    HttpStatus.SUCCESS,
+                    response.body().orEmpty()
+                )
+            } else {
+                NetworkResult.Error(HttpStatus.ERROR, "Failed to load history")
+            }
+        } catch (e: Exception) {
+            NetworkResult.Error(HttpStatus.ERROR, e.message ?: "Network error (get history)")
+        }
+    }
+
+    suspend fun getRelatedProducts(productId: Long): NetworkResult<List<Product>> {
+        return try {
+            val res = remote.getRelatedProducts(productId)
+            if (res.isSuccessful) {
+                val body = res.body().orEmpty()
+                NetworkResult.Success(
+                    HttpStatus.SUCCESS,
+                    body.map { ProductMapper.toDomain(it) }
+                )
+            } else {
+                NetworkResult.Error(HttpStatus.ERROR, "Failed to load related products")
+            }
+        } catch (e: Exception) {
+            NetworkResult.Error(HttpStatus.ERROR, e.message ?: "Network error (related)")
+        }
+    }
+
+    suspend fun getAllCategory(): NetworkResult<ProductCategoryResponse> {
+        return try {
+            val res = remote.getAllCategory()   // this calls apiService.getAllCategories()
+
+            if (res.isSuccessful) {
+                val body = res.body()
+                if (body != null) {
+                    NetworkResult.Success(
+                        HttpStatus.SUCCESS,
+                        body
+                    )
+                } else {
+                    NetworkResult.Error(HttpStatus.ERROR, "Empty response body")
+                }
+            } else {
+                NetworkResult.Error(HttpStatus.ERROR, "Failed to load categories (HTTP ${res.code()})")
+            }
+
+        } catch (e: Exception) {
+            NetworkResult.Error(
+                HttpStatus.ERROR,
+                e.message ?: "Network error while loading categories"
+            )
+        }
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.nathaniel.carryapp.presentation.utils
 
 import android.app.DatePickerDialog
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
@@ -44,6 +45,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -82,9 +84,12 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.nathaniel.carryapp.R
 import com.nathaniel.carryapp.domain.enum.AlertType
 import com.nathaniel.carryapp.domain.enum.ButtonVariants
+import com.nathaniel.carryapp.domain.enum.ToastType
 import com.nathaniel.carryapp.presentation.theme.LocalAppColors
 import com.nathaniel.carryapp.presentation.theme.LocalAppSpacing
 import com.nathaniel.carryapp.presentation.theme.LocalResponsiveSizes
+import com.nathaniel.carryapp.presentation.ui.compose.orders.ToastMessage
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -965,6 +970,84 @@ fun SweetAlertDialog(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun CustomToast(
+    toastMessage: ToastMessage?,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    if (toastMessage == null) return
+
+    val backgroundColor = when (toastMessage.type) {
+        ToastType.SUCCESS -> Color(0xFF4CAF50)
+        ToastType.INFO    -> Color(0xFF2196F3)
+        ToastType.WARNING -> Color(0xFFFFC107)
+        ToastType.DANGER  -> Color(0xFFF44336)
+    }
+
+    val iconRes = when (toastMessage.type) {
+        ToastType.SUCCESS -> R.drawable.ic_success_toast
+        ToastType.INFO    -> R.drawable.ic_info_toast
+        ToastType.WARNING -> R.drawable.ic_warning_toast
+        ToastType.DANGER  -> R.drawable.ic_error_toast
+    }
+
+    LaunchedEffect(toastMessage) {
+        delay(2500)
+        onDismiss()
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        contentAlignment = Alignment.TopCenter
+    ) {
+        Card(
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(containerColor = backgroundColor),
+            modifier = Modifier.padding(top = 50.dp)
+        ) {
+            Row(
+                Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    painter = painterResource(id = iconRes),
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(20.dp)
+                )
+
+                Spacer(modifier = Modifier.width(10.dp))
+
+                Text(
+                    text = toastMessage.message,
+                    color = Color.White,
+                    fontSize = 14.sp
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun LoadingOverlay(isLoading: Boolean) {
+    if (isLoading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.35f)),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(
+                color = Color.White,
+                strokeWidth = 4.dp
+            )
         }
     }
 }

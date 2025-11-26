@@ -8,7 +8,6 @@ class UpdateCustomerUseCase @Inject constructor(
     private val repository: ApiRepository
 ) {
     suspend operator fun invoke(
-        identifier: String,
         request: CustomerDetailRequest
-    ) = repository.updateCustomer(identifier, request)
+    ) = repository.updateCustomer(request)
 }

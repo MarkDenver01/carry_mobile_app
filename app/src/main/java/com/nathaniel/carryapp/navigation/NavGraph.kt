@@ -1,5 +1,8 @@
 package com.nathaniel.carryapp.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
@@ -15,8 +18,15 @@ import com.nathaniel.carryapp.presentation.ui.compose.membership.apply.SukiMembe
 import com.nathaniel.carryapp.presentation.ui.compose.membership.payment.SubscriptionScreen
 import com.nathaniel.carryapp.presentation.ui.compose.membership.view.ViewMembershipScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.account.AccountScreen
+import com.nathaniel.carryapp.presentation.ui.compose.orders.account.CashInFailedScreen
+import com.nathaniel.carryapp.presentation.ui.compose.orders.account.CashInScreen
+import com.nathaniel.carryapp.presentation.ui.compose.orders.account.CashInSuccessScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.account.CustomerRegistrationScreen
+import com.nathaniel.carryapp.presentation.ui.compose.orders.account.CustomerViewModel
+import com.nathaniel.carryapp.presentation.ui.compose.orders.cart.CartScreen
+import com.nathaniel.carryapp.presentation.ui.compose.orders.cart.CheckoutScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.category.CategoriesScreen
+import com.nathaniel.carryapp.presentation.ui.compose.orders.category.CategoryFilteredProductScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.location.DeliveryAddressScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.location.LocationConfirmationScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.shopping.ShoppingScreen
@@ -126,6 +136,7 @@ fun NavGraphBuilder.membershipGraph(navController: NavController) {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 fun NavGraphBuilder.orderGraph(navController: NavController) {
     composable(Routes.ORDERS) {
         OrderScreen(navController = navController)
@@ -149,12 +160,46 @@ fun NavGraphBuilder.orderGraph(navController: NavController) {
         CategoriesScreen(navController = navController)
     }
 
+    composable(
+        route = "${Routes.SORT_PRODUCT_BY_CATEGORY}/{categoryName}"
+    ) { backStackEntry ->
+
+        val categoryName = backStackEntry.arguments?.getString("categoryName") ?: ""
+
+        CategoryFilteredProductScreen(
+            navController = navController,
+            categoryName = categoryName
+        )
+    }
+
     composable(Routes.ACCOUNT) {
         AccountScreen(navController = navController)
     }
 
+    composable(Routes.CASH_IN) {
+        CashInScreen(navController = navController)
+    }
+
     composable(Routes.CUSTOMER_DETAIL) {
         CustomerRegistrationScreen(navController = navController)
+    }
+
+    composable(Routes.CASH_IN_SUCCESS) {
+        CashInSuccessScreen(
+            navController = navController
+        )
+    }
+
+    composable(Routes.CASH_IN_FAILED) {
+        CashInFailedScreen(navController = navController)
+    }
+
+    composable(Routes.CART) {
+        CartScreen(navController = navController)
+    }
+
+    composable(Routes.CHECKOUT) {
+        CheckoutScreen(navController = navController)
     }
 }
 

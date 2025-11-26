@@ -35,4 +35,7 @@ object DatabaseModule {
 
     @Provides
     fun provideDeliveryAddressDao(db: CarryDatabase) = db.deliveryAddressDao()
+
+    @Provides
+    fun provideCartDao(db: CarryDatabase) = db.cartDao()
 }
