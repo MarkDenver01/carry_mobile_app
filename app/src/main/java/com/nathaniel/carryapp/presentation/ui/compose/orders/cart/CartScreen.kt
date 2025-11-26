@@ -52,7 +52,11 @@ fun CartScreen(
                     navigationIconContentColor = Color.White
                 ),
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = {
+                        navController.navigate(Routes.ORDERS) {
+                            popUpTo(Routes.CART) { inclusive = false }
+                        }
+                    }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = null)
                     }
                 },

@@ -28,4 +28,6 @@ class CartLocalDataSourceImpl @Inject constructor(
     override suspend fun getProductQty(productId: Long): Int {
         return cartDao.getProductQty(productId)
     }
+
+    override suspend fun clearAll() = cartDao.clearAll()
 }

@@ -16,6 +16,8 @@ import com.nathaniel.carryapp.domain.datasource.CartLocalDataSource
 import com.nathaniel.carryapp.domain.datasource.LoginLocalDataSource
 import com.nathaniel.carryapp.domain.usecase.AddToCartUseCase
 import com.nathaniel.carryapp.domain.usecase.CashInUseCase
+import com.nathaniel.carryapp.domain.usecase.CheckoutUseCase
+import com.nathaniel.carryapp.domain.usecase.ClearCartUseCase
 import com.nathaniel.carryapp.domain.usecase.ForwardGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.GetAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.GetAllCategoryUseCase
@@ -270,4 +272,16 @@ object AppModule {
     fun provideGetAllCategoryUseCase(
         apiRepository: ApiRepository
     ): GetAllCategoryUseCase = GetAllCategoryUseCase(apiRepository)
+
+    @Provides
+    @Singleton
+    fun provideCheckOutUseCase(
+        apiRepository: ApiRepository
+    ): CheckoutUseCase = CheckoutUseCase(apiRepository)
+
+    @Provides
+    @Singleton
+    fun provideClearCartUseCase(
+        localRepository: LocalRepository
+    ): ClearCartUseCase = ClearCartUseCase(localRepository)
 }

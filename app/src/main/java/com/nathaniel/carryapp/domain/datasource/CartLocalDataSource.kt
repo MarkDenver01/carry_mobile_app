@@ -9,4 +9,7 @@ interface CartLocalDataSource {
     suspend fun getGroupedItems(): List<CartGroupEntity>
 
     suspend fun getProductQty(productId: Long): Int
+
+    suspend fun clearAll()
+
 }

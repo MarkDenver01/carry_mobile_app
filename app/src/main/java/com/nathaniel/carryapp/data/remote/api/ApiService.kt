@@ -1,12 +1,14 @@
 package com.nathaniel.carryapp.data.remote.api
 
 import com.nathaniel.carryapp.domain.request.CashInRequest
+import com.nathaniel.carryapp.domain.request.CheckoutRequest
 import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
 import com.nathaniel.carryapp.domain.request.LoginResponse
 import com.nathaniel.carryapp.domain.request.MobileRequest
 import com.nathaniel.carryapp.domain.request.UserHistoryRequest
 import com.nathaniel.carryapp.domain.response.CashInInitResponse
 import com.nathaniel.carryapp.domain.response.CustomerDetailResponse
+import com.nathaniel.carryapp.domain.response.OrderResponse
 import com.nathaniel.carryapp.domain.response.ProductCategoryResponse
 import com.nathaniel.carryapp.domain.response.ProductResponse
 import com.nathaniel.carryapp.domain.response.UploadPhotoResponse
@@ -90,4 +92,8 @@ interface ApiService {
     @GET("/user/public/all/product_category")
     suspend fun getAllCategories(): Response<ProductCategoryResponse>
 
+    @POST("user/public/api/orders/checkout")
+    suspend fun checkout(
+        @Body request: CheckoutRequest
+    ): Response<OrderResponse>
 }

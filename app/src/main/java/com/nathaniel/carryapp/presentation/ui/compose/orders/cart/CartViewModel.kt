@@ -4,11 +4,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nathaniel.carryapp.domain.model.CartDisplayItem
 import com.nathaniel.carryapp.domain.model.Product
+import com.nathaniel.carryapp.domain.request.CheckoutRequest
+import com.nathaniel.carryapp.domain.response.OrderResponse
 import com.nathaniel.carryapp.domain.usecase.AddToCartUseCase
+import com.nathaniel.carryapp.domain.usecase.CheckoutUseCase
+import com.nathaniel.carryapp.domain.usecase.ClearCartUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCartCountUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCartSummaryUseCase
 import com.nathaniel.carryapp.domain.usecase.RemoveFromCartUseCase
 import com.nathaniel.carryapp.presentation.ui.compose.orders.CartSummary
+import com.nathaniel.carryapp.presentation.utils.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,8 +26,10 @@ class CartViewModel @Inject constructor(
     private val addToCartUseCase: AddToCartUseCase,
     private val removeFromCartUseCase: RemoveFromCartUseCase,
     private val getCartCountUseCase: GetCartCountUseCase,
-    private val getCartSummaryUseCase: GetCartSummaryUseCase
-): ViewModel() {
+    private val getCartSummaryUseCase: GetCartSummaryUseCase,
+    private val checkoutUseCase: CheckoutUseCase,
+    private val clearCartUseCase: ClearCartUseCase
+) : ViewModel() {
     private val _products = MutableStateFlow<List<Product>>(emptyList())
     val products: StateFlow<List<Product>> = _products.asStateFlow()
 
@@ -34,6 +41,9 @@ class CartViewModel @Inject constructor(
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    private val _checkoutState = MutableStateFlow<NetworkResult<OrderResponse>?>(null)
+    val checkoutState = _checkoutState
 
     init {
         // para may initial value agad pag pumasok sa app
@@ -106,6 +116,22 @@ class CartViewModel @Inject constructor(
     fun removeProductOriginalDomain(productId: Long) {
         viewModelScope.launch {
             removeFromCartUseCase(productId)
+            refreshCart()
+        }
+    }
+
+    fun checkout(request: CheckoutRequest) {
+        viewModelScope.launch {
+            _checkoutState.value = NetworkResult.Loading()
+
+            val result = checkoutUseCase(request)
+            _checkoutState.value = result
+        }
+    }
+
+    fun clearCart() {
+        viewModelScope.launch {
+            clearCartUseCase.invoke()   // you must add this in usecase/repository
             refreshCart()
         }
     }

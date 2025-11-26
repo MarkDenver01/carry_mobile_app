@@ -38,5 +38,8 @@ interface CartDao {
     """
     )
     suspend fun getGrouped(): List<CartGroupEntity>
+
+    @Query("DELETE FROM cart_items")
+    suspend fun clearAll()
 }
 

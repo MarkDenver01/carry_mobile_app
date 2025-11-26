@@ -1,6 +1,7 @@
 package com.nathaniel.carryapp.domain.datasource
 
 import com.nathaniel.carryapp.domain.request.CashInRequest
+import com.nathaniel.carryapp.domain.request.CheckoutRequest
 import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
 import com.nathaniel.carryapp.domain.request.LoginResponse
 import com.nathaniel.carryapp.domain.request.UserHistoryRequest
@@ -8,6 +9,7 @@ import com.nathaniel.carryapp.domain.response.BarangayResponse
 import com.nathaniel.carryapp.domain.response.CashInInitResponse
 import com.nathaniel.carryapp.domain.response.CityResponse
 import com.nathaniel.carryapp.domain.response.CustomerDetailResponse
+import com.nathaniel.carryapp.domain.response.OrderResponse
 import com.nathaniel.carryapp.domain.response.ProductCategoryResponse
 import com.nathaniel.carryapp.domain.response.ProductResponse
 import com.nathaniel.carryapp.domain.response.ProvinceResponse
@@ -47,4 +49,6 @@ interface AuthRemoteDatasource {
     suspend fun getRelatedProducts(productId: Long): Response<List<ProductResponse>>
 
     suspend fun getAllCategory(): Response<ProductCategoryResponse>
+
+    suspend fun checkOUt(request: CheckoutRequest): Response<OrderResponse>
 }

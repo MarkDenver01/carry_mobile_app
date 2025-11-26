@@ -89,4 +89,6 @@ class LocalRepository @Inject constructor(
             CartSummary(productId = g.productId, qty = g.qty)
         }
     }
+
+    suspend fun clearAll() = cartLocalDataSource.clearAll()
 }
