@@ -29,7 +29,6 @@ import com.nathaniel.carryapp.domain.request.CheckoutRequest
 import com.nathaniel.carryapp.navigation.Routes
 import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
 import com.nathaniel.carryapp.presentation.ui.compose.orders.account.CustomerViewModel
-import com.nathaniel.carryapp.presentation.ui.compose.orders.cart.CartViewModel
 import com.nathaniel.carryapp.presentation.ui.sharedViewModel
 import com.nathaniel.carryapp.presentation.utils.NetworkResult
 import com.nathaniel.carryapp.presentation.utils.SweetAlertDialog
@@ -48,7 +47,8 @@ fun CheckoutScreen(
     var selectedPayment by remember { mutableStateOf("COD") }
     val walletBalance by customerViewModel.walletBalance.collectAsState()
     var showConfirmDialog by remember { mutableStateOf(false) }
-    var showDialog by remember { mutableStateOf(false) }
+    var showDialogErrorPayment by remember { mutableStateOf(false) }
+    var showDialogSuccessPayment by remember { mutableStateOf(false) }
 
     val total = cartItems.sumOf { it.subtotal }
 
@@ -62,22 +62,11 @@ fun CheckoutScreen(
                 }
 
                 is NetworkResult.Success -> {
-                    // Wallet deduction
-                    if (selectedPayment == "WALLET") {
-                        customerViewModel.refreshWallet()
-                    }
-
-                    // Clear cart after successful checkout
-                    cartViewModel.clearCart()
-
-                    // Navigate to success screen
-                    navController.navigate(Routes.ORDERS) {
-                        popUpTo(Routes.CHECKOUT) { inclusive = true }
-                    }
+                    showDialogSuccessPayment = true
                 }
 
                 is NetworkResult.Error -> {
-                    showDialog = true
+                    showDialogErrorPayment = true
                 }
 
                 else -> Unit
@@ -206,21 +195,42 @@ fun CheckoutScreen(
         }
     }
 
-    if (showDialog) {
+    if (showDialogSuccessPayment) {
         SweetAlertDialog(
-            type = AlertType.WARNING,
-            title = "Error",
-            message = "There is an error encounter. Please try again.",
-            show = showDialog,
-            confirmText = "Yes",
-            dismissText = "Cancel",
-            isSingleButton = false,
+            type = AlertType.SUCCESS,
+            title = "Payment Success",
+            message = "Payment has been successful. Will be notified you regarding your order.",
+            show = showDialogSuccessPayment,
+            confirmText = "Close",
+            isSingleButton = true,
             onConfirm = {
-                showDialog = false
+                showDialogSuccessPayment = false
+                // Wallet deduction
+                if (selectedPayment == "WALLET") {
+                    customerViewModel.refreshWallet()
+                }
+
+                // Clear cart after successful checkout
+                cartViewModel.clearCart()
+
+                // Navigate to success screen
+                navController.navigate(Routes.ORDERS) {
+                    popUpTo(Routes.CHECKOUT) { inclusive = true }
+                }
+            })
+    }
+
+    if (showDialogErrorPayment) {
+        SweetAlertDialog(
+            type = AlertType.ERROR,
+            title = "Error",
+            message = "There is an unexpected error occur during the payment.",
+            show = showDialogErrorPayment,
+            confirmText = "Close",
+            isSingleButton = true,
+            onConfirm = {
+                showDialogErrorPayment = false
                 // Perform your action here
-            },
-            onDismiss = {
-                showDialog = false
             })
     }
 
