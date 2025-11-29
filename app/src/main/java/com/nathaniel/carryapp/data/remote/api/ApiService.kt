@@ -3,6 +3,7 @@ package com.nathaniel.carryapp.data.remote.api
 import com.nathaniel.carryapp.domain.request.CashInRequest
 import com.nathaniel.carryapp.domain.request.CheckoutRequest
 import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
+import com.nathaniel.carryapp.domain.request.DriverLocationUpdateRequest
 import com.nathaniel.carryapp.domain.request.LoginResponse
 import com.nathaniel.carryapp.domain.request.MobileRequest
 import com.nathaniel.carryapp.domain.request.UpdateWalletBalanceRequest
@@ -110,4 +111,7 @@ interface ApiService {
     suspend fun checkout(
         @Body request: CheckoutRequest
     ): Response<OrderResponse>
+
+    @POST("/api/driver/location")
+    suspend fun updateLocation(@Body driverLocationUpdateRequest: DriverLocationUpdateRequest)
 }

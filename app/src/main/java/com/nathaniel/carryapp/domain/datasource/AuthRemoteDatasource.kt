@@ -3,6 +3,7 @@ package com.nathaniel.carryapp.domain.datasource
 import com.nathaniel.carryapp.domain.request.CashInRequest
 import com.nathaniel.carryapp.domain.request.CheckoutRequest
 import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
+import com.nathaniel.carryapp.domain.request.DriverLocationUpdateRequest
 import com.nathaniel.carryapp.domain.request.LoginResponse
 import com.nathaniel.carryapp.domain.request.UpdateWalletBalanceRequest
 import com.nathaniel.carryapp.domain.request.UserHistoryRequest
@@ -56,4 +57,6 @@ interface AuthRemoteDatasource {
     suspend fun updateWallet(request: UpdateWalletBalanceRequest): Response<WalletResponse>
 
     suspend fun getCustomerWalletBalance(mobileNumber: String): Response<WalletResponse>
+
+    suspend fun updateDriverLocation(dto: DriverLocationUpdateRequest)
 }

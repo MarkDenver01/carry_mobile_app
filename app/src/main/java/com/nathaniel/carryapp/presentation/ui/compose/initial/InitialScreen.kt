@@ -1,5 +1,6 @@
 package com.nathaniel.carryapp.presentation.ui.compose.initial
 
+import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -10,10 +11,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.nathaniel.carryapp.R
@@ -21,6 +24,8 @@ import com.nathaniel.carryapp.navigation.Routes
 import com.nathaniel.carryapp.presentation.theme.BgApp
 import com.nathaniel.carryapp.presentation.theme.LocalAppSpacing
 import com.nathaniel.carryapp.presentation.theme.LocalResponsiveSizes
+import com.nathaniel.carryapp.presentation.ui.service.DriverLocationScheduler
+import com.nathaniel.carryapp.presentation.ui.service.DriverLocationService
 import com.nathaniel.carryapp.presentation.utils.DynamicButton
 import kotlinx.coroutines.delay
 
@@ -29,6 +34,7 @@ fun InitialScreen(
     navController: NavController,
     viewModel: InitialViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     // Observe navigation flow
     LaunchedEffect(Unit) {
         viewModel.navigateToDashboard.collect {
@@ -90,7 +96,12 @@ fun InitialScreen(
             DynamicButton(
                 onClick = {
                     pressed = true
-                    viewModel.onGetStartedClicked()
+                    //viewModel.onGetStartedClicked()
+//                    val intent = Intent(context, DriverLocationService::class.java).apply {
+//                        action = "START_DRIVER_SERVICE"
+//                    }
+//                    ContextCompat.startForegroundService(context, intent)
+                    DriverLocationScheduler.start(context)
                 },
                 height = sizes.buttonHeight,
                 fontSize = sizes.buttonFontSize,

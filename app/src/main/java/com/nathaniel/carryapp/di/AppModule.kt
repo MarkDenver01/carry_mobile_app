@@ -43,6 +43,7 @@ import com.nathaniel.carryapp.domain.usecase.SaveUserHistoryUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveUserSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.UpdateAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.UpdateCustomerUseCase
+import com.nathaniel.carryapp.domain.usecase.UpdateDriverLocationUseCase
 import com.nathaniel.carryapp.domain.usecase.UploadCustomerPhotoUseCase
 import com.nathaniel.carryapp.domain.usecase.VerifyOtpUseCase
 import dagger.Module
@@ -284,4 +285,10 @@ object AppModule {
     fun provideClearCartUseCase(
         localRepository: LocalRepository
     ): ClearCartUseCase = ClearCartUseCase(localRepository)
+
+    @Provides
+    @Singleton
+    fun provideUpdateDriverLocationUseCase(
+        repository: ApiRepository
+    ): UpdateDriverLocationUseCase = UpdateDriverLocationUseCase(repository)
 }

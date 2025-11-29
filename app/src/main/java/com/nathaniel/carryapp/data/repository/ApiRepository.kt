@@ -20,6 +20,7 @@ import com.nathaniel.carryapp.domain.model.Province
 import com.nathaniel.carryapp.domain.request.CashInRequest
 import com.nathaniel.carryapp.domain.request.CheckoutRequest
 import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
+import com.nathaniel.carryapp.domain.request.DriverLocationUpdateRequest
 import com.nathaniel.carryapp.domain.request.LoginResponse
 import com.nathaniel.carryapp.domain.request.UpdateWalletBalanceRequest
 import com.nathaniel.carryapp.domain.request.UserHistoryRequest
@@ -420,6 +421,9 @@ class ApiRepository @Inject constructor(
             )
         }
     }
+
+    suspend fun updateDriverLocation(request: DriverLocationUpdateRequest) =
+        remote.updateDriverLocation(request)
 
 
 }

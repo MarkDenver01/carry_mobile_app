@@ -7,8 +7,14 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+
+    <!-- Required for Android 13+ -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
+
 
     <application
         android:name=".MainApplication"
@@ -57,7 +63,15 @@
             </intent-filter>
 
         </activity>
+        <receiver
+            android:name=".presentation.ui.service.DriverLocationReceiver"
+            android:exported="false" />
 
+        <service
+            android:name=".presentation.ui.service.DriverLocationService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="location"/>
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
