@@ -31,6 +31,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.nathaniel.carryapp.R
 import com.nathaniel.carryapp.navigation.Routes
 import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
+import com.nathaniel.carryapp.presentation.ui.compose.orders.cart.CartViewModel
 import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.ShopBottomBar
 import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.ShopHeader
 import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.ShopSearchBar
@@ -43,24 +44,20 @@ import com.nathaniel.carryapp.presentation.utils.LoadingOverlay
 fun AccountScreen(navController: NavController) {
     val customerViewModel: CustomerViewModel = sharedViewModel()
     val orderViewModel: OrderViewModel = sharedViewModel()
+    val cartViewModel: CartViewModel = sharedViewModel()
     val walletBalance by customerViewModel.walletBalance.collectAsState()
     val customer = customerViewModel.customerDetails.collectAsState().value
     val isLoading by customerViewModel.isLoading.collectAsState()
+    val cartCount by cartViewModel.cartCount.collectAsState()
 
     Scaffold(
         containerColor = Color(0xFFF7F8FA),
         topBar = {
             ShopHeader(
                 notifications = 12,
-                cartCount = 15,
-                onCartClick = {
-                    navController.navigate(Routes.CART) {
-                        popUpTo(Routes.ORDERS) { inclusive = true }
-                    }
-                },
-                onNotificationClick = {
-
-                }
+                cartCount = cartCount,
+                onCartClick = { navController.navigate(Routes.CART) },
+                onNotificationClick = {}
             )
         },
         bottomBar = {
