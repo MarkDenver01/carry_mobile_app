@@ -16,7 +16,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.airbnb.lottie.compose.*
@@ -41,7 +43,9 @@ fun SignInScreen(
     val colors = LocalAppColors.current
     val spacing = LocalAppSpacing.current
     val typography = LocalAppTypography.current
-    val sizes = LocalResponsiveSizes.current
+    val sizes = LocalResponsiveSizes.current.copy(
+        titleFontSize = 22.sp // 🔥 recommended max for phones
+    )
 
     var mobileNumberOrEmailAddress by remember { mutableStateOf("") }
 
@@ -142,6 +146,7 @@ fun SignInScreen(
                 ) {
 
                     Column(
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
 
@@ -150,7 +155,12 @@ fun SignInScreen(
                             fontSize = sizes.titleFontSize,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF1A1A1A),
-                            modifier = Modifier.padding(bottom = spacing.sm)
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 24.dp),
+                            softWrap = true,
+                            maxLines = Int.MAX_VALUE
                         )
 
                         Text(
@@ -199,8 +209,8 @@ fun SignInScreen(
 
                         Text(
                             text = "Forgot Password?",
-                            color = Color(0xFF1A1A1A),
-                            fontSize = sizes.buttonFontSize,
+                            color = Color(0xFF009807),
+                            fontSize = 14.sp,
                             modifier = Modifier.clickable {
                                 navController.navigate(Routes.FORGOT_PASSWORD)
                             }

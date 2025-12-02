@@ -39,4 +39,6 @@ object Routes {
     const val CART = "my_cart"
 
     const val CHECKOUT = "check_out"
+
+    const val CUSTOMER_REG_SUCCESS = "customer_registration_success"
 }

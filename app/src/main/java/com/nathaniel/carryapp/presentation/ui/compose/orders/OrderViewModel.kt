@@ -769,14 +769,7 @@ class OrderViewModel @Inject constructor(
 
                 saveUserSessionUseCase(true)
                 saveCustomerDetailsUseCase(details)
-
-                _toastState.value = ToastMessage(
-                    "Registration successful",
-                    ToastType.SUCCESS
-                )
-
-                delay(2000)
-                _navigateTo.value = Routes.ORDERS
+                _navigateTo.value = Routes.CUSTOMER_REG_SUCCESS
             }
 
         } catch (e: Exception) {
@@ -861,6 +854,10 @@ class OrderViewModel @Inject constructor(
 
     fun selectCategory(category: String) {
         _selectedCategory.value = category
+    }
+
+    fun navigateToSuccess() {
+        _navigateTo.value = Routes.CUSTOMER_REG_SUCCESS
     }
 
 }

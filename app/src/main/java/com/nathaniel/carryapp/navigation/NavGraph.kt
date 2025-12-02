@@ -1,5 +1,6 @@
 package com.nathaniel.carryapp.navigation
 
+import SignUpSuccessScreen
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -201,6 +202,18 @@ fun NavGraphBuilder.orderGraph(navController: NavController) {
     composable(Routes.CHECKOUT) {
         CheckoutScreen(navController = navController)
     }
+
+    composable(Routes.CUSTOMER_REG_SUCCESS) {
+        SignUpSuccessScreen(
+            onProceed = {
+                navController.navigate(Routes.ORDERS) {
+                    popUpTo(Routes.CUSTOMER_REG_SUCCESS) { inclusive = true }
+                }
+            },
+            onBack = { navController.popBackStack() }
+        )
+    }
+
 }
 
 fun NavGraphBuilder.shoppingGraph(navController: NavController) {

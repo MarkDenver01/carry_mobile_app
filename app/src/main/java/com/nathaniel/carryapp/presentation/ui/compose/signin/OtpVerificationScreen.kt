@@ -23,15 +23,17 @@ import com.nathaniel.carryapp.presentation.theme.LocalAppColors
 import com.nathaniel.carryapp.presentation.theme.LocalAppSpacing
 import com.nathaniel.carryapp.presentation.theme.LocalAppTypography
 import com.nathaniel.carryapp.presentation.theme.LocalResponsiveSizes
+import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
+import com.nathaniel.carryapp.presentation.ui.sharedViewModel
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OtpVerificationScreen(
     navController: NavController,
-    mobileNumber: String? = "",
-    viewModel: SignInViewModel = hiltViewModel()
+    mobileNumber: String? = ""
 ) {
+    val viewModel: SignInViewModel = sharedViewModel()
     val uiState by viewModel.uiState.collectAsState()
     var otpCode by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }

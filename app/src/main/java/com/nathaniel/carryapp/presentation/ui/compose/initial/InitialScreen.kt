@@ -96,12 +96,8 @@ fun InitialScreen(
             DynamicButton(
                 onClick = {
                     pressed = true
-                    //viewModel.onGetStartedClicked()
-//                    val intent = Intent(context, DriverLocationService::class.java).apply {
-//                        action = "START_DRIVER_SERVICE"
-//                    }
-//                    ContextCompat.startForegroundService(context, intent)
-                    DriverLocationScheduler.start(context)
+                    viewModel.onGetStartedClicked()
+                    //DriverLocationScheduler.start(context)
                 },
                 height = sizes.buttonHeight,
                 fontSize = sizes.buttonFontSize,
