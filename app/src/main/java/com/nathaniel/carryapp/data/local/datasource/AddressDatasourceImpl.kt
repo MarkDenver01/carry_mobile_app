@@ -2,12 +2,12 @@ package com.nathaniel.carryapp.data.local.datasource
 
 import com.nathaniel.carryapp.data.local.room.dao.DeliveryAddressDao
 import com.nathaniel.carryapp.data.local.room.entity.DeliveryAddressEntity
-import com.nathaniel.carryapp.domain.datasource.AddressLocalDataSource
+import com.nathaniel.carryapp.domain.datasource.AddressDatasource
 import jakarta.inject.Inject
 
-class AddressLocalDataSourceImpl @Inject constructor(
+class AddressDatasourceImpl @Inject constructor(
     private val dao: DeliveryAddressDao
-) : AddressLocalDataSource {
+) : AddressDatasource {
 
     override suspend fun save(address: DeliveryAddressEntity) {
         dao.saveAddress(address)

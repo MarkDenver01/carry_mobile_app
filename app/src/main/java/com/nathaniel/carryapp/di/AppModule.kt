@@ -1,19 +1,18 @@
 package com.nathaniel.carryapp.di
 
-import androidx.room.Update
-import com.nathaniel.carryapp.data.local.datasource.CartLocalDataSourceImpl
-import com.nathaniel.carryapp.data.local.datasource.LoginLocalDataSourceImpl
+import com.nathaniel.carryapp.data.local.datasource.CartDatasourceImpl
+import com.nathaniel.carryapp.data.local.datasource.LoginDatasourceImpl
 import com.nathaniel.carryapp.data.local.prefs.TokenManager
 import com.nathaniel.carryapp.data.remote.api.ApiService
 import com.nathaniel.carryapp.data.remote.api.PsgcApiService
-import com.nathaniel.carryapp.data.remote.datasource.AuthImplRemoteDataSource
+import com.nathaniel.carryapp.data.remote.datasource.ApiDatasourceImpl
 import com.nathaniel.carryapp.data.repository.ApiRepository
 import com.nathaniel.carryapp.data.repository.GeocodingRepository
 import com.nathaniel.carryapp.data.repository.LocalRepository
-import com.nathaniel.carryapp.domain.datasource.AddressLocalDataSource
-import com.nathaniel.carryapp.domain.datasource.AuthRemoteDatasource
-import com.nathaniel.carryapp.domain.datasource.CartLocalDataSource
-import com.nathaniel.carryapp.domain.datasource.LoginLocalDataSource
+import com.nathaniel.carryapp.domain.datasource.AddressDatasource
+import com.nathaniel.carryapp.domain.datasource.ApiDatasource
+import com.nathaniel.carryapp.domain.datasource.CartDatasource
+import com.nathaniel.carryapp.domain.datasource.LoginDatasource
 import com.nathaniel.carryapp.domain.usecase.AddToCartUseCase
 import com.nathaniel.carryapp.domain.usecase.CashInUseCase
 import com.nathaniel.carryapp.domain.usecase.CheckoutUseCase
@@ -58,30 +57,30 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideAuthRemoteDataSource(
+    fun provideApiDatasource(
         apiService: ApiService,
         psgcApiService: PsgcApiService
-    ): AuthRemoteDatasource {
-        return AuthImplRemoteDataSource(apiService, psgcApiService)
+    ): ApiDatasource {
+        return ApiDatasourceImpl(apiService, psgcApiService)
     }
 
     @Provides
     @Singleton
-    fun provideLoginLocalDataSource(
-        impl: LoginLocalDataSourceImpl
-    ): LoginLocalDataSource = impl
+    fun provideLoginDatasource(
+        impl: LoginDatasourceImpl
+    ): LoginDatasource = impl
 
     @Provides
     @Singleton
-    fun provideCartLocalDataSource(
-        impl: CartLocalDataSourceImpl
-    ): CartLocalDataSource = impl
+    fun provideCartDatasource(
+        impl: CartDatasourceImpl
+    ): CartDatasource = impl
 
     @Provides
     @Singleton
-    fun provideAuthRepository(
-        remote: AuthRemoteDatasource,
-        local: LoginLocalDataSource,
+    fun provideApiRepository(
+        remote: ApiDatasource,
+        local: LoginDatasource,
         tokenManager: TokenManager
     ): ApiRepository {
         return ApiRepository(remote, local, tokenManager)
@@ -90,14 +89,14 @@ object AppModule {
     @Provides
     @Singleton
     fun provideLocalRepository(
-        addressLocalDataSource: AddressLocalDataSource,
-        loginLocalDataSource: LoginLocalDataSource,
-        cartLocalDataSource: CartLocalDataSource,
+        addressDataSource: AddressDatasource,
+        loginDataSource: LoginDatasource,
+        cartDataSource: CartDatasource,
         tokenManager: TokenManager
     ): LocalRepository = LocalRepository(
-        addressLocalDataSource,
-        loginLocalDataSource,
-        cartLocalDataSource,
+        addressDataSource,
+        loginDataSource,
+        cartDataSource,
         tokenManager
     )
 

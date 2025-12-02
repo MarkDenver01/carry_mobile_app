@@ -8,7 +8,7 @@ import com.nathaniel.carryapp.data.local.room.relations.LoginWithCustomer
 import com.nathaniel.carryapp.data.local.room.relations.LoginWithDriver
 import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
 
-interface LoginLocalDataSource {
+interface LoginDatasource {
     suspend fun saveLogin(
         login: LoginEntity,
         customer: CustomerEntity?,

@@ -3,11 +3,10 @@ package com.nathaniel.carryapp.data.repository
 import com.nathaniel.carryapp.data.local.prefs.TokenManager
 import com.nathaniel.carryapp.data.local.room.entity.CustomerDetailsEntity
 import com.nathaniel.carryapp.data.local.room.entity.DeliveryAddressEntity
-import com.nathaniel.carryapp.domain.datasource.AddressLocalDataSource
-import com.nathaniel.carryapp.domain.datasource.CartLocalDataSource
-import com.nathaniel.carryapp.domain.datasource.LoginLocalDataSource
+import com.nathaniel.carryapp.domain.datasource.AddressDatasource
+import com.nathaniel.carryapp.domain.datasource.CartDatasource
+import com.nathaniel.carryapp.domain.datasource.LoginDatasource
 import com.nathaniel.carryapp.domain.mapper.CustomerDetailsMapper
-import com.nathaniel.carryapp.domain.model.CartDisplayItem
 import com.nathaniel.carryapp.domain.model.ShopProduct
 import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
 import com.nathaniel.carryapp.presentation.ui.compose.orders.CartSummary
@@ -16,9 +15,9 @@ import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 
 class LocalRepository @Inject constructor(
-    private val addressLocalDataSource: AddressLocalDataSource,
-    private val loginLocalDataSource: LoginLocalDataSource,
-    private val cartLocalDataSource: CartLocalDataSource,
+    private val addressDataSource: AddressDatasource,
+    private val loginDataSource: LoginDatasource,
+    private val cartDataSource: CartDatasource,
     private val tokenManager: TokenManager
 ) {
 
@@ -31,11 +30,11 @@ class LocalRepository @Inject constructor(
     fun getUserSession(): Boolean = tokenManager.getUserSession()
 
     suspend fun saveCustomerDetails(customerDetailRequest: CustomerDetailRequest) {
-        loginLocalDataSource.saveCustomerDetails(customerDetailRequest)
+        loginDataSource.saveCustomerDetails(customerDetailRequest)
     }
 
     suspend fun getCustomerDetails(): CustomerDetailRequest? {
-        val entity: CustomerDetailsEntity? = loginLocalDataSource.getCustomerDetails()
+        val entity: CustomerDetailsEntity? = loginDataSource.getCustomerDetails()
         return entity?.let { CustomerDetailsMapper.fromEntity(it) }
     }
 
@@ -46,12 +45,12 @@ class LocalRepository @Inject constructor(
     fun getMobileOrEmail(): String? = tokenManager.getMobileOrEmail()
 
     suspend fun saveAddress(address: DeliveryAddressEntity) {
-        addressLocalDataSource.save(address)
+        addressDataSource.save(address)
     }
 
-    suspend fun getAddress(): DeliveryAddressEntity? = addressLocalDataSource.get()
+    suspend fun getAddress(): DeliveryAddressEntity? = addressDataSource.get()
 
-    suspend fun clearAddress() = addressLocalDataSource.clear()
+    suspend fun clearAddress() = addressDataSource.clear()
     private val _products = MutableStateFlow<List<ShopProduct>>(emptyList())
     fun getProductsFlow(): StateFlow<List<ShopProduct>> = _products
 
@@ -62,7 +61,7 @@ class LocalRepository @Inject constructor(
         barangayName: String,
         addressDetail: String
     ) {
-        addressLocalDataSource.updateAddressFields(
+        addressDataSource.updateAddressFields(
             provinceName,
             cityName,
             barangayName,
@@ -75,20 +74,20 @@ class LocalRepository @Inject constructor(
     }
 
     suspend fun add(productId: Long) {
-        cartLocalDataSource.addItem(productId)
+        cartDataSource.addItem(productId)
     }
 
     suspend fun remove(productId: Long) {
-        cartLocalDataSource.removeLatest(productId)
+        cartDataSource.removeLatest(productId)
     }
 
-    suspend fun getCartCount(): Int = cartLocalDataSource.getTotalCount()
+    suspend fun getCartCount(): Int = cartDataSource.getTotalCount()
 
     suspend fun getCartGroups(): List<CartSummary> {
-        return cartLocalDataSource.getGroupedItems().map { g ->
+        return cartDataSource.getGroupedItems().map { g ->
             CartSummary(productId = g.productId, qty = g.qty)
         }
     }
 
-    suspend fun clearAll() = cartLocalDataSource.clearAll()
+    suspend fun clearAll() = cartDataSource.clearAll()
 }

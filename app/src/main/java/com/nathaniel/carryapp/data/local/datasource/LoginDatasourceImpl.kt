@@ -7,16 +7,16 @@ import com.nathaniel.carryapp.data.local.room.entity.CustomerDetailsEntity
 import com.nathaniel.carryapp.data.local.room.entity.CustomerEntity
 import com.nathaniel.carryapp.data.local.room.entity.DriverEntity
 import com.nathaniel.carryapp.data.local.room.entity.LoginEntity
-import com.nathaniel.carryapp.domain.datasource.LoginLocalDataSource
+import com.nathaniel.carryapp.domain.datasource.LoginDatasource
 import com.nathaniel.carryapp.domain.mapper.CustomerDetailsMapper
 import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
 import javax.inject.Inject
 
-class LoginLocalDataSourceImpl @Inject constructor(
+class LoginDatasourceImpl @Inject constructor(
     private val loginDao: LoginDao,
     private val customerDao: CustomerDao,
     private val driverDao: DriverDao
-) : LoginLocalDataSource {
+) : LoginDatasource {
 
     override suspend fun saveLogin(
         login: LoginEntity,

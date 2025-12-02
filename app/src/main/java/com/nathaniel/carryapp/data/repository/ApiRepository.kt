@@ -6,8 +6,8 @@ import com.nathaniel.carryapp.data.local.prefs.TokenManager
 import com.nathaniel.carryapp.data.local.room.entity.CustomerEntity
 import com.nathaniel.carryapp.data.local.room.entity.DriverEntity
 import com.nathaniel.carryapp.data.local.room.entity.LoginEntity
-import com.nathaniel.carryapp.domain.datasource.AuthRemoteDatasource
-import com.nathaniel.carryapp.domain.datasource.LoginLocalDataSource
+import com.nathaniel.carryapp.domain.datasource.ApiDatasource
+import com.nathaniel.carryapp.domain.datasource.LoginDatasource
 import com.nathaniel.carryapp.domain.enum.HttpStatus
 import com.nathaniel.carryapp.domain.mapper.BarangayMapper
 import com.nathaniel.carryapp.domain.mapper.CityMapper
@@ -31,18 +31,15 @@ import com.nathaniel.carryapp.domain.response.ProductCategoryResponse
 import com.nathaniel.carryapp.domain.response.UserHistoryResponse
 import com.nathaniel.carryapp.domain.response.WalletResponse
 import com.nathaniel.carryapp.presentation.utils.NetworkResult
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import okhttp3.MultipartBody
-import okhttp3.internal.http.hasBody
 import retrofit2.Response
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 class ApiRepository @Inject constructor(
-    private val remote: AuthRemoteDatasource,
-    private val loginLocalDataSource: LoginLocalDataSource,
+    private val remote: ApiDatasource,
+    private val loginDataSource: LoginDatasource,
     private val tokenManager: TokenManager
 ) {
 
@@ -202,20 +199,20 @@ class ApiRepository @Inject constructor(
         customerEntity: CustomerEntity?,
         driverEntity: DriverEntity?
     ) {
-        loginLocalDataSource.saveLogin(loginEntity, customerEntity, driverEntity)
+        loginDataSource.saveLogin(loginEntity, customerEntity, driverEntity)
     }
 
     suspend fun getCurrentSession() =
-        loginLocalDataSource.getCurrentLogin()
+        loginDataSource.getCurrentLogin()
 
     suspend fun getCustomerSession() =
-        loginLocalDataSource.getCustomerSession()
+        loginDataSource.getCustomerSession()
 
     suspend fun getDriverSession() =
-        loginLocalDataSource.getDriverSession()
+        loginDataSource.getDriverSession()
 
     suspend fun logout() =
-        loginLocalDataSource.logout()
+        loginDataSource.logout()
 
     suspend fun updateCustomer(
         request: CustomerDetailRequest

@@ -3,12 +3,12 @@ package com.nathaniel.carryapp.data.local.datasource
 import com.nathaniel.carryapp.data.local.room.dao.CartDao
 import com.nathaniel.carryapp.data.local.room.entity.CartGroupEntity
 import com.nathaniel.carryapp.data.local.room.entity.CartItemEntity
-import com.nathaniel.carryapp.domain.datasource.CartLocalDataSource
+import com.nathaniel.carryapp.domain.datasource.CartDatasource
 import javax.inject.Inject
 
-class CartLocalDataSourceImpl @Inject constructor(
+class CartDatasourceImpl @Inject constructor(
     private val cartDao: CartDao,
-) : CartLocalDataSource {
+) : CartDatasource {
     override suspend fun addItem(productId: Long) {
         cartDao.insertItem(CartItemEntity(productId = productId))
     }

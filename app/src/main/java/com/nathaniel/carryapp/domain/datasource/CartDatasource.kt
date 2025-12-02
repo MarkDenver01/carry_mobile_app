@@ -2,7 +2,7 @@ package com.nathaniel.carryapp.domain.datasource
 
 import com.nathaniel.carryapp.data.local.room.entity.CartGroupEntity
 
-interface CartLocalDataSource {
+interface CartDatasource {
     suspend fun addItem(productId: Long)
     suspend fun removeLatest(productId: Long)
     suspend fun getTotalCount(): Int

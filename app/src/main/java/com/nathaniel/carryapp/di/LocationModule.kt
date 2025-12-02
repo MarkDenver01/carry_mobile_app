@@ -1,7 +1,7 @@
 package com.nathaniel.carryapp.di
 
-import com.nathaniel.carryapp.data.local.datasource.AddressLocalDataSourceImpl
-import com.nathaniel.carryapp.domain.datasource.AddressLocalDataSource
+import com.nathaniel.carryapp.data.local.datasource.AddressDatasourceImpl
+import com.nathaniel.carryapp.domain.datasource.AddressDatasource
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -15,6 +15,6 @@ abstract class LocationModule {
     @Binds
     @Singleton
     abstract fun bindAddressLocalDatasource(
-        addressLocalDataSourceImpl: AddressLocalDataSourceImpl
-    ): AddressLocalDataSource
+        addressDataSourceImpl: AddressDatasourceImpl
+    ): AddressDatasource
 }
