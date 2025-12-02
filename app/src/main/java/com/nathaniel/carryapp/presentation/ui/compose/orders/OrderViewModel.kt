@@ -769,6 +769,7 @@ class OrderViewModel @Inject constructor(
 
                 saveUserSessionUseCase(true)
                 saveCustomerDetailsUseCase(details)
+                delay(3000)
                 _navigateTo.value = Routes.CUSTOMER_REG_SUCCESS
             }
 
