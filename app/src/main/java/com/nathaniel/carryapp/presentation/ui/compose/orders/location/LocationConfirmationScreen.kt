@@ -25,14 +25,15 @@ import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
 import com.nathaniel.carryapp.presentation.ui.compose.orders.components.BackHeader
 import com.nathaniel.carryapp.presentation.ui.sharedViewModel
 import com.nathaniel.carryapp.presentation.utils.rememberLocationPermissionState
+import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("MissingPermission")
 @Composable
 fun LocationConfirmationScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: OrderViewModel = hiltViewModel(),
 ) {
-    val viewModel: OrderViewModel = sharedViewModel()
     // Observe VIEWMODEL ADDRESS STATE
     val addressState = viewModel.reverseAddress.collectAsState()
     val pinPosition by viewModel.selectedLatLng.collectAsState()
@@ -42,6 +43,7 @@ fun LocationConfirmationScreen(
 
     // 🔥 WHENEVER pinPosition changes → MOVE CAMERA
     LaunchedEffect(pinPosition) {
+        Timber.e("xxxx pin position: ${pinPosition?.longitude} - ${pinPosition?.latitude}")
         if (pinPosition != null) {
             cameraPositionState.animate(
                 update = CameraUpdateFactory.newLatLngZoom(pinPosition!!, 17f),
@@ -73,6 +75,7 @@ fun LocationConfirmationScreen(
                         val province = addressState.value.province
                         val city = addressState.value.city
                         val barangay = addressState.value.barangay
+                        Timber.e("xxxx data: ${detailAddress} - ${province} - ${city} -${barangay}")
 
                         val deliveryAddressRequest = DeliveryAddressRequest(
                             provinceCode = "",

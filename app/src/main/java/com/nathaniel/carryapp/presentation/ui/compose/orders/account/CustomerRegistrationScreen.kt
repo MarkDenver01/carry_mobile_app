@@ -1,8 +1,6 @@
 package com.nathaniel.carryapp.presentation.ui.compose.orders.account
 
-import android.content.Context
 import android.net.Uri
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -19,8 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -28,25 +24,24 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-import com.nathaniel.carryapp.domain.enum.ToastType
 import com.nathaniel.carryapp.domain.request.CustomerRegistrationRequest
-import com.nathaniel.carryapp.navigation.Routes
 import com.nathaniel.carryapp.presentation.ui.compose.orders.CustomerRegistrationUIEvent
 import com.nathaniel.carryapp.presentation.ui.compose.orders.components.BackHeader
 import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
-import com.nathaniel.carryapp.presentation.ui.compose.orders.ToastMessage
+import com.nathaniel.carryapp.presentation.ui.compose.signin.SignInViewModel
+import com.nathaniel.carryapp.presentation.ui.sharedViewModel
 import com.nathaniel.carryapp.presentation.utils.CustomToast
-import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomerRegistrationScreen(
     navController: NavController,
-    viewModel: OrderViewModel = hiltViewModel()
+    orderViewModel: OrderViewModel = hiltViewModel(),
+    signInViewModel: SignInViewModel = hiltViewModel()
 ) {
-    val state by viewModel.uiState.collectAsState()
-    val toastState by viewModel.toastState.collectAsState()
-    val navigateTo by viewModel.navigateTo.collectAsState()
+    val state by orderViewModel.uiState.collectAsState()
+    val toastState by orderViewModel.toastState.collectAsState()
+    val navigateTo by orderViewModel.navigateTo.collectAsState()
 
     Box(modifier = Modifier.fillMaxSize()) {
 
@@ -67,12 +62,13 @@ fun CustomerRegistrationScreen(
                     Button(
                         onClick = {
                             val request = CustomerRegistrationRequest(
-                                state.userName,
-                                state.address,
-                                state.mobileNumber,
-                                state.email
+                                userName = state.userName,
+                                address = state.address,
+                                mobileNumber = state.mobileNumber,
+                                email = state.email
                             )
-                            viewModel.submitCustomer(request, state.photoUri)
+                            signInViewModel.saveLoginSession(email = state.email, session = true)
+                            orderViewModel.submitCustomer(request, photoUri = state.photoUri)
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -129,7 +125,7 @@ fun CustomerRegistrationScreen(
                     UploadPhotoSection(
                         imageUri = state.photoUri,
                         onPickImage = { uri ->
-                            viewModel.onEvent(
+                            orderViewModel.onEvent(
                                 CustomerRegistrationUIEvent.OnPhotoSelected(uri)
                             )
                         }
@@ -144,7 +140,7 @@ fun CustomerRegistrationScreen(
                             label = "Full Name",
                             value = state.userName,
                             onValueChange = {
-                                viewModel.onEvent(
+                                orderViewModel.onEvent(
                                     CustomerRegistrationUIEvent.OnUserNameChanged(it)
                                 )
                             }
@@ -155,7 +151,7 @@ fun CustomerRegistrationScreen(
                             value = state.email,
                             enabled = !state.isEmailDisabled,
                             onValueChange = {
-                                viewModel.onEvent(
+                                orderViewModel.onEvent(
                                     CustomerRegistrationUIEvent.OnEmailChanged(it)
                                 )
                             }
@@ -166,7 +162,7 @@ fun CustomerRegistrationScreen(
                             value = state.mobileNumber,
                             enabled = !state.isMobileDisabled,
                             onValueChange = {
-                                viewModel.onEvent(
+                                orderViewModel.onEvent(
                                     CustomerRegistrationUIEvent.OnMobileChanged(it)
                                 )
                             },
@@ -189,7 +185,7 @@ fun CustomerRegistrationScreen(
         // =========================
         CustomToast(
             toastMessage = toastState,
-            onDismiss = { viewModel.resetToast() },
+            onDismiss = { orderViewModel.resetToast() },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(top = 20.dp)
@@ -201,7 +197,7 @@ fun CustomerRegistrationScreen(
         LaunchedEffect(navigateTo) {
             navigateTo?.let { route ->
                 navController.navigate(route)
-                viewModel.resetNavigation()
+                orderViewModel.resetNavigation()
             }
         }
     }

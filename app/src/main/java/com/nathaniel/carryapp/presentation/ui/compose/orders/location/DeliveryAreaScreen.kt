@@ -21,9 +21,9 @@ import com.nathaniel.carryapp.presentation.ui.sharedViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeliveryAreaScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: OrderViewModel = hiltViewModel(),
 ) {
-    val viewModel: OrderViewModel = sharedViewModel()
     val selectedArea by viewModel.selected.collectAsState()
     val regions by viewModel.regions.collectAsState()
     val error by viewModel.error.collectAsState()
@@ -33,7 +33,7 @@ fun DeliveryAreaScreen(
     Scaffold(
         containerColor = Color.White,
         topBar = { BackHeader(onBack = { navController.popBackStack() }) },
-        bottomBar = { BottomActionBar(viewModel, navController) }
+        bottomBar = { BottomActionBar(navController, viewModel) }
     ) { innerPadding ->
 
         LazyColumn(

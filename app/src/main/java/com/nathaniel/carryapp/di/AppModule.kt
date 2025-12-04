@@ -18,9 +18,11 @@ import com.nathaniel.carryapp.domain.datasource.LoginDatasource
 import com.nathaniel.carryapp.domain.usecase.AddToCartUseCase
 import com.nathaniel.carryapp.domain.usecase.CashInUseCase
 import com.nathaniel.carryapp.domain.usecase.CheckAgreementStatusUseCase
+import com.nathaniel.carryapp.domain.usecase.CheckLoginSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.CheckoutUseCase
 import com.nathaniel.carryapp.domain.usecase.ClearAgreementStatusUseCase
 import com.nathaniel.carryapp.domain.usecase.ClearCartUseCase
+import com.nathaniel.carryapp.domain.usecase.DeleteLoginSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.ForwardGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.GetAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.GetAllCategoryUseCase
@@ -42,6 +44,7 @@ import com.nathaniel.carryapp.domain.usecase.ReverseGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveAgreementUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveCustomerDetailsUseCase
+import com.nathaniel.carryapp.domain.usecase.SaveLoginSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveMobileOrEmailUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveUserHistoryUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveUserSessionUseCase
@@ -306,20 +309,37 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun SaveAgreementUseCase(
+    fun provideSaveAgreementUseCase(
         localRepository: LocalRepository
     ): SaveAgreementUseCase = SaveAgreementUseCase(localRepository)
 
     @Provides
     @Singleton
-    fun CheckAgreementStatusUseCase(
+    fun provideCheckAgreementStatusUseCase(
         localRepository: LocalRepository
     ): CheckAgreementStatusUseCase = CheckAgreementStatusUseCase(localRepository)
 
     @Provides
     @Singleton
-    fun ClearAgreementStatusUseCase(
+    fun provideClearAgreementStatusUseCase(
         localRepository: LocalRepository
     ): ClearAgreementStatusUseCase = ClearAgreementStatusUseCase(localRepository)
 
+    @Provides
+    @Singleton
+    fun provideSaveLoginSessionUseCase(
+        localRepository: LocalRepository
+    ): SaveLoginSessionUseCase = SaveLoginSessionUseCase(localRepository)
+
+    @Provides
+    @Singleton
+    fun provideCheckLoginSessionUseCase(
+        localRepository: LocalRepository
+    ): CheckLoginSessionUseCase = CheckLoginSessionUseCase(localRepository)
+
+    @Provides
+    @Singleton
+    fun provideDeleteLoginSessionUseCase(
+        localRepository: LocalRepository
+    ): DeleteLoginSessionUseCase = DeleteLoginSessionUseCase(localRepository)
 }

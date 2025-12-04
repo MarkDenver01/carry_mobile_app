@@ -164,7 +164,7 @@ fun SignInScreen(
                         )
 
                         Text(
-                            text = "Sign in with your mobile number",
+                            text = "Sign in with your email",
                             fontSize = typography.body.fontSize,
                             color = Color(0xFF333333),
                             modifier = Modifier.padding(bottom = spacing.lg)
@@ -175,7 +175,7 @@ fun SignInScreen(
                             onValueChange = { mobileNumberOrEmailAddress = it },
                             placeholder = {
                                 Text(
-                                    text = "Mobile number or Email address",
+                                    text = "Email address",
                                     color = Color(0xFF666666),
                                     fontSize = typography.body.fontSize
                                 )

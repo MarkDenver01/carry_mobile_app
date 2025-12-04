@@ -1,33 +1,31 @@
 package com.nathaniel.carryapp.domain.model
 
-import com.nathaniel.carryapp.data.local.room.entity.AgreementTermsEntity
+import com.nathaniel.carryapp.data.local.room.entity.LoginSessionEntity
 
-data class AgreementRequest(
+data class LoginSessionRequest(
     val email: String,
-    val agreementStatus: Boolean
+    val session: Boolean
 )
 
-data class AgreementResponse(
-    val agreementStatus: Boolean
+data class LoginSessionResponse(
+    val session: Boolean
 )
 
-object AgreementMapper {
+object LoginSessionMapper {
     // ─────────────────────────────────────────────
     // REQUEST → ENTITY (for saving to Room)
     // ─────────────────────────────────────────────
-    fun toEntity(request: AgreementRequest): AgreementTermsEntity {
-        return AgreementTermsEntity(
+    fun toEntity(request: LoginSessionRequest): LoginSessionEntity {
+        return LoginSessionEntity(
             email = request.email,
-            agreement = request.agreementStatus
+            session = request.session
         )
     }
 
     // ─────────────────────────────────────────────
     // ENTITY → REQUEST (optional, useful for restore)
     // ─────────────────────────────────────────────
-    fun toResponse(entity: AgreementTermsEntity): AgreementResponse {
-        return AgreementResponse(
-            agreementStatus = entity.agreement
-        )
+    fun toResponse(entity: LoginSessionEntity): LoginSessionResponse {
+        return LoginSessionResponse(session = entity.session)
     }
 }

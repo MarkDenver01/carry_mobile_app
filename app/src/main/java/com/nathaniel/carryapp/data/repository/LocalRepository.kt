@@ -4,6 +4,7 @@ import com.nathaniel.carryapp.data.local.prefs.TokenManager
 import com.nathaniel.carryapp.data.local.room.entity.AgreementTermsEntity
 import com.nathaniel.carryapp.data.local.room.entity.CustomerDetailsEntity
 import com.nathaniel.carryapp.data.local.room.entity.DeliveryAddressEntity
+import com.nathaniel.carryapp.data.local.room.entity.LoginSessionEntity
 import com.nathaniel.carryapp.domain.datasource.AddressDatasource
 import com.nathaniel.carryapp.domain.datasource.AgreementDatasource
 import com.nathaniel.carryapp.domain.datasource.CartDatasource
@@ -15,6 +16,7 @@ import com.nathaniel.carryapp.presentation.ui.compose.orders.CartSummary
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
+import kotlin.math.log
 
 class LocalRepository @Inject constructor(
     private val addressDataSource: AddressDatasource,
@@ -63,6 +65,14 @@ class LocalRepository @Inject constructor(
         agreementDatasource.isVerified(email)
 
     suspend fun clearAgreementStatus() = agreementDatasource.clearAgreementStatus()
+
+    suspend fun saveLoginSession(session: LoginSessionEntity) {
+        loginDataSource.saveLoginSession(session)
+    }
+
+    suspend fun isLoggedIn(email: String): Boolean? = loginDataSource.isLoggedIn(email)
+
+    suspend fun deleteLoginSession() = loginDataSource.deleteLoginSession()
 
     suspend fun updateAddress(
         provinceName: String,

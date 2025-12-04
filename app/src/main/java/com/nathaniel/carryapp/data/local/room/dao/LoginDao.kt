@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import com.nathaniel.carryapp.data.local.room.entity.LoginEntity
+import com.nathaniel.carryapp.data.local.room.entity.LoginSessionEntity
 import com.nathaniel.carryapp.data.local.room.relations.LoginWithCustomer
 import com.nathaniel.carryapp.data.local.room.relations.LoginWithDriver
 
@@ -13,6 +14,15 @@ import com.nathaniel.carryapp.data.local.room.relations.LoginWithDriver
 interface LoginDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertLogin(login: LoginEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertLoginSession(loginSessionEntity: LoginSessionEntity)
+
+    @Query("SELECT session FROM login_session_table WHERE email = :email LIMIT 1")
+    suspend fun isLoggedIn(email: String): Boolean?
+
+    @Query("DELETE FROM login_session_table")
+    suspend fun deleteLoginSession()
 
     @Query("SELECT * FROM login_table WHERE userId = :userId LIMIT 1")
     suspend fun getLogin(userId: Long): LoginEntity?

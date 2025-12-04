@@ -15,9 +15,11 @@ import com.nathaniel.carryapp.data.local.room.entity.CustomerEntity
 import com.nathaniel.carryapp.data.local.room.entity.DeliveryAddressEntity
 import com.nathaniel.carryapp.data.local.room.entity.DriverEntity
 import com.nathaniel.carryapp.data.local.room.entity.LoginEntity
+import com.nathaniel.carryapp.data.local.room.entity.LoginSessionEntity
 
 @Database(
     entities = [
+        LoginSessionEntity::class,
         LoginEntity::class,
         CustomerEntity::class,
         DriverEntity::class,
@@ -26,7 +28,7 @@ import com.nathaniel.carryapp.data.local.room.entity.LoginEntity
         CartItemEntity::class,
         AgreementTermsEntity::class
     ],
-    version = 6,
+    version = 7,
     exportSchema = true
 )
 abstract class CarryDatabase : RoomDatabase() {

@@ -30,6 +30,7 @@ import com.nathaniel.carryapp.domain.response.ProductCategoryResponse
 import com.nathaniel.carryapp.domain.usecase.AddToCartUseCase
 import com.nathaniel.carryapp.domain.usecase.BarangayResult
 import com.nathaniel.carryapp.domain.usecase.CategoryResult
+import com.nathaniel.carryapp.domain.usecase.CheckLoginSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.CityResult
 import com.nathaniel.carryapp.domain.usecase.ForwardGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.GeocodeResult
@@ -76,6 +77,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
+import kotlin.invoke
 
 private const val REGION_IV_A = "040000000"
 
@@ -131,6 +133,7 @@ class OrderViewModel @Inject constructor(
     private val saveUserHistoryUseCase: SaveUserHistoryUseCase,
     private val getUserHistoryUseCase: GetUserHistoryUseCase,
     private val getRelatedProductsUseCase: GetRelatedProductsUseCase,
+    private val checkLoginSessionUseCase: CheckLoginSessionUseCase,
     private val apiRepository: ApiRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
@@ -219,11 +222,11 @@ class OrderViewModel @Inject constructor(
     val related: StateFlow<List<Product>> = _related
 
     init {
-        checkLoginStatus()
         loadRegions()
         loadProvinces()
         loadSavedAddress()
         loadSavedMobileOrEmail()
+        checkLoginStatus()
         loadCustomerSession()
     }
 
@@ -233,6 +236,7 @@ class OrderViewModel @Inject constructor(
         if (!saved.isNullOrBlank()) {
 
             if (saved.contains("@")) {
+
                 // It's an email
                 _uiState.update {
                     it.copy(
@@ -265,7 +269,7 @@ class OrderViewModel @Inject constructor(
             if (saved != null) {
 
                 // 1. USE THE SAVED ADDRESS TEXT AS GEOCODING INPUT
-                val fullAddress = saved.addressDetail ?: ""
+                val fullAddress = saved.addressDetail
 
                 // 2. Convert text → LatLng
                 val geocodeResult = forwardGeocodeUseCase(fullAddress)
@@ -475,6 +479,10 @@ class OrderViewModel @Inject constructor(
 
     fun onNext(deliveryAddressRequest: DeliveryAddressRequest, nav: NavController) {
         viewModelScope.launch {
+            Timber.e(
+                "xxxx delivery request: ${deliveryAddressRequest.addressDetails}, ${deliveryAddressRequest.provinceName}, ${deliveryAddressRequest.cityName}, ${deliveryAddressRequest.barangayName}"
+            )
+
             saveAddressUseCase.invoke(
                 DeliveryAddressMapper.toEntity(deliveryAddressRequest)
             )
@@ -542,9 +550,15 @@ class OrderViewModel @Inject constructor(
     }
 
     private fun checkLoginStatus() {
+        val email = getMobileOrEmailUseCase()
         viewModelScope.launch {
-            val login = apiRepository.getCurrentSession()
-            _isLoggedIn.value = login != null
+            if (email.isNullOrEmpty()) {
+                _isLoggedIn.value = false
+                return@launch
+            }
+
+            val result = checkLoginSessionUseCase.invoke(email) ?: false
+            _isLoggedIn.value = result
         }
     }
 
@@ -640,6 +654,7 @@ class OrderViewModel @Inject constructor(
 
     fun updatePin(newPos: LatLng) {
         _selectedLatLng.value = newPos
+        Timber.d("xxxxxx location: ${newPos.latitude} - ${newPos.longitude}")
         reverseLookup(newPos)
     }
 
@@ -647,6 +662,7 @@ class OrderViewModel @Inject constructor(
         viewModelScope.launch {
             when (val result = reverseGeocodeUseCase(pos.latitude, pos.longitude)) {
                 is GeocodeResult.Success -> {
+                    Timber.d("reverse address: ${result.data.fullAddressLine}, ${result.data.province}, ${result.data.city}, ${result.data.city}")
                     _reverseAddress.value = result.data
                 }
 
@@ -697,6 +713,7 @@ class OrderViewModel @Inject constructor(
                 // Step 4: Reverse geocode → update address fields
                 when (val result = reverseGeocodeUseCase(latLng.latitude, latLng.longitude)) {
                     is GeocodeResult.Success -> {
+                        Timber.d("location data: {${result.data.fullAddressLine}, ${result.data.province}, ${result.data.city}, ${result.data.barangay}")
                         _reverseAddress.value = result.data
                     }
 
@@ -766,8 +783,8 @@ class OrderViewModel @Inject constructor(
             val response = updateCustomerUseCase(details)
 
             if (response.isSuccessful) {
-
                 saveUserSessionUseCase(true)
+                saveMobileOrEmailUseCase.invoke(request.email)
                 saveCustomerDetailsUseCase(details)
                 delay(3000)
                 _navigateTo.value = Routes.CUSTOMER_REG_SUCCESS

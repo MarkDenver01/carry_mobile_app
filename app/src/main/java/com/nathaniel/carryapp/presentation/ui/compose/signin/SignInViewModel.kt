@@ -6,9 +6,14 @@ import androidx.navigation.NavController
 import com.nathaniel.carryapp.data.repository.ApiRepository
 import com.nathaniel.carryapp.domain.model.AgreementMapper
 import com.nathaniel.carryapp.domain.model.AgreementRequest
+import com.nathaniel.carryapp.domain.model.LoginSessionMapper
+import com.nathaniel.carryapp.domain.model.LoginSessionRequest
 import com.nathaniel.carryapp.domain.usecase.CheckAgreementStatusUseCase
+import com.nathaniel.carryapp.domain.usecase.CheckLoginSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.ClearAgreementStatusUseCase
+import com.nathaniel.carryapp.domain.usecase.DeleteLoginSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveAgreementUseCase
+import com.nathaniel.carryapp.domain.usecase.SaveLoginSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveMobileOrEmailUseCase
 import com.nathaniel.carryapp.domain.usecase.VerifyOtpResult
 import com.nathaniel.carryapp.domain.usecase.VerifyOtpUseCase
@@ -21,6 +26,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 sealed class AuthUiEvent {
@@ -42,7 +48,8 @@ class SignInViewModel @Inject constructor(
     private val saveMobileOrEmailUseCase: SaveMobileOrEmailUseCase,
     private val saveAgreementUseCase: SaveAgreementUseCase,
     private val checkAgreementStatusUseCase: CheckAgreementStatusUseCase,
-    private val clearAgreementStatusUseCase: ClearAgreementStatusUseCase,
+    private val saveLoginSessionUseCase: SaveLoginSessionUseCase,
+    private val deleteLoginSessionUseCase: DeleteLoginSessionUseCase,
     private val repository: ApiRepository
 ) : ViewModel() {
 
@@ -51,6 +58,9 @@ class SignInViewModel @Inject constructor(
 
     private val _eventFlow = MutableSharedFlow<AuthUiEvent>()
     val eventFlow: SharedFlow<AuthUiEvent> = _eventFlow
+
+    private val _isLoggedIn = MutableStateFlow<Boolean?>(null)
+    val isLoggedIn = _isLoggedIn
 
     fun saveMobileOrEmail(mobileOrEmail: String) {
         saveMobileOrEmailUseCase.invoke(mobileOrEmail)
@@ -117,5 +127,21 @@ class SignInViewModel @Inject constructor(
                 popUpTo(Routes.AGREEMENT_TERMS_PRIVACY) { inclusive = true }
             }
         }
+    }
+
+    fun saveLoginSession(email: String, session: Boolean) {
+        viewModelScope.launch {
+            val loginSessionRequest = LoginSessionRequest(email, session)
+            saveLoginSessionUseCase.invoke(
+                LoginSessionMapper.toEntity(
+                    loginSessionRequest
+                )
+            )
+            Timber.d("login session {$email, $session}")
+        }
+    }
+
+    fun deleteLoginSession() {
+        viewModelScope.launch { deleteLoginSessionUseCase.invoke() }
     }
 }

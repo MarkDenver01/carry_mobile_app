@@ -19,13 +19,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
+import com.nathaniel.carryapp.presentation.ui.sharedViewModel
 
 @Composable
 fun BottomActionBar(
-    viewModel: OrderViewModel,
-    navController: NavController
+    navController: NavController,
+    viewModel: OrderViewModel = hiltViewModel(),
 ) {
     Column(
         modifier = Modifier

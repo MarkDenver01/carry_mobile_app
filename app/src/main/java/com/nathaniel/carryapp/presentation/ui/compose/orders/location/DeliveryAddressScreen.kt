@@ -25,6 +25,7 @@ import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
 import com.nathaniel.carryapp.presentation.ui.compose.orders.components.BackHeader
 import com.nathaniel.carryapp.presentation.ui.compose.signin.SignInViewModel
 import com.nathaniel.carryapp.presentation.ui.sharedViewModel
+import timber.log.Timber
 
 // ───────────────── COLORS ─────────────────
 private val GreenPrimary = Color(0xFF118B3C)
@@ -36,9 +37,9 @@ private val ErrorRed = Color(0xFFD84315)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeliveryAddressScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: OrderViewModel = hiltViewModel(),
 ) {
-    val viewModel: OrderViewModel = sharedViewModel()
     // Local States
     var address by remember { mutableStateOf("") }
     var landmark by remember { mutableStateOf("") }
@@ -79,6 +80,7 @@ fun DeliveryAddressScreen(
                                     addressDetails = address,
                                     landMark = landmark
                                 )
+
                                 viewModel.onNext(deliveryAddressRequest, navController)
                             }
                         }

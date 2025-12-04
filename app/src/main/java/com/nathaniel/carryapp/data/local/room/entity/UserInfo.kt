@@ -5,6 +5,13 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 
+@Entity(tableName = "login_session_table")
+data class LoginSessionEntity(
+    @PrimaryKey val userId: Long = 1,
+    val email: String? = "",
+    val session: Boolean = false
+)
+
 @Entity(tableName = "login_table")
 data class LoginEntity(
     @PrimaryKey val userId: Long, // <-- backend user ID (DO NOT AUTO GENERATE)
