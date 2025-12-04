@@ -2,10 +2,17 @@ package com.nathaniel.carryapp.presentation.ui.compose.signin
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
 import com.nathaniel.carryapp.data.repository.ApiRepository
+import com.nathaniel.carryapp.domain.model.AgreementMapper
+import com.nathaniel.carryapp.domain.model.AgreementRequest
+import com.nathaniel.carryapp.domain.usecase.CheckAgreementStatusUseCase
+import com.nathaniel.carryapp.domain.usecase.ClearAgreementStatusUseCase
+import com.nathaniel.carryapp.domain.usecase.SaveAgreementUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveMobileOrEmailUseCase
 import com.nathaniel.carryapp.domain.usecase.VerifyOtpResult
 import com.nathaniel.carryapp.domain.usecase.VerifyOtpUseCase
+import com.nathaniel.carryapp.navigation.Routes
 import com.nathaniel.carryapp.presentation.utils.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -18,8 +25,7 @@ import javax.inject.Inject
 
 sealed class AuthUiEvent {
     data class NavigateToOtp(val mobile: String) : AuthUiEvent()
-
-    data class NavigateToTerms(val mobile: String) : AuthUiEvent()
+    data class NavigateToTerms(val mobileOrEmail: String) : AuthUiEvent()
     object NavigateToHome : AuthUiEvent()
     data class ShowError(val message: String) : AuthUiEvent()
 }
@@ -34,6 +40,9 @@ data class AuthUiState(
 class SignInViewModel @Inject constructor(
     private val verifyOtpUseCase: VerifyOtpUseCase,
     private val saveMobileOrEmailUseCase: SaveMobileOrEmailUseCase,
+    private val saveAgreementUseCase: SaveAgreementUseCase,
+    private val checkAgreementStatusUseCase: CheckAgreementStatusUseCase,
+    private val clearAgreementStatusUseCase: ClearAgreementStatusUseCase,
     private val repository: ApiRepository
 ) : ViewModel() {
 
@@ -46,6 +55,7 @@ class SignInViewModel @Inject constructor(
     fun saveMobileOrEmail(mobileOrEmail: String) {
         saveMobileOrEmailUseCase.invoke(mobileOrEmail)
     }
+
     fun sendOtp(mobileNumber: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
@@ -55,41 +65,56 @@ class SignInViewModel @Inject constructor(
                     _uiState.update { it.copy(isLoading = false, otpSent = true) }
                     _eventFlow.emit(AuthUiEvent.NavigateToOtp(mobileNumber))
                 }
+
                 is NetworkResult.Error -> {
                     _uiState.update { it.copy(isLoading = false) }
                     _eventFlow.emit(AuthUiEvent.ShowError(result.message ?: "Failed to send OTP"))
                 }
+
                 else -> Unit
             }
         }
     }
 
 
-    fun verifyOtp(mobileNumber: String, otp: String) {
+    fun verifyOtp(mobileOrEmail: String, otp: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
 
-            when (val result = verifyOtpUseCase(mobileNumber, otp)) {
+            when (val result = verifyOtpUseCase(mobileOrEmail, otp)) {
 
-                is VerifyOtpResult.CustomerLogin -> {
-                    _uiState.update { it.copy(isLoading = false, verified = true) }
-                    _eventFlow.emit(AuthUiEvent.NavigateToTerms(mobileNumber))
-                }
-
-                is VerifyOtpResult.DriverLogin -> {
-                    _uiState.update { it.copy(isLoading = false, verified = true) }
-                    _eventFlow.emit(AuthUiEvent.NavigateToTerms(mobileNumber))
-                }
-
+                is VerifyOtpResult.CustomerLogin,
+                is VerifyOtpResult.DriverLogin,
                 is VerifyOtpResult.NewUser -> {
+                    val agreed = checkAgreementStatusUseCase(mobileOrEmail)
+
                     _uiState.update { it.copy(isLoading = false, verified = true) }
-                    _eventFlow.emit(AuthUiEvent.NavigateToTerms(mobileNumber))
+                    if (agreed == true) {
+                        _eventFlow.emit(AuthUiEvent.NavigateToHome)
+                    } else {
+                        _eventFlow.emit(AuthUiEvent.NavigateToTerms(mobileOrEmail))
+                    }
                 }
 
                 is VerifyOtpResult.Error -> {
                     _uiState.update { it.copy(isLoading = false) }
                     _eventFlow.emit(AuthUiEvent.ShowError(result.message))
                 }
+            }
+        }
+    }
+
+    fun addAgreementStatus(email: String, agreementStatus: Boolean, navController: NavController) {
+        viewModelScope.launch {
+            val agreementRequest = AgreementRequest(email, agreementStatus)
+            saveAgreementUseCase.invoke(
+                AgreementMapper.toEntity(
+                    agreementRequest
+                )
+            )
+
+            navController.navigate(Routes.DELIVERY_AREA) {
+                popUpTo(Routes.AGREEMENT_TERMS_PRIVACY) { inclusive = true }
             }
         }
     }

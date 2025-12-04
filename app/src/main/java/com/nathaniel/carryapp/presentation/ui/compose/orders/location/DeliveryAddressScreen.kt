@@ -23,6 +23,8 @@ import androidx.navigation.NavController
 import com.nathaniel.carryapp.domain.request.DeliveryAddressRequest
 import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
 import com.nathaniel.carryapp.presentation.ui.compose.orders.components.BackHeader
+import com.nathaniel.carryapp.presentation.ui.compose.signin.SignInViewModel
+import com.nathaniel.carryapp.presentation.ui.sharedViewModel
 
 // ───────────────── COLORS ─────────────────
 private val GreenPrimary = Color(0xFF118B3C)
@@ -34,9 +36,9 @@ private val ErrorRed = Color(0xFFD84315)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeliveryAddressScreen(
-    navController: NavController,
-    viewModel: OrderViewModel = hiltViewModel(),
+    navController: NavController
 ) {
+    val viewModel: OrderViewModel = sharedViewModel()
     // Local States
     var address by remember { mutableStateOf("") }
     var landmark by remember { mutableStateOf("") }

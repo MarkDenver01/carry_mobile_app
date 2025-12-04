@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.nathaniel.carryapp.navigation.Routes
 import com.nathaniel.carryapp.presentation.ui.compose.navigation.TopNavigationBar
@@ -23,7 +22,6 @@ import com.nathaniel.carryapp.presentation.theme.LocalAppColors
 import com.nathaniel.carryapp.presentation.theme.LocalAppSpacing
 import com.nathaniel.carryapp.presentation.theme.LocalAppTypography
 import com.nathaniel.carryapp.presentation.theme.LocalResponsiveSizes
-import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
 import com.nathaniel.carryapp.presentation.ui.sharedViewModel
 import kotlinx.coroutines.delay
 
@@ -59,7 +57,7 @@ fun OtpVerificationScreen(
         viewModel.eventFlow.collect { event ->
             when (event) {
                 is AuthUiEvent.NavigateToTerms -> {
-                    navController.navigate("${Routes.AGREEMENT_TERMS_PRIVACY}/${event.mobile}") {
+                    navController.navigate("${Routes.AGREEMENT_TERMS_PRIVACY}/${event.mobileOrEmail}") {
                         popUpTo(Routes.SIGN_IN) { inclusive = true }
                     }
                 }

@@ -46,7 +46,7 @@ fun CategoriesScreen(
         .groupBy { it.categoryName }
         .map { (categoryName, items) ->
             Category(
-                name = categoryName ?: "Others",
+                name = categoryName,
                 imageUrl = items.firstOrNull()?.imageUrl
             )
         }

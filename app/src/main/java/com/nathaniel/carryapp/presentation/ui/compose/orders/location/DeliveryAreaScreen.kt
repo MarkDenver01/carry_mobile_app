@@ -16,13 +16,14 @@ import com.nathaniel.carryapp.presentation.ui.compose.orders.components.AreaRow
 import com.nathaniel.carryapp.presentation.ui.compose.orders.components.BackHeader
 import com.nathaniel.carryapp.presentation.ui.compose.orders.components.LoadingAreaCardShimmer
 import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.BottomActionBar
+import com.nathaniel.carryapp.presentation.ui.sharedViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeliveryAreaScreen(
-    navController: NavController,
-    viewModel: OrderViewModel = hiltViewModel()
+    navController: NavController
 ) {
+    val viewModel: OrderViewModel = sharedViewModel()
     val selectedArea by viewModel.selected.collectAsState()
     val regions by viewModel.regions.collectAsState()
     val error by viewModel.error.collectAsState()

@@ -3,7 +3,6 @@ package com.nathaniel.carryapp.navigation
 import SignUpSuccessScreen
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
@@ -23,7 +22,6 @@ import com.nathaniel.carryapp.presentation.ui.compose.orders.account.CashInFaile
 import com.nathaniel.carryapp.presentation.ui.compose.orders.account.CashInScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.account.CashInSuccessScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.account.CustomerRegistrationScreen
-import com.nathaniel.carryapp.presentation.ui.compose.orders.account.CustomerViewModel
 import com.nathaniel.carryapp.presentation.ui.compose.orders.cart.CartScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.cart.CheckoutScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.category.CategoriesScreen
@@ -98,17 +96,12 @@ fun NavGraphBuilder.signInGraph(navController: NavController) {
     }
 
     composable(
-        route = "${Routes.AGREEMENT_TERMS_PRIVACY}/{mobileNumber}"
+        route = "${Routes.AGREEMENT_TERMS_PRIVACY}/{mobileOrEmail}"
     ) { backStackEntry ->
-        val mobile = backStackEntry.arguments?.getString("mobileNumber") ?: ""
+        val mobileOrEmail = backStackEntry.arguments?.getString("mobileOrEmail") ?: ""
         AgreementTermsPrivacyScreen(
             navController = navController,
-            mobileNumber = mobile,
-            onAgree = {
-                navController.navigate(Routes.DELIVERY_AREA) {
-                    popUpTo(Routes.AGREEMENT_TERMS_PRIVACY) { inclusive = true }
-                }
-            }
+            mobileOrEmail = mobileOrEmail,
         )
     }
 }

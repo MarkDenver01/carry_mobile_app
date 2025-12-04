@@ -38,4 +38,7 @@ object DatabaseModule {
 
     @Provides
     fun provideCartDao(db: CarryDatabase) = db.cartDao()
+
+    @Provides
+    fun provideAgreementTermsDao(db: CarryDatabase) = db.agreementTermsDao()
 }

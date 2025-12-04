@@ -21,16 +21,17 @@ import com.nathaniel.carryapp.presentation.theme.LocalAppSpacing
 import com.nathaniel.carryapp.presentation.theme.LocalAppTypography
 import com.nathaniel.carryapp.presentation.theme.LocalResponsiveSizes
 import com.nathaniel.carryapp.presentation.ui.compose.navigation.TopNavigationBar
+import com.nathaniel.carryapp.presentation.ui.compose.signin.SignInViewModel
+import com.nathaniel.carryapp.presentation.ui.sharedViewModel
 import com.nathaniel.carryapp.presentation.utils.DynamicButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AgreementTermsPrivacyScreen(
     navController: NavController,
-    mobileNumber: String? = "",
-    // Optional: you can pass a custom action when user agrees
-    onAgree: (() -> Unit)? = null
+    mobileOrEmail: String? = "",
 ) {
+    val signInViewModel: SignInViewModel = sharedViewModel()
     val colors = LocalAppColors.current
     val spacing = LocalAppSpacing.current
     val typography = LocalAppTypography.current
@@ -61,7 +62,11 @@ fun AgreementTermsPrivacyScreen(
             ) {
                 DynamicButton(
                     onClick = {
-                        onAgree?.invoke() ?: navController.popBackStack()
+                        signInViewModel.addAgreementStatus(
+                            email = mobileOrEmail ?: "",
+                            agreementStatus = true,
+                            navController
+                        )
                     },
                     enabled = true,
                     height = sizes.buttonHeight,

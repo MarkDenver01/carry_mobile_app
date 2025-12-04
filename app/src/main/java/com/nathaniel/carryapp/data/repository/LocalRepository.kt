@@ -1,9 +1,11 @@
 package com.nathaniel.carryapp.data.repository
 
 import com.nathaniel.carryapp.data.local.prefs.TokenManager
+import com.nathaniel.carryapp.data.local.room.entity.AgreementTermsEntity
 import com.nathaniel.carryapp.data.local.room.entity.CustomerDetailsEntity
 import com.nathaniel.carryapp.data.local.room.entity.DeliveryAddressEntity
 import com.nathaniel.carryapp.domain.datasource.AddressDatasource
+import com.nathaniel.carryapp.domain.datasource.AgreementDatasource
 import com.nathaniel.carryapp.domain.datasource.CartDatasource
 import com.nathaniel.carryapp.domain.datasource.LoginDatasource
 import com.nathaniel.carryapp.domain.mapper.CustomerDetailsMapper
@@ -18,10 +20,11 @@ class LocalRepository @Inject constructor(
     private val addressDataSource: AddressDatasource,
     private val loginDataSource: LoginDatasource,
     private val cartDataSource: CartDatasource,
+    private val agreementDatasource: AgreementDatasource,
     private val tokenManager: TokenManager
 ) {
-
-    private var products: List<ShopProduct> = emptyList()
+    private val _products = MutableStateFlow<List<ShopProduct>>(emptyList())
+    fun getProductsFlow(): StateFlow<List<ShopProduct>> = _products
 
     fun saveUserSession(session: Boolean) {
         tokenManager.userSession(session)
@@ -51,9 +54,15 @@ class LocalRepository @Inject constructor(
     suspend fun getAddress(): DeliveryAddressEntity? = addressDataSource.get()
 
     suspend fun clearAddress() = addressDataSource.clear()
-    private val _products = MutableStateFlow<List<ShopProduct>>(emptyList())
-    fun getProductsFlow(): StateFlow<List<ShopProduct>> = _products
 
+    suspend fun saveAgreement(agreement: AgreementTermsEntity) {
+        agreementDatasource.insertAgreement(agreement)
+    }
+
+    suspend fun isVerifiedAgreement(email: String): Boolean? =
+        agreementDatasource.isVerified(email)
+
+    suspend fun clearAgreementStatus() = agreementDatasource.clearAgreementStatus()
 
     suspend fun updateAddress(
         provinceName: String,

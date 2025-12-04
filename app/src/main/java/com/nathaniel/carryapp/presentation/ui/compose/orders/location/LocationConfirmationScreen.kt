@@ -23,16 +23,16 @@ import com.google.maps.android.compose.*
 import com.nathaniel.carryapp.domain.request.DeliveryAddressRequest
 import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
 import com.nathaniel.carryapp.presentation.ui.compose.orders.components.BackHeader
+import com.nathaniel.carryapp.presentation.ui.sharedViewModel
 import com.nathaniel.carryapp.presentation.utils.rememberLocationPermissionState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("MissingPermission")
 @Composable
 fun LocationConfirmationScreen(
-    navController: NavController,
-    viewModel: OrderViewModel = hiltViewModel()
+    navController: NavController
 ) {
-
+    val viewModel: OrderViewModel = sharedViewModel()
     // Observe VIEWMODEL ADDRESS STATE
     val addressState = viewModel.reverseAddress.collectAsState()
     val pinPosition by viewModel.selectedLatLng.collectAsState()

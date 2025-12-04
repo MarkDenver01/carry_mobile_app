@@ -1,5 +1,6 @@
 package com.nathaniel.carryapp.di
 
+import com.nathaniel.carryapp.data.local.datasource.AgreementDatasourceImpl
 import com.nathaniel.carryapp.data.local.datasource.CartDatasourceImpl
 import com.nathaniel.carryapp.data.local.datasource.LoginDatasourceImpl
 import com.nathaniel.carryapp.data.local.prefs.TokenManager
@@ -10,12 +11,15 @@ import com.nathaniel.carryapp.data.repository.ApiRepository
 import com.nathaniel.carryapp.data.repository.GeocodingRepository
 import com.nathaniel.carryapp.data.repository.LocalRepository
 import com.nathaniel.carryapp.domain.datasource.AddressDatasource
+import com.nathaniel.carryapp.domain.datasource.AgreementDatasource
 import com.nathaniel.carryapp.domain.datasource.ApiDatasource
 import com.nathaniel.carryapp.domain.datasource.CartDatasource
 import com.nathaniel.carryapp.domain.datasource.LoginDatasource
 import com.nathaniel.carryapp.domain.usecase.AddToCartUseCase
 import com.nathaniel.carryapp.domain.usecase.CashInUseCase
+import com.nathaniel.carryapp.domain.usecase.CheckAgreementStatusUseCase
 import com.nathaniel.carryapp.domain.usecase.CheckoutUseCase
+import com.nathaniel.carryapp.domain.usecase.ClearAgreementStatusUseCase
 import com.nathaniel.carryapp.domain.usecase.ClearCartUseCase
 import com.nathaniel.carryapp.domain.usecase.ForwardGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.GetAddressUseCase
@@ -36,6 +40,7 @@ import com.nathaniel.carryapp.domain.usecase.GetWalletBalanceUseCase
 import com.nathaniel.carryapp.domain.usecase.RemoveFromCartUseCase
 import com.nathaniel.carryapp.domain.usecase.ReverseGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveAddressUseCase
+import com.nathaniel.carryapp.domain.usecase.SaveAgreementUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveCustomerDetailsUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveMobileOrEmailUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveUserHistoryUseCase
@@ -78,6 +83,12 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideAgreementDatasource(
+        impl: AgreementDatasourceImpl
+    ): AgreementDatasource = impl
+
+    @Provides
+    @Singleton
     fun provideApiRepository(
         remote: ApiDatasource,
         local: LoginDatasource,
@@ -92,11 +103,13 @@ object AppModule {
         addressDataSource: AddressDatasource,
         loginDataSource: LoginDatasource,
         cartDataSource: CartDatasource,
+        agreementDatasource: AgreementDatasource,
         tokenManager: TokenManager
     ): LocalRepository = LocalRepository(
         addressDataSource,
         loginDataSource,
         cartDataSource,
+        agreementDatasource,
         tokenManager
     )
 
@@ -290,4 +303,23 @@ object AppModule {
     fun provideUpdateDriverLocationUseCase(
         repository: ApiRepository
     ): UpdateDriverLocationUseCase = UpdateDriverLocationUseCase(repository)
+
+    @Provides
+    @Singleton
+    fun SaveAgreementUseCase(
+        localRepository: LocalRepository
+    ): SaveAgreementUseCase = SaveAgreementUseCase(localRepository)
+
+    @Provides
+    @Singleton
+    fun CheckAgreementStatusUseCase(
+        localRepository: LocalRepository
+    ): CheckAgreementStatusUseCase = CheckAgreementStatusUseCase(localRepository)
+
+    @Provides
+    @Singleton
+    fun ClearAgreementStatusUseCase(
+        localRepository: LocalRepository
+    ): ClearAgreementStatusUseCase = ClearAgreementStatusUseCase(localRepository)
+
 }

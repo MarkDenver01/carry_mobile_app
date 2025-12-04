@@ -15,9 +15,9 @@ sealed class VerifyOtpResult {
 class VerifyOtpUseCase @Inject constructor(
     private val apiRepository: ApiRepository
 ) {
-    suspend operator fun invoke(mobile: String, otp: String): VerifyOtpResult {
+    suspend operator fun invoke(mobileOrEmail: String, otp: String): VerifyOtpResult {
 
-        when (val result = apiRepository.verifyOtp(mobile, otp)) {
+        when (val result = apiRepository.verifyOtp(mobileOrEmail, otp)) {
 
             is NetworkResult.Error -> {
                 return VerifyOtpResult.Error(result.message ?: "OTP verification failed")
