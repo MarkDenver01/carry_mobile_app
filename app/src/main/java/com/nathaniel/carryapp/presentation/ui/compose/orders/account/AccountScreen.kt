@@ -9,6 +9,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,6 +52,7 @@ fun AccountScreen(navController: NavController) {
     val customer = customerViewModel.customerDetails.collectAsState().value
     val isLoading by customerViewModel.isLoading.collectAsState()
     val cartCount by cartViewModel.cartCount.collectAsState()
+    var selectedIndex by remember { mutableStateOf(0) }
 
     Scaffold(
         containerColor = Color(0xFFF7F8FA),
@@ -62,10 +66,12 @@ fun AccountScreen(navController: NavController) {
         },
         bottomBar = {
             ShopBottomBar(
-                onHome = { navController.navigate(Routes.ORDERS) },
-                onCategories = { navController.navigate(Routes.CATEGORIES) },
-                onReorder = { navController.navigate(Routes.REORDER) },
-                onAccount = {}
+                selectedIndex = selectedIndex,
+                onItemSelected = { selectedIndex = it },
+                onHome = { navController.navigate("home") },
+                onCategories = { navController.navigate("categories") },
+                onReorder = { navController.navigate("reorder") },
+                onAccount = { navController.navigate("account") }
             )
         }
     ) { inner ->

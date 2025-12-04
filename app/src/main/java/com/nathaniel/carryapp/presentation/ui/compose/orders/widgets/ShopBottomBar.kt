@@ -19,100 +19,58 @@ import com.nathaniel.carryapp.R
 
 @Composable
 fun ShopBottomBar(
+    selectedIndex: Int,
+    onItemSelected: (Int) -> Unit,
     onHome: () -> Unit,
     onCategories: () -> Unit,
     onReorder: () -> Unit,
     onAccount: () -> Unit,
     offersCount: Int = 0
 ) {
-    var selectedIndex by remember { mutableStateOf(0) }
     val darkGreen = Color(0xFF0F8B3B)
     val lightGray = Color(0xFF6B7D85)
 
-    Box(
+    NavigationBar(
+        containerColor = Color.White,
+        tonalElevation = 8.dp,
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.Transparent)
+            .navigationBarsPadding()
+            .height(80.dp)
     ) {
-        // ✅ Base Navigation Bar
-        NavigationBar(
-            containerColor = Color.White,
-            tonalElevation = 8.dp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .navigationBarsPadding()
-                .height(80.dp)
-        ) {
-            NavigationBarItem(
-                selected = selectedIndex == 0,
-                onClick = { selectedIndex = 0; onHome() },
-                icon = { Icon(Icons.Outlined.Home, contentDescription = "Home") },
-                label = { Text("Home") },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = Color.White,
-                    unselectedIconColor = lightGray,
-                    selectedTextColor = Color.White,
-                    unselectedTextColor = lightGray,
-                    indicatorColor = darkGreen
-                )
+        NavigationBarItem(
+            selected = selectedIndex == 0,
+            onClick = { onItemSelected(0); onHome() },
+            icon = { Icon(Icons.Outlined.Home, "Home") },
+            label = { Text("Home") },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = Color.White,
+                unselectedIconColor = lightGray,
+                selectedTextColor = Color.White,
+                unselectedTextColor = lightGray,
+                indicatorColor = darkGreen
             )
+        )
 
-            NavigationBarItem(
-                selected = selectedIndex == 1,
-                onClick = { selectedIndex = 1; onCategories() },
-                icon = { Icon(Icons.Outlined.ShoppingCart, contentDescription = "Categories") },
-                label = { Text("Categories") },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = Color.White,
-                    unselectedIconColor = lightGray,
-                    selectedTextColor = Color.White,
-                    unselectedTextColor = lightGray,
-                    indicatorColor = darkGreen
-                )
-            )
+        NavigationBarItem(
+            selected = selectedIndex == 1,
+            onClick = { onItemSelected(1); onCategories() },
+            icon = { Icon(Icons.Outlined.ShoppingCart, "Categories") },
+            label = { Text("Categories") }
+        )
 
-            //Spacer(modifier = Modifier.width(36.dp))
+        NavigationBarItem(
+            selected = selectedIndex == 2,
+            onClick = { onItemSelected(2); onReorder() },
+            icon = { Icon(Icons.Outlined.List, "Reorder") },
+            label = { Text("Reorder") }
+        )
 
-            NavigationBarItem(
-                selected = selectedIndex == 2,
-                onClick = { selectedIndex = 2; onReorder() },
-                icon = { Icon(Icons.Outlined.List, contentDescription = "Reorder") },
-                label = { Text("Reorder") },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = Color.White,
-                    unselectedIconColor = lightGray,
-                    selectedTextColor = Color.White,
-                    unselectedTextColor = lightGray,
-                    indicatorColor = darkGreen
-                )
-            )
-
-            NavigationBarItem(
-                selected = selectedIndex == 3,
-                onClick = { selectedIndex = 3; onAccount() },
-                icon = { Icon(Icons.Outlined.AccountCircle, contentDescription = "Account") },
-                label = { Text("Account") },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = Color.White,
-                    unselectedIconColor = lightGray,
-                    selectedTextColor = Color.White,
-                    unselectedTextColor = lightGray,
-                    indicatorColor = darkGreen
-                )
-            )
-        }
-
-        // 🎅 Floating Festive Offers Button (non-overlapping, same baseline)
-//        Box(
-//            modifier = Modifier
-//                .align(Alignment.TopCenter)
-//                .offset(y = (-10).dp)
-//        ) {
-//            GreenFloatingButton(
-//                count = 12,
-//                onClick = { /* navigate to offers */ },
-//                modifier = Modifier.align(Alignment.TopCenter)
-//            )
-//        }
+        NavigationBarItem(
+            selected = selectedIndex == 3,
+            onClick = { onItemSelected(3); onAccount() },
+            icon = { Icon(Icons.Outlined.AccountCircle, "Account") },
+            label = { Text("Account") }
+        )
     }
 }

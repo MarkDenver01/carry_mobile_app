@@ -34,6 +34,7 @@ fun CategoryFilteredProductScreen(
 ) {
     val orderViewModel: OrderViewModel = sharedViewModel()
     val cartViewModel: CartViewModel = sharedViewModel()
+    var selectedIndex by remember { mutableStateOf(0) }
 
     // Set selected category
     LaunchedEffect(Unit) { orderViewModel.selectCategory(categoryName) }
@@ -61,8 +62,10 @@ fun CategoryFilteredProductScreen(
         },
         bottomBar = {
             ShopBottomBar(
-                onHome = { navController.navigate(Routes.ORDERS) },
-                onCategories = { navController.navigate(Routes.CATEGORIES) },
+                selectedIndex = selectedIndex,
+                onItemSelected = { selectedIndex = it },
+                onHome = { orderViewModel.onHomeClick() },
+                onCategories = { orderViewModel.onCategoriesClick() },
                 onReorder = { orderViewModel.onReorderClick() },
                 onAccount = { orderViewModel.onAccountClick() }
             )

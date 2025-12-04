@@ -265,17 +265,20 @@ class OrderViewModel @Inject constructor(
         viewModelScope.launch {
 
             val saved = getAddressUseCase()
+            Timber.d("gather location: ${saved?.longitude} - ${saved?.latitude}")
 
             if (saved != null) {
 
                 // 1. USE THE SAVED ADDRESS TEXT AS GEOCODING INPUT
                 val fullAddress = saved.addressDetail
+                Timber.d("full address: ${fullAddress}")
 
                 // 2. Convert text → LatLng
                 val geocodeResult = forwardGeocodeUseCase(fullAddress)
 
                 if (geocodeResult is GeocodeResult.Success) {
 
+                    Timber.d("geocode result: ${geocodeResult.data.latitude} - ${geocodeResult.data.longitude}")
                     // 3. THIS is the TRUE starting point of the map
                     _selectedLatLng.value = geocodeResult.data
 

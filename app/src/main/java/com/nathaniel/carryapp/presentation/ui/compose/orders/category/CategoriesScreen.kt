@@ -39,6 +39,8 @@ fun CategoriesScreen(
     // Convert DOMAIN → UI
     val shopProducts = products.map { it.toShopProduct() }
 
+    var selectedIndex by remember { mutableStateOf(0) }
+
     // -------------------------------------
     // BUILD CATEGORIES FROM REAL PRODUCT DATA
     // -------------------------------------
@@ -69,10 +71,12 @@ fun CategoriesScreen(
         },
         bottomBar = {
             ShopBottomBar(
-                onHome = { navController.navigate(Routes.ORDERS) },
-                onCategories = {},
-                onReorder = { orderViewModel.onReorderClick() },
-                onAccount = { orderViewModel.onAccountClick() }
+                selectedIndex = selectedIndex,
+                onItemSelected = { selectedIndex = it },
+                onHome = { navController.navigate("home") },
+                onCategories = { navController.navigate("categories") },
+                onReorder = { navController.navigate("reorder") },
+                onAccount = { navController.navigate("account") }
             )
         },
         containerColor = Color.White

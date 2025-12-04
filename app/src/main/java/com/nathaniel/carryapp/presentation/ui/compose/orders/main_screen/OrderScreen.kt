@@ -40,6 +40,8 @@ fun OrderScreen(
     // Convert from domain → UI
     val shopProducts = products.map { it.toShopProduct() }
 
+    var selectedIndex by remember { mutableStateOf(0) }
+
     LaunchedEffect(products) {
         cartViewModel.setProducts(products)
     }
@@ -80,6 +82,8 @@ fun OrderScreen(
         },
         bottomBar = {
             ShopBottomBar(
+                selectedIndex = selectedIndex,
+                onItemSelected = { selectedIndex = it },
                 onHome = { orderViewModel.onHomeClick() },
                 onCategories = { orderViewModel.onCategoriesClick() },
                 onReorder = { orderViewModel.onReorderClick() },

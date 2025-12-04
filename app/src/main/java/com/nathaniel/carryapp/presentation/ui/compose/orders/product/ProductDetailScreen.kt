@@ -45,11 +45,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.nathaniel.carryapp.navigation.Routes
-import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
-import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.ShopBottomBar
-import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.ShopHeader
-import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.ShopSearchBar
 
 @Composable
 fun ProductDetailScreen(
