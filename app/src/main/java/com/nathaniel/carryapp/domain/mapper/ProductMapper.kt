@@ -19,8 +19,12 @@ object ProductMapper {
         )
     }
 
-    fun toDomainList(list: List<ProductResponse>) =
-        list.map { toDomain(it) }
+    // Filter before mapping (more efficient)
+    fun toDomainList(list: List<ProductResponse>): List<Product> {
+        return list
+            .filter { it.stocks > 0 }            // ⬅ Only map products with stocks > 0
+            .map { toDomain(it) }
+    }
 
     // DOMAIN -> UI MAPPER
     fun Product.toShopProduct(): ShopProduct {

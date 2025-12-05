@@ -164,6 +164,9 @@ fun ProductDetailRouter(
                         onMinus = {
                             cartViewModel.removeProductOriginalDomain(p.id)
                         },
+                        onDeduct = { orderViewModel.deductStock(p.id) },
+                        onRestore = { orderViewModel.restoreStock(p.id) },
+
                         onDetailClick = {
                             val customerId = customerSession?.customer?.customerId
                             if (customerId != null) {

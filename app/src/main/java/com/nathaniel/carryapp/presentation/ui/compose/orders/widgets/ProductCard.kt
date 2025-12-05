@@ -36,6 +36,8 @@ fun ProductCard(
     onFavorite: () -> Unit,
     onAdd: () -> Unit,
     onMinus: () -> Unit,
+    onDeduct: () -> Unit,
+    onRestore: () -> Unit,
     onDetailClick: () -> Unit
 ) {
     var qty by remember { mutableStateOf(0) }
@@ -153,6 +155,7 @@ fun ProductCard(
                         if (qty > 0) {
                             qty -= 1
                             onMinus()
+                            onRestore()
                         }
                     },
                     modifier = Modifier.width(48.dp),
@@ -178,6 +181,7 @@ fun ProductCard(
                         if (remainingStock > 0) {
                             qty += 1
                             onAdd()
+                            onDeduct()
                         }
                     },
                     modifier = Modifier.width(48.dp),

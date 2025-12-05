@@ -170,6 +170,8 @@ fun ReOrderScreen(
                             onMinus = {
                                 cartViewModel.removeProductOriginalDomain(p.id)
                             },
+                            onDeduct = { orderViewModel.deductStock(p.id) },
+                            onRestore = { orderViewModel.restoreStock(p.id) },
                             onDetailClick = {
                                 // ✅ Optionally record when a product detail is viewed
                                 val customerId = customerSession?.customer?.customerId

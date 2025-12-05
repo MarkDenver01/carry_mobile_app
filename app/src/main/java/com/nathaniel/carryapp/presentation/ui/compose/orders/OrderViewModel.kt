@@ -438,6 +438,21 @@ class OrderViewModel @Inject constructor(
         }
     }
 
+    fun deductStock(productId: Long) {
+        _products.value = _products.value.map { p ->
+            if (p.id == productId && p.stocks > 0) {
+                p.copy(stocks = p.stocks - 1)
+            } else p
+        }
+    }
+
+    fun restoreStock(productId: Long) {
+        _products.value = _products.value.map { p ->
+            if (p.id == productId) {
+                p.copy(stocks = p.stocks + 1)
+            } else p
+        }
+    }
 
     private fun loadRegions() {
         viewModelScope.launch {

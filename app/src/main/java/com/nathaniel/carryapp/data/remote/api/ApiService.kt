@@ -39,7 +39,7 @@ interface ApiService {
         @Body request: MobileRequest
     ): Response<LoginResponse>
 
-    @GET("/user/public/api/price/all")
+    @GET("/user/public/api/price/all/available")
     suspend fun getAllProducts(): Response<List<ProductResponse>>
 
     @POST("/user/public/customer")

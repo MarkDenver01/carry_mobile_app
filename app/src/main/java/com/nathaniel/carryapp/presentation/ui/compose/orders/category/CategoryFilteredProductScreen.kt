@@ -131,6 +131,8 @@ fun CategoryFilteredProductScreen(
                             onMinus = {
                                 if (p.enabled) cartViewModel.removeProductOriginalDomain(p.id)
                             },
+                            onDeduct = { orderViewModel.deductStock(p.id) },
+                            onRestore = { orderViewModel.restoreStock(p.id) },
                             onDetail = {
                                 if (p.enabled) {
                                     navController.navigate("${Routes.PRODUCT_DETAIL}/${p.id}")
@@ -149,6 +151,8 @@ fun ProductCardFiltered(
     product: ShopProduct,
     onAdd: () -> Unit,
     onMinus: () -> Unit,
+    onDeduct: () -> Unit,
+    onRestore: () -> Unit,
     onDetail: () -> Unit
 ) {
     val alpha = if (product.enabled) 1f else 0.4f
@@ -163,6 +167,8 @@ fun ProductCardFiltered(
             onFavorite = {},
             onAdd = onAdd,
             onMinus = onMinus,
+            onDeduct = { onDeduct },
+            onRestore = { onRestore },
             onDetailClick = onDetail
         )
     }
