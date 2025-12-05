@@ -130,11 +130,11 @@ fun OrderScreen(
                         onSearch = { query ->
                             orderViewModel.updateSearchQuery(query)
 
-                            val customerId = customerSession?.customer?.customerId
-                            if (customerId != null && query.isNotBlank()) {
-                                orderViewModel.recordUserInteraction(customerId, query)
-                                Timber.d("🔍 Search recorded: $query")
-                            }
+//                            val customerId = customerSession?.customer?.customerId
+//                            if (customerId != null && query.isNotBlank()) {
+//                                orderViewModel.recordUserInteraction(customerId, query)
+//                                Timber.d("🔍 Search recorded: $query")
+//                            }
                         }
                     )
                     Spacer(Modifier.height(8.dp))

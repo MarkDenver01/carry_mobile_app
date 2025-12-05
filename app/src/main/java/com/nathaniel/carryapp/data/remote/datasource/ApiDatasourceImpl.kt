@@ -85,7 +85,7 @@ class ApiDatasourceImpl @Inject constructor(
     override suspend fun checkOUt(request: CheckoutRequest): Response<OrderResponse> =
         apiService.checkout(request)
 
-    override suspend fun updateWallet(request: UpdateWalletBalanceRequest): Response<WalletResponse>{
+    override suspend fun updateWallet(request: UpdateWalletBalanceRequest): Response<WalletResponse> {
         return apiService.updateCustomerWalletBalance(request)
     }
 
@@ -95,6 +95,10 @@ class ApiDatasourceImpl @Inject constructor(
 
     override suspend fun updateDriverLocation(dto: DriverLocationUpdateRequest) {
         apiService.updateLocation(dto)
+    }
+
+    override suspend fun searchProducts(query: String): Response<List<ProductResponse>> {
+        return apiService.smartSearch(query)
     }
 
 

@@ -422,5 +422,24 @@ class ApiRepository @Inject constructor(
     suspend fun updateDriverLocation(request: DriverLocationUpdateRequest) =
         remote.updateDriverLocation(request)
 
+    suspend fun searchProducts(query: String): NetworkResult<List<Product>> {
+        return try {
+            val response = remote.searchProducts(query)
+
+            if (response.isSuccessful) {
+                val body = response.body().orEmpty()
+                NetworkResult.Success(
+                    HttpStatus.SUCCESS,
+                    body.map { ProductMapper.toDomain(it) }
+                )
+            } else {
+                NetworkResult.Error(HttpStatus.ERROR, "Search failed")
+            }
+
+        } catch (e: Exception) {
+            NetworkResult.Error(HttpStatus.ERROR, e.message ?: "Search error")
+        }
+    }
+
 
 }

@@ -59,4 +59,6 @@ interface ApiDatasource {
     suspend fun getCustomerWalletBalance(mobileNumber: String): Response<WalletResponse>
 
     suspend fun updateDriverLocation(dto: DriverLocationUpdateRequest)
+
+    suspend fun searchProducts(query: String): Response<List<ProductResponse>>
 }

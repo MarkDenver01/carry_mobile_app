@@ -52,6 +52,7 @@ import com.nathaniel.carryapp.domain.usecase.SaveHistoryResult
 import com.nathaniel.carryapp.domain.usecase.SaveMobileOrEmailUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveUserHistoryUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveUserSessionUseCase
+import com.nathaniel.carryapp.domain.usecase.SearchProductsUseCase
 import com.nathaniel.carryapp.domain.usecase.UpdateAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.UpdateCustomerUseCase
 import com.nathaniel.carryapp.domain.usecase.UploadCustomerPhotoUseCase
@@ -61,6 +62,7 @@ import com.nathaniel.carryapp.presentation.ui.state.CustomerUiAction
 import com.nathaniel.carryapp.presentation.ui.state.CustomerUiEvent
 import com.nathaniel.carryapp.presentation.ui.state.LoginUiAction
 import com.nathaniel.carryapp.presentation.ui.state.LoginUiEvent
+import com.nathaniel.carryapp.presentation.utils.NetworkResult
 import com.nathaniel.carryapp.presentation.utils.toMultipart
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -120,6 +122,7 @@ class OrderViewModel @Inject constructor(
     private val getUserHistoryUseCase: GetUserHistoryUseCase,
     private val getRelatedProductsUseCase: GetRelatedProductsUseCase,
     private val checkLoginSessionUseCase: CheckLoginSessionUseCase,
+    private val searchProductsUseCase: SearchProductsUseCase,
     private val apiRepository: ApiRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
@@ -842,7 +845,30 @@ class OrderViewModel @Inject constructor(
     }
 
     fun updateSearchQuery(query: String) {
-        _searchQuery.value = query
+        viewModelScope.launch {
+
+            _searchQuery.value = query
+
+            if (query.isBlank()) {
+                loadProducts()
+                return@launch
+            }
+
+            when (val result = searchProductsUseCase(query)) {
+
+                is ProductResult.Success -> {
+                    _products.value = result.products
+                }
+
+                is ProductResult.Error -> {
+                    // fallback: client-side search
+                    _products.value = _products.value.filter {
+                        it.name.contains(query, ignoreCase = true) ||
+                                it.categoryName.contains(query, ignoreCase = true)
+                    }
+                }
+            }
+        }
     }
 
     // ---------- BUTTON ACTIONS ----------

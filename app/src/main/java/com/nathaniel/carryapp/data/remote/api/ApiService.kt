@@ -114,4 +114,7 @@ interface ApiService {
 
     @POST("/api/driver/location")
     suspend fun updateLocation(@Body driverLocationUpdateRequest: DriverLocationUpdateRequest)
+
+    @GET("/user/public/search")
+    suspend fun smartSearch(@Query("query") query: String): Response<List<ProductResponse>>
 }

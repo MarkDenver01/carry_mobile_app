@@ -48,6 +48,7 @@ import com.nathaniel.carryapp.domain.usecase.SaveLoginSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveMobileOrEmailUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveUserHistoryUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveUserSessionUseCase
+import com.nathaniel.carryapp.domain.usecase.SearchProductsUseCase
 import com.nathaniel.carryapp.domain.usecase.UpdateAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.UpdateCustomerUseCase
 import com.nathaniel.carryapp.domain.usecase.UpdateDriverLocationUseCase
@@ -342,4 +343,10 @@ object AppModule {
     fun provideDeleteLoginSessionUseCase(
         localRepository: LocalRepository
     ): DeleteLoginSessionUseCase = DeleteLoginSessionUseCase(localRepository)
+
+    @Provides
+    @Singleton
+    fun provideSearchProductUseCase(
+        apiRepository: ApiRepository
+    ): SearchProductsUseCase = SearchProductsUseCase(apiRepository)
 }
