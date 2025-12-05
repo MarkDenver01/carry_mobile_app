@@ -58,7 +58,13 @@ fun OtpVerificationScreen(
             when (event) {
                 is AuthUiEvent.NavigateToTerms -> {
                     navController.navigate("${Routes.AGREEMENT_TERMS_PRIVACY}/${event.mobileOrEmail}") {
-                        popUpTo(Routes.SIGN_IN) { inclusive = true }
+                        popUpTo(Routes.OTP) { inclusive = true }
+                    }
+                }
+
+                is AuthUiEvent.NavigateToDriver -> {
+                    navController.navigate("${Routes.DRIVER_MAIN_SCREEN}/${event.mobileOrEmail}") {
+                        popUpTo(Routes.OTP) { inclusive = true }
                     }
                 }
 

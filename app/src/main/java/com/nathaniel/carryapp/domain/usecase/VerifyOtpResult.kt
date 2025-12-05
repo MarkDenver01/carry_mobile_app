@@ -17,16 +17,17 @@ class VerifyOtpUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(mobileOrEmail: String, otp: String): VerifyOtpResult {
 
-        when (val result = apiRepository.verifyOtp(mobileOrEmail, otp)) {
+        return when (val result = apiRepository.verifyOtp(mobileOrEmail, otp)) {
 
             is NetworkResult.Error -> {
-                return VerifyOtpResult.Error(result.message ?: "OTP verification failed")
+                VerifyOtpResult.Error(result.message ?: "OTP verification failed")
             }
 
             is NetworkResult.Success -> {
-                val data = result.data ?: return VerifyOtpResult.Error("Invalid server response")
+                val data = result.data
+                    ?: return VerifyOtpResult.Error("Invalid server response")
 
-                // Map to Room entities
+                // Map to Room entities (can be nullable depending on mapper logic)
                 val loginEntity = LoginMapper.toLoginEntity(data)
                 val customerEntity = LoginMapper.toCustomerEntity(data)
                 val driverEntity = LoginMapper.toDriverEntity(data)
@@ -38,14 +39,23 @@ class VerifyOtpUseCase @Inject constructor(
                     driverEntity = driverEntity
                 )
 
-                return when {
-                    customerEntity != null -> VerifyOtpResult.CustomerLogin
-                    driverEntity != null -> VerifyOtpResult.DriverLogin
+                // ✅ Use boolean conditions in a when { } block (not when(data.role))
+                // ✅ Use driverEntity for driver branch (not customerEntity)
+                when {
+                    data.role == "CUSTOMER" && customerEntity != null -> {
+                        VerifyOtpResult.CustomerLogin
+                    }
+
+                    data.role == "DRIVER" && driverEntity != null -> {
+                        VerifyOtpResult.DriverLogin
+                    }
+
                     else -> VerifyOtpResult.NewUser
                 }
             }
 
-            else -> return VerifyOtpResult.Error("Unknown error")
+            // If you have a Loading state in NetworkResult
+            else -> VerifyOtpResult.Error("Unknown error")
         }
     }
 }

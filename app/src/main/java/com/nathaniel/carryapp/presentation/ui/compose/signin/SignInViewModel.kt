@@ -32,6 +32,10 @@ import javax.inject.Inject
 sealed class AuthUiEvent {
     data class NavigateToOtp(val mobile: String) : AuthUiEvent()
     data class NavigateToTerms(val mobileOrEmail: String) : AuthUiEvent()
+
+    data class NavigateToDriver(val mobileOrEmail: String) : AuthUiEvent(
+
+    )
     object NavigateToHome : AuthUiEvent()
     data class ShowError(val message: String) : AuthUiEvent()
 }
@@ -92,9 +96,16 @@ class SignInViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true) }
 
             when (val result = verifyOtpUseCase(mobileOrEmail, otp)) {
+                is VerifyOtpResult.DriverLogin -> {
+                    val agreed = checkAgreementStatusUseCase(mobileOrEmail)
+                    if (agreed == true) {
+                        _eventFlow.emit(AuthUiEvent.NavigateToHome)
+                    } else {
+                        _eventFlow.emit(AuthUiEvent.NavigateToDriver(mobileOrEmail))
+                    }
+                }
 
                 is VerifyOtpResult.CustomerLogin,
-                is VerifyOtpResult.DriverLogin,
                 is VerifyOtpResult.NewUser -> {
                     val agreed = checkAgreementStatusUseCase(mobileOrEmail)
 

@@ -68,10 +68,10 @@ fun AccountScreen(navController: NavController) {
             ShopBottomBar(
                 selectedIndex = selectedIndex,
                 onItemSelected = { selectedIndex = it },
-                onHome = { navController.navigate("home") },
-                onCategories = { navController.navigate("categories") },
-                onReorder = { navController.navigate("reorder") },
-                onAccount = { navController.navigate("account") }
+                onHome = { navController.navigate(Routes.ORDERS) },
+                onCategories = { navController.navigate(Routes.CATEGORIES) },
+                onReorder = { navController.navigate(Routes.REORDER) },
+                onAccount = { navController.navigate(Routes.ACCOUNT) }
             )
         }
     ) { inner ->

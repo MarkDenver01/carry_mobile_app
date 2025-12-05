@@ -7,24 +7,11 @@ object Routes {
     const val SHOPPING = "shopping"
     const val ALERTS = "alerts"
     const val BROWSE = "browse"
-    const val DELIVERY = "delivery"
-    const val PICKUP = "pickup"
-    const val SIGN_UP = "sign_up"
     const val SIGN_IN = "sign_in"
-    const val DISPLAY_PROFILE = "display_profile"
-    const val UPDATE_PROFILE = "update_profile"
-    const val CHANGE_PASSWORD = "change_password"
-    const val MEMBERSHIP = "membership"
-    const val SUBSCRIPTION = "subscription"
-    const val BADGE_DETAILS = "badge_details"
-    const val VOUCHER = "voucher"
-    const val SELECT_ORDER = "select_order"
-
     const val FORGOT_PASSWORD = "forgot_password"
     const val OTP = "otp"
     const val AGREEMENT_TERMS_PRIVACY = "agreement_terms_privacy"
     const val CATEGORIES = "categories"
-
     const val SORT_PRODUCT_BY_CATEGORY = "sort_product_by_category"
     const val REORDER = "reorder"
     const val ACCOUNT = "account"
@@ -37,8 +24,7 @@ object Routes {
     const val CASH_IN_SUCCESS = "cash_in_success"
     const val CASH_IN_FAILED = "cash_in_failed"
     const val CART = "my_cart"
-
     const val CHECKOUT = "check_out"
-
     const val CUSTOMER_REG_SUCCESS = "customer_registration_success"
+    const val DRIVER_MAIN_SCREEN = "driver_main_screen"
 }
