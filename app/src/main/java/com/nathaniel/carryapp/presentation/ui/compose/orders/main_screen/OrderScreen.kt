@@ -43,6 +43,22 @@ fun OrderScreen(
     // Convert from domain → UI
     val shopProducts = products.map { it.toShopProduct() }
 
+    val searchQuery by orderViewModel.searchQuery.collectAsState()
+
+    // FILTER products globally
+    val filteredProducts = remember(searchQuery, shopProducts) {
+        if (searchQuery.isBlank()) {
+            shopProducts
+        } else {
+            val q = searchQuery.lowercase()
+
+            shopProducts.filter { p ->
+                p.name.lowercase().contains(q) ||
+                        p.categoryName.lowercase().contains(q)
+            }
+        }
+    }
+
     LaunchedEffect(products) {
         cartViewModel.setProducts(products)
     }
@@ -69,14 +85,15 @@ fun OrderScreen(
     }
 
     // Dynamic category groups
-    val racks = shopProducts
-        .groupBy { it.categoryName } // GROUP BY CATEGORY
+    val racks = filteredProducts
+        .groupBy { it.categoryName }
         .map { (categoryName, productList) ->
             ProductRack(
                 title = categoryName,
                 products = productList
             )
         }
+        .filter { it.products.isNotEmpty() }  // hide empty categories
 
     Scaffold(
         containerColor = Color(0xFFF7F8FA),
@@ -111,6 +128,8 @@ fun OrderScreen(
                     ShopSearchBar(
                         hint = "I'm Smart Search AI, looking for…",
                         onSearch = { query ->
+                            orderViewModel.updateSearchQuery(query)
+
                             val customerId = customerSession?.customer?.customerId
                             if (customerId != null && query.isNotBlank()) {
                                 orderViewModel.recordUserInteraction(customerId, query)

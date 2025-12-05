@@ -27,7 +27,10 @@ fun ShopSearchBar(
 
     OutlinedTextField(
         value = query,
-        onValueChange = { query = it },
+        onValueChange = {
+            query = it
+            onSearch(it)
+        },
         placeholder = {
             Text(
                 text = hint,

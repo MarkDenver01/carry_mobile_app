@@ -213,6 +213,9 @@ class OrderViewModel @Inject constructor(
     private val _selectedTab = MutableStateFlow(0)
     val selectedTab: StateFlow<Int> = _selectedTab
 
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery
+
     init {
         loadRegions()
         loadProvinces()
@@ -836,6 +839,10 @@ class OrderViewModel @Inject constructor(
 
     fun updateSelectedTab(index: Int) {
         _selectedTab.value = index
+    }
+
+    fun updateSearchQuery(query: String) {
+        _searchQuery.value = query
     }
 
     // ---------- BUTTON ACTIONS ----------
