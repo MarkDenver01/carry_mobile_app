@@ -40,6 +40,7 @@ fun ProductCard(
 ) {
     var qty by remember { mutableStateOf(0) }
     var isFavorite by remember { mutableStateOf(false) }
+    val remainingStock = (sold - qty).coerceAtLeast(0)
 
     Card(
         modifier = Modifier
@@ -122,7 +123,11 @@ fun ProductCard(
             Spacer(Modifier.height(2.dp))
             Text(weight, fontSize = 12.sp, color = Color(0xFF6B7D85))
             Spacer(Modifier.height(2.dp))
-            Text("$sold Stocks", fontSize = 12.sp, color = Color(0xFF118B3C))
+            Text(
+                "$remainingStock Stocks",
+                fontSize = 12.sp,
+                color = Color(0xFF118B3C)
+            )
             Spacer(Modifier.height(8.dp))
             Text(
                 text = price.toString(),
@@ -170,8 +175,10 @@ fun ProductCard(
 
                 TextButton(
                     onClick = {
-                        qty += 1
-                        onAdd()
+                        if (remainingStock > 0) {
+                            qty += 1
+                            onAdd()
+                        }
                     },
                     modifier = Modifier.width(48.dp),
                     contentPadding = PaddingValues(0.dp)
