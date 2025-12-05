@@ -25,11 +25,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.nathaniel.carryapp.domain.request.CustomerRegistrationRequest
-import com.nathaniel.carryapp.presentation.ui.compose.orders.CustomerRegistrationUIEvent
+import com.nathaniel.carryapp.navigation.Routes
 import com.nathaniel.carryapp.presentation.ui.compose.orders.components.BackHeader
 import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
 import com.nathaniel.carryapp.presentation.ui.compose.signin.SignInViewModel
-import com.nathaniel.carryapp.presentation.ui.sharedViewModel
+import com.nathaniel.carryapp.presentation.ui.state.CustomerRegistrationUIEvent
+import com.nathaniel.carryapp.presentation.ui.state.CustomerUiAction
 import com.nathaniel.carryapp.presentation.utils.CustomToast
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,7 +42,6 @@ fun CustomerRegistrationScreen(
 ) {
     val state by orderViewModel.uiState.collectAsState()
     val toastState by orderViewModel.toastState.collectAsState()
-    val navigateTo by orderViewModel.navigateTo.collectAsState()
 
     Box(modifier = Modifier.fillMaxSize()) {
 
@@ -125,7 +125,7 @@ fun CustomerRegistrationScreen(
                     UploadPhotoSection(
                         imageUri = state.photoUri,
                         onPickImage = { uri ->
-                            orderViewModel.onEvent(
+                            orderViewModel.onCustomerFillEvent(
                                 CustomerRegistrationUIEvent.OnPhotoSelected(uri)
                             )
                         }
@@ -140,7 +140,7 @@ fun CustomerRegistrationScreen(
                             label = "Full Name",
                             value = state.userName,
                             onValueChange = {
-                                orderViewModel.onEvent(
+                                orderViewModel.onCustomerFillEvent(
                                     CustomerRegistrationUIEvent.OnUserNameChanged(it)
                                 )
                             }
@@ -151,7 +151,7 @@ fun CustomerRegistrationScreen(
                             value = state.email,
                             enabled = !state.isEmailDisabled,
                             onValueChange = {
-                                orderViewModel.onEvent(
+                                orderViewModel.onCustomerFillEvent(
                                     CustomerRegistrationUIEvent.OnEmailChanged(it)
                                 )
                             }
@@ -162,7 +162,7 @@ fun CustomerRegistrationScreen(
                             value = state.mobileNumber,
                             enabled = !state.isMobileDisabled,
                             onValueChange = {
-                                orderViewModel.onEvent(
+                                orderViewModel.onCustomerFillEvent(
                                     CustomerRegistrationUIEvent.OnMobileChanged(it)
                                 )
                             },
@@ -194,10 +194,18 @@ fun CustomerRegistrationScreen(
         // =========================
         // NAVIGATION EVENT
         // =========================
-        LaunchedEffect(navigateTo) {
-            navigateTo?.let { route ->
-                navController.navigate(route)
-                orderViewModel.resetNavigation()
+        LaunchedEffect(orderViewModel.customerUiAction) {
+            orderViewModel.customerUiAction.collect { action ->
+                when (action) {
+                    is CustomerUiAction.Navigate -> {
+                        navController.navigate(action.route) {
+                            popUpTo(Routes.SIGN_IN) { inclusive = false }
+                        }
+                        orderViewModel.resetCustomerAction()
+                    }
+
+                    null -> Unit
+                }
             }
         }
     }

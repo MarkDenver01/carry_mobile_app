@@ -122,7 +122,7 @@ fun ProductCard(
             Spacer(Modifier.height(2.dp))
             Text(weight, fontSize = 12.sp, color = Color(0xFF6B7D85))
             Spacer(Modifier.height(2.dp))
-            Text("$sold items sold", fontSize = 12.sp, color = Color(0xFF118B3C))
+            Text("$sold Stocks", fontSize = 12.sp, color = Color(0xFF118B3C))
             Spacer(Modifier.height(8.dp))
             Text(
                 text = price.toString(),

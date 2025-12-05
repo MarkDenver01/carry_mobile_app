@@ -25,6 +25,8 @@ import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.ProductCard
 import com.nathaniel.carryapp.presentation.ui.sharedViewModel
 import com.nathaniel.carryapp.domain.model.ShopProduct
 import com.nathaniel.carryapp.domain.mapper.ProductMapper.toShopProduct
+import com.nathaniel.carryapp.presentation.ui.state.LoginUiAction
+import com.nathaniel.carryapp.presentation.ui.state.LoginUiEvent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,9 +38,6 @@ fun CategoryFilteredProductScreen(
     val cartViewModel: CartViewModel = sharedViewModel()
     var selectedIndex by remember { mutableStateOf(0) }
 
-    // Set selected category
-    LaunchedEffect(Unit) { orderViewModel.selectCategory(categoryName) }
-
     val products by orderViewModel.products.collectAsState()
     val selectedCategory by orderViewModel.selectedCategory.collectAsState()
 
@@ -46,10 +45,30 @@ fun CategoryFilteredProductScreen(
     val filtered = products
         .map { it.toShopProduct() }
         .map { shop ->
-            shop.copy(
-                enabled = shop.categoryName == selectedCategory
-            )
+            shop.copy(enabled = shop.categoryName == selectedCategory)
         }
+
+    // Set selected category
+    LaunchedEffect(categoryName) {
+        orderViewModel.selectCategory(categoryName)
+    }
+
+    LaunchedEffect(orderViewModel.loginUiAction) {
+        orderViewModel.loginUiAction.collect { action ->
+            when (action) {
+                is LoginUiAction.Navigate -> {
+                    navController.navigate(action.route) {
+                        popUpTo(Routes.SIGN_IN) { inclusive = false }
+                    }
+                    orderViewModel.resetLoginAction()
+                }
+
+                is LoginUiAction.ShowToast -> "Order"
+                null -> Unit
+            }
+        }
+    }
+
 
     Scaffold(
         topBar = {
@@ -62,12 +81,12 @@ fun CategoryFilteredProductScreen(
         },
         bottomBar = {
             ShopBottomBar(
-                selectedIndex = selectedIndex,
-                onItemSelected = { selectedIndex = it },
-                onHome = { orderViewModel.onHomeClick() },
-                onCategories = { orderViewModel.onCategoriesClick() },
-                onReorder = { orderViewModel.onReorderClick() },
-                onAccount = { orderViewModel.onAccountClick() }
+                selectedIndex = orderViewModel.selectedTab.collectAsState().value,
+                onItemSelected = { orderViewModel.updateSelectedTab(it) },
+                onHome = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnHomeClicked) },
+                onCategories = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnCategoriesClicked) },
+                onReorder = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnReorderClicked) },
+                onAccount = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnAccountClicked) }
             )
         },
         containerColor = Color.White

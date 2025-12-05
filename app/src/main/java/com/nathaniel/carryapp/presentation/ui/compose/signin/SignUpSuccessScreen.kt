@@ -13,17 +13,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.airbnb.lottie.compose.*
 import com.nathaniel.carryapp.R
+import com.nathaniel.carryapp.navigation.Routes
 import com.nathaniel.carryapp.presentation.theme.LocalAppColors
 import com.nathaniel.carryapp.presentation.theme.LocalResponsiveSizes
+import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
+import com.nathaniel.carryapp.presentation.ui.sharedViewModel
+import com.nathaniel.carryapp.presentation.ui.state.LoginUiAction
+import com.nathaniel.carryapp.presentation.ui.state.LoginUiEvent
 import com.nathaniel.carryapp.presentation.utils.DynamicButton
 
 @Composable
 fun SignUpSuccessScreen(
-    onProceed: () -> Unit,
-    onBack: () -> Unit
+    navController: NavController,
 ) {
+    val orderViewModel: OrderViewModel = sharedViewModel()
     val sizes = LocalResponsiveSizes.current
     val colors = LocalAppColors.current
     val spacing = 16.dp
@@ -36,6 +42,22 @@ fun SignUpSuccessScreen(
         composition,
         iterations = LottieConstants.IterateForever
     )
+
+    LaunchedEffect(orderViewModel.loginUiAction) {
+        orderViewModel.loginUiAction.collect { action ->
+            when (action) {
+                is LoginUiAction.Navigate -> {
+                    navController.navigate(action.route) {
+                        popUpTo(Routes.SIGN_IN) { inclusive = false }
+                    }
+                    orderViewModel.resetLoginAction()
+                }
+
+                is LoginUiAction.ShowToast -> "Success"
+                null -> Unit
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -50,7 +72,7 @@ fun SignUpSuccessScreen(
                     contentDescription = "Back",
                     modifier = Modifier
                         .size(22.dp)
-                        .clickable { onBack() },
+                        .clickable { navController.popBackStack() },
                     tint = Color.Black
                 )
                 Spacer(modifier = Modifier.width(8.dp))
@@ -69,7 +91,9 @@ fun SignUpSuccessScreen(
                     .padding(16.dp)
             ) {
                 DynamicButton(
-                    onClick = onProceed,
+                    onClick = {
+                        orderViewModel.onLoginClickEvent(LoginUiEvent.OnHomeClicked)
+                    },
                     height = sizes.buttonHeight,
                     backgroundColor = colors.primary,
                     pressedBackgroundColor = colors.primaryDark,

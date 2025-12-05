@@ -133,14 +133,7 @@ fun NavGraphBuilder.orderGraph(navController: NavController) {
     }
 
     composable(Routes.CUSTOMER_REG_SUCCESS) {
-        SignUpSuccessScreen(
-            onProceed = {
-                navController.navigate(Routes.ORDERS) {
-                    popUpTo(Routes.CUSTOMER_REG_SUCCESS) { inclusive = true }
-                }
-            },
-            onBack = { navController.popBackStack() }
-        )
+        SignUpSuccessScreen(navController = navController)
     }
 
     // TODO - recreate the UI for re-order

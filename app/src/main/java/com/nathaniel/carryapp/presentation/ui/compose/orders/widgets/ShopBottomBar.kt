@@ -46,7 +46,7 @@ fun ShopBottomBar(
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = Color.White,
                 unselectedIconColor = lightGray,
-                selectedTextColor = Color.White,
+                selectedTextColor = darkGreen,
                 unselectedTextColor = lightGray,
                 indicatorColor = darkGreen
             )
@@ -56,21 +56,42 @@ fun ShopBottomBar(
             selected = selectedIndex == 1,
             onClick = { onItemSelected(1); onCategories() },
             icon = { Icon(Icons.Outlined.ShoppingCart, "Categories") },
-            label = { Text("Categories") }
+            label = { Text("Categories") },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = Color.White,
+                unselectedIconColor = lightGray,
+                selectedTextColor = darkGreen,
+                unselectedTextColor = lightGray,
+                indicatorColor = darkGreen
+            )
         )
 
         NavigationBarItem(
             selected = selectedIndex == 2,
             onClick = { onItemSelected(2); onReorder() },
             icon = { Icon(Icons.Outlined.List, "Reorder") },
-            label = { Text("Reorder") }
+            label = { Text("Reorder") },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = Color.White,
+                unselectedIconColor = lightGray,
+                selectedTextColor = darkGreen,
+                unselectedTextColor = lightGray,
+                indicatorColor = darkGreen
+            )
         )
 
         NavigationBarItem(
             selected = selectedIndex == 3,
             onClick = { onItemSelected(3); onAccount() },
             icon = { Icon(Icons.Outlined.AccountCircle, "Account") },
-            label = { Text("Account") }
+            label = { Text("Account") },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = Color.White,
+                unselectedIconColor = lightGray,
+                selectedTextColor = darkGreen,
+                unselectedTextColor = lightGray,
+                indicatorColor = darkGreen
+            )
         )
     }
 }

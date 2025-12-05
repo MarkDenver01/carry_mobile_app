@@ -1,12 +1,12 @@
 package com.nathaniel.carryapp.presentation.ui.compose.initial
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -17,7 +17,7 @@ class InitialViewModel @Inject constructor() : ViewModel() {
 
     fun onGetStartedClicked() {
         viewModelScope.launch {
-            Log.d("TST", "Get started clicked.")
+            Timber.d("Get started clicking...")
             _navigateToDashboard.emit(Unit)
         }
     }

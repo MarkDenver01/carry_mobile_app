@@ -27,6 +27,8 @@ import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.ShopBottomB
 import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.ShopHeader
 import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.ShopSearchBar
 import com.nathaniel.carryapp.presentation.ui.sharedViewModel
+import com.nathaniel.carryapp.presentation.ui.state.LoginUiAction
+import com.nathaniel.carryapp.presentation.ui.state.LoginUiEvent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,7 +40,6 @@ fun CategoriesScreen(
 
     // Convert DOMAIN → UI
     val shopProducts = products.map { it.toShopProduct() }
-
     var selectedIndex by remember { mutableStateOf(0) }
 
     // -------------------------------------
@@ -56,6 +57,24 @@ fun CategoriesScreen(
 
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
 
+    LaunchedEffect(orderViewModel.loginUiAction) {
+        orderViewModel.loginUiAction.collect { action ->
+            when (action) {
+                is LoginUiAction.Navigate -> {
+                    navController.navigate(action.route) {
+                        popUpTo(Routes.SIGN_IN) { inclusive = false }
+                    }
+                    orderViewModel.resetLoginAction()
+                }
+
+                is LoginUiAction.ShowToast -> "Order"
+                null -> Unit
+            }
+        }
+    }
+
+
+
     Scaffold(
         topBar = {
             ShopHeader(
@@ -71,12 +90,12 @@ fun CategoriesScreen(
         },
         bottomBar = {
             ShopBottomBar(
-                selectedIndex = selectedIndex,
-                onItemSelected = { selectedIndex = it },
-                onHome = { navController.navigate("home") },
-                onCategories = { navController.navigate("categories") },
-                onReorder = { navController.navigate("reorder") },
-                onAccount = { navController.navigate("account") }
+                selectedIndex = orderViewModel.selectedTab.collectAsState().value,
+                onItemSelected = { orderViewModel.updateSelectedTab(it) },
+                onHome = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnHomeClicked) },
+                onCategories = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnCategoriesClicked) },
+                onReorder = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnReorderClicked) },
+                onAccount = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnAccountClicked) }
             )
         },
         containerColor = Color.White

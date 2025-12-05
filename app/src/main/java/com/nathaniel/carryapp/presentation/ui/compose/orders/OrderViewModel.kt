@@ -14,32 +14,24 @@ import com.google.android.gms.maps.model.LatLng
 import com.nathaniel.carryapp.data.local.room.relations.LoginWithCustomer
 import com.nathaniel.carryapp.data.repository.ApiRepository
 import com.nathaniel.carryapp.data.repository.GeocodedAddress
-import com.nathaniel.carryapp.data.repository.LocalRepository
 import com.nathaniel.carryapp.domain.enum.ToastType
 import com.nathaniel.carryapp.domain.mapper.CustomerDetailsMapper
 import com.nathaniel.carryapp.domain.model.Barangay
-import com.nathaniel.carryapp.domain.model.CartDisplayItem
 import com.nathaniel.carryapp.domain.model.City
 import com.nathaniel.carryapp.domain.model.Product
 import com.nathaniel.carryapp.domain.model.Province
-import com.nathaniel.carryapp.domain.model.ShopProduct
 import com.nathaniel.carryapp.domain.request.CustomerRegistrationRequest
 import com.nathaniel.carryapp.domain.request.DeliveryAddressMapper
 import com.nathaniel.carryapp.domain.request.DeliveryAddressRequest
 import com.nathaniel.carryapp.domain.response.ProductCategoryResponse
-import com.nathaniel.carryapp.domain.usecase.AddToCartUseCase
 import com.nathaniel.carryapp.domain.usecase.BarangayResult
-import com.nathaniel.carryapp.domain.usecase.CategoryResult
 import com.nathaniel.carryapp.domain.usecase.CheckLoginSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.CityResult
 import com.nathaniel.carryapp.domain.usecase.ForwardGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.GeocodeResult
 import com.nathaniel.carryapp.domain.usecase.GetAddressUseCase
-import com.nathaniel.carryapp.domain.usecase.GetAllCategoryUseCase
 import com.nathaniel.carryapp.domain.usecase.GetAllProductsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetBarangaysByCityUseCase
-import com.nathaniel.carryapp.domain.usecase.GetCartCountUseCase
-import com.nathaniel.carryapp.domain.usecase.GetCartSummaryUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCitiesByProvinceUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCurrentLocationUseCase
 import com.nathaniel.carryapp.domain.usecase.GetMobileOrEmailUseCase
@@ -53,7 +45,6 @@ import com.nathaniel.carryapp.domain.usecase.ProductResult
 import com.nathaniel.carryapp.domain.usecase.ProvinceResult
 import com.nathaniel.carryapp.domain.usecase.RecommendationResult
 import com.nathaniel.carryapp.domain.usecase.RelatedProductsResult
-import com.nathaniel.carryapp.domain.usecase.RemoveFromCartUseCase
 import com.nathaniel.carryapp.domain.usecase.ReverseGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveCustomerDetailsUseCase
@@ -65,19 +56,21 @@ import com.nathaniel.carryapp.domain.usecase.UpdateAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.UpdateCustomerUseCase
 import com.nathaniel.carryapp.domain.usecase.UploadCustomerPhotoUseCase
 import com.nathaniel.carryapp.navigation.Routes
+import com.nathaniel.carryapp.presentation.ui.state.CustomerRegistrationUIEvent
+import com.nathaniel.carryapp.presentation.ui.state.CustomerUiAction
+import com.nathaniel.carryapp.presentation.ui.state.CustomerUiEvent
+import com.nathaniel.carryapp.presentation.ui.state.LoginUiAction
+import com.nathaniel.carryapp.presentation.ui.state.LoginUiEvent
 import com.nathaniel.carryapp.presentation.utils.toMultipart
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
-import kotlin.invoke
 
 private const val REGION_IV_A = "040000000"
 
@@ -91,7 +84,7 @@ data class CartSummary(
     val qty: Int
 )
 
-data class CustomerUIState(
+data class CustomerFillData(
     val userName: String = "",
     val email: String = "",
     val isEmailDisabled: Boolean = false,
@@ -102,13 +95,6 @@ data class CustomerUIState(
     val address: String = "",
     val photoUri: Uri? = null
 )
-
-sealed class CustomerRegistrationUIEvent {
-    data class OnUserNameChanged(val value: String) : CustomerRegistrationUIEvent()
-    data class OnEmailChanged(val value: String) : CustomerRegistrationUIEvent()
-    data class OnMobileChanged(val value: String) : CustomerRegistrationUIEvent()
-    data class OnPhotoSelected(val uri: Uri) : CustomerRegistrationUIEvent()
-}
 
 @HiltViewModel
 class OrderViewModel @Inject constructor(
@@ -140,9 +126,6 @@ class OrderViewModel @Inject constructor(
 
     private val _selectedCategory = MutableStateFlow<String?>(null)
     val selectedCategory = _selectedCategory
-
-    private val _navigateTo = MutableStateFlow<String?>(null)
-    val navigateTo: StateFlow<String?> = _navigateTo
 
     private val _isLoggedIn = MutableStateFlow<Boolean?>(null)
     val isLoggedIn: StateFlow<Boolean?> = _isLoggedIn
@@ -215,11 +198,20 @@ class OrderViewModel @Inject constructor(
     private val _pinMoveMode = MutableStateFlow(false)
     val pinMoveMode: StateFlow<Boolean> = _pinMoveMode
 
-    private val _uiState = MutableStateFlow(CustomerUIState())
-    val uiState: StateFlow<CustomerUIState> = _uiState
+    private val _uiState = MutableStateFlow(CustomerFillData())
+    val uiState: StateFlow<CustomerFillData> = _uiState
 
     private val _related = MutableStateFlow<List<Product>>(emptyList())
     val related: StateFlow<List<Product>> = _related
+
+    private val _loginUiAction = MutableStateFlow<LoginUiAction?>(null)
+    val loginUiAction: StateFlow<LoginUiAction?> = _loginUiAction
+
+    private val _customerUiAction = MutableStateFlow<CustomerUiAction?>(null)
+    val customerUiAction: StateFlow<CustomerUiAction?> = _customerUiAction
+
+    private val _selectedTab = MutableStateFlow(0)
+    val selectedTab: StateFlow<Int> = _selectedTab
 
     init {
         loadRegions()
@@ -565,66 +557,17 @@ class OrderViewModel @Inject constructor(
         }
     }
 
-    fun resetNavigation() {
-        _navigateTo.value = null
-    }
-
-    // ---------- BUTTON ACTIONS ----------
-
-    fun onHomeClick() {
-        Timber.d("onHomeClick ${_isLoggedIn.value}")
-        if (_isLoggedIn.value == true) {
-            _navigateTo.value = Routes.ORDERS
-        } else {
-            _navigateTo.value = Routes.SIGN_IN
+    private suspend fun checkLoginStatusSuspend(): Boolean {
+        val email = getMobileOrEmailUseCase()
+        if (email.isNullOrEmpty()) {
+            _isLoggedIn.value = false
+            return false
         }
-    }
 
-    fun onCategoriesClick() {
-        Timber.d("onCategoriesClick ${_isLoggedIn.value}")
-        if (_isLoggedIn.value == true) {
-            _navigateTo.value = Routes.CATEGORIES
-        } else {
-            _navigateTo.value = Routes.SIGN_IN
-        }
+        val result = checkLoginSessionUseCase(email) ?: false
+        _isLoggedIn.value = result
+        return result
     }
-
-    fun onReorderClick() {
-        Timber.d("onReorderClick ${_isLoggedIn.value}")
-        if (_isLoggedIn.value == true) {
-            //_navigateTo.value = Routes.REORDER
-        } else {
-            _navigateTo.value = Routes.SIGN_IN
-        }
-    }
-
-    fun onAccountClick() {
-        Timber.d("onAccountClick ${_isLoggedIn.value}")
-        if (_isLoggedIn.value == true) {
-            _navigateTo.value = Routes.ACCOUNT
-        } else {
-            _navigateTo.value = Routes.SIGN_IN
-        }
-    }
-
-    fun onSearchClick() {
-        Timber.d("onSearchClick ${_isLoggedIn.value}")
-        if (_isLoggedIn.value == true) {
-            // do nothing for now
-        } else {
-            _navigateTo.value = Routes.SIGN_IN
-        }
-    }
-
-    fun onViewMoreClick() {
-        Timber.d("onViewMoreClick ${_isLoggedIn.value}")
-        if (_isLoggedIn.value == true) {
-            // do nothing for now
-        } else {
-            _navigateTo.value = Routes.SIGN_IN
-        }
-    }
-
 
     fun select(area: String) {
         _selected.value = area
@@ -742,9 +685,8 @@ class OrderViewModel @Inject constructor(
         }
     }
 
-    fun onEvent(event: CustomerRegistrationUIEvent) {
+    fun onCustomerFillEvent(event: CustomerRegistrationUIEvent) {
         when (event) {
-
             is CustomerRegistrationUIEvent.OnUserNameChanged ->
                 _uiState.update { it.copy(userName = event.value) }
 
@@ -790,7 +732,7 @@ class OrderViewModel @Inject constructor(
                 saveMobileOrEmailUseCase.invoke(request.email)
                 saveCustomerDetailsUseCase(details)
                 delay(3000)
-                _navigateTo.value = Routes.CUSTOMER_REG_SUCCESS
+                onCustomerClickEvent(CustomerUiEvent.OnCustomerRegisterClicked)
             }
 
         } catch (e: Exception) {
@@ -877,8 +819,77 @@ class OrderViewModel @Inject constructor(
         _selectedCategory.value = category
     }
 
-    fun navigateToSuccess() {
-        _navigateTo.value = Routes.CUSTOMER_REG_SUCCESS
+    fun updateSelectedTab(index: Int) {
+        _selectedTab.value = index
     }
 
+    // ---------- BUTTON ACTIONS ----------
+    fun onCustomerClickEvent(customerUiEvent: CustomerUiEvent) {
+        viewModelScope.launch {
+            when (customerUiEvent) {
+                CustomerUiEvent.OnCustomerRegisterClicked -> {
+                    _customerUiAction.value = CustomerUiAction.Navigate(Routes.CUSTOMER_REG_SUCCESS)
+                }
+            }
+        }
+    }
+
+    fun onLoginClickEvent(loginUiEvent: LoginUiEvent) {
+        viewModelScope.launch {
+            val loggedIn = checkLoginStatusSuspend()
+
+            when (loginUiEvent) {
+                // home (main order)
+                LoginUiEvent.OnHomeClicked -> {
+                    _loginUiAction.value = LoginUiAction.Navigate(
+                        if (loggedIn) Routes.ORDERS else Routes.SIGN_IN
+                    )
+                }
+
+                // categories
+                LoginUiEvent.OnCategoriesClicked -> {
+                    _loginUiAction.value = LoginUiAction.Navigate(
+                        if (loggedIn) Routes.CATEGORIES else Routes.SIGN_IN
+                    )
+                }
+
+                // reorder
+                LoginUiEvent.OnReorderClicked -> {
+                    _loginUiAction.value = LoginUiAction.Navigate(
+                        if (loggedIn) Routes.REORDER else Routes.SIGN_IN
+                    )
+                }
+
+                // account
+                LoginUiEvent.OnAccountClicked -> {
+                    _loginUiAction.value = LoginUiAction.Navigate(
+                        if (loggedIn) Routes.ACCOUNT else Routes.SIGN_IN
+                    )
+                }
+
+                // search
+                LoginUiEvent.OnSearchClicked -> {
+                    _loginUiAction.value = LoginUiAction.Navigate(
+                        if (loggedIn) Routes.BROWSE else Routes.SIGN_IN
+                    )
+                }
+
+                // view more
+                LoginUiEvent.OnViewMoreClicked -> {
+                    _loginUiAction.value = LoginUiAction.Navigate(
+                        if (loggedIn) Routes.BROWSE else Routes.SIGN_IN
+                    )
+                }
+
+            }
+        }
+    }
+
+    fun resetLoginAction() {
+        _loginUiAction.value = null
+    }
+
+    fun resetCustomerAction() {
+        _customerUiAction.value = null
+    }
 }

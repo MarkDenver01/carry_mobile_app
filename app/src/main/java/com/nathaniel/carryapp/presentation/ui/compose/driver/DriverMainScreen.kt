@@ -21,6 +21,8 @@ import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
 import com.nathaniel.carryapp.presentation.ui.compose.orders.cart.CartViewModel
 import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.*
 import com.nathaniel.carryapp.presentation.ui.sharedViewModel
+import com.nathaniel.carryapp.presentation.ui.state.LoginUiAction
+import com.nathaniel.carryapp.presentation.ui.state.LoginUiEvent
 import timber.log.Timber
 
 
@@ -32,7 +34,6 @@ fun DriverMainScreen(
 ) {
     val orderViewModel: OrderViewModel = sharedViewModel()
     val cartViewModel: CartViewModel = sharedViewModel()
-    val navigateTo by orderViewModel.navigateTo.collectAsState()
     val products by orderViewModel.products.collectAsState()
     val error by orderViewModel.error.collectAsState()
     val cartCount by cartViewModel.cartCount.collectAsState()
@@ -46,12 +47,19 @@ fun DriverMainScreen(
         cartViewModel.setProducts(products)
     }
 
-    LaunchedEffect(navigateTo) {
-        navigateTo?.let { route ->
-            navController.navigate(route) {
-                popUpTo(Routes.ORDERS) { inclusive = false }
+    LaunchedEffect(orderViewModel.loginUiAction) {
+        orderViewModel.loginUiAction.collect { action ->
+            when (action) {
+                is LoginUiAction.Navigate -> {
+                    navController.navigate(action.route) {
+                        popUpTo(Routes.SIGN_IN) { inclusive = false }
+                    }
+                    orderViewModel.resetLoginAction()
+                }
+
+                is LoginUiAction.ShowToast -> "Order"
+                null -> Unit
             }
-            orderViewModel.resetNavigation()
         }
     }
 
@@ -82,12 +90,12 @@ fun DriverMainScreen(
         },
         bottomBar = {
             ShopBottomBar(
-                selectedIndex = selectedIndex,
-                onItemSelected = { selectedIndex = it },
-                onHome = { orderViewModel.onHomeClick() },
-                onCategories = { orderViewModel.onCategoriesClick() },
-                onReorder = { orderViewModel.onReorderClick() },
-                onAccount = { orderViewModel.onAccountClick() }
+                selectedIndex = orderViewModel.selectedTab.collectAsState().value,
+                onItemSelected = { orderViewModel.updateSelectedTab(it) },
+                onHome = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnHomeClicked) },
+                onCategories = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnCategoriesClicked) },
+                onReorder = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnReorderClicked) },
+                onAccount = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnAccountClicked) }
             )
         }
     ) { inner ->
@@ -130,7 +138,7 @@ fun DriverMainScreen(
                 SectionHeader(
                     title = rack.title,
                     actionText = "View More",
-                    onActionClick = { orderViewModel.onViewMoreClick() }
+                    onActionClick = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnViewMoreClicked) }
                 )
 
                 // Product grid per rack
