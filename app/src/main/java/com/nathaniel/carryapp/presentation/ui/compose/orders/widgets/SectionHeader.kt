@@ -1,7 +1,9 @@
 package com.nathaniel.carryapp.presentation.ui.compose.orders.widgets
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -30,12 +32,22 @@ fun SectionHeader(
             fontWeight = FontWeight.ExtraBold,
             modifier = Modifier.weight(1f)
         )
-        Text(
-            text = actionText,
-            color = Color(0xFF118B3C),
-            fontSize = 14.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.clickable { onActionClick() }
-        )
+
+        // ⭐ VIEW MORE AS BUTTON
+        Box(
+            modifier = Modifier
+                .height(32.dp)
+                .background(Color(0xFF118B3C), RoundedCornerShape(15.dp))
+                .clickable { onActionClick() }
+                .padding(horizontal = 12.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = actionText,
+                color = Color.White,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
     }
 }

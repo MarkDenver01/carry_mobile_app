@@ -332,7 +332,7 @@ fun DynamicButton(
         onClick = onClick,
         enabled = enabled,
         modifier = modifier.height(height),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = animatedBackgroundColor,
             contentColor = if (enabled) Color.White else disabledTextColor,
