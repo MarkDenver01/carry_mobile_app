@@ -5,9 +5,6 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -27,7 +24,9 @@ import com.nathaniel.carryapp.presentation.ui.sharedViewModel
 import com.nathaniel.carryapp.presentation.ui.state.LoginUiAction
 import com.nathaniel.carryapp.presentation.ui.state.LoginUiEvent
 import timber.log.Timber
-
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -42,14 +41,19 @@ fun OrderScreen(
     val error by orderViewModel.error.collectAsState()
     val cartCount by cartViewModel.cartCount.collectAsState()
     val customerSession by orderViewModel.customerSession.collectAsState()
+
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     val cardWidth = (screenWidth / 2) - 24.dp
     val cardHeight = 330.dp
+
+    // DOMAIN -> UI
     val shopProducts = products.map { it.toShopProduct() }
     val searchQuery by orderViewModel.searchQuery.collectAsState()
 
-    // FILTER products globally
+    // =====================================================
+    // 🔍 GLOBAL SEARCH FILTER
+    // =====================================================
     val filteredProducts = remember(searchQuery, shopProducts) {
         if (searchQuery.isBlank()) {
             shopProducts
@@ -63,6 +67,90 @@ fun OrderScreen(
         }
     }
 
+    // =====================================================
+    // 🔥 EXPIRY CALC (SAME LOGIC AS ProductCard)
+    // =====================================================
+    val today = LocalDate.now()
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+
+    fun daysLeft(expiryDate: String?): Int? {
+        return try {
+            if (!expiryDate.isNullOrBlank()) {
+                val dateOnly = expiryDate.substringBefore(" ")
+                ChronoUnit.DAYS.between(
+                    today,
+                    LocalDate.parse(dateOnly, formatter)
+                ).toInt()
+            } else null
+        } catch (e: Exception) {
+            Timber.e("Expiry parse error in OrderScreen: ${e.message}")
+            null
+        }
+    }
+
+    // Optional: debug log to verify what is considered promo
+    LaunchedEffect(filteredProducts) {
+        filteredProducts.forEach { p ->
+            Timber.d(
+                "PROMO_CHECK :: name=%s expiry=%s daysLeft=%s",
+                p.name,
+                p.expiryDate,
+                daysLeft(p.expiryDate)
+            )
+        }
+    }
+
+    // =====================================================
+    // ⭐ STEP 1: GET ALL PROMO PRODUCTS (<= 60 DAYS)
+    // =====================================================
+    val promoProducts = filteredProducts.filter { p ->
+        val d = daysLeft(p.expiryDate)
+        d != null && d in 0..60   // 0–60 days before expiry
+    }
+
+    Timber.e("xxxxxx prod: ${promoProducts.size}")
+
+    // =====================================================
+    // ⭐ STEP 2: REMOVE PROMO PRODUCTS FROM NORMAL LIST
+    // =====================================================
+    val promoIds = promoProducts.map { it.id }.toSet()
+
+    val nonPromoProducts = filteredProducts.filter { p ->
+        p.id !in promoIds
+    }
+
+    // =====================================================
+    // ⭐ STEP 3: BUILD NORMAL CATEGORY RACKS (WITHOUT PROMOS)
+    // =====================================================
+    val normalRacks = nonPromoProducts
+        .groupBy { it.categoryName }
+        .map { (categoryName, productList) ->
+            ProductRack(
+                title = categoryName,
+                products = productList
+            )
+        }
+        .filter { it.products.isNotEmpty() }  // hide empty categories
+
+    // =====================================================
+    // ⭐ STEP 4: FINAL RACK ORDER → PROMO FIRST, THEN NORMAL
+    // =====================================================
+    val racks = buildList {
+        if (promoProducts.isNotEmpty()) {
+            // sort promo by nearest to expire (optional pero useful)
+            add(
+                ProductRack(
+                    title = "Promo Products",
+                    products = promoProducts.sortedBy { daysLeft(it.expiryDate) ?: Int.MAX_VALUE }
+                )
+            )
+        }
+        addAll(normalRacks)
+    }
+
+    // =====================================================
+    // VIEWMODEL EFFECTS
+    // =====================================================
     LaunchedEffect(products) {
         cartViewModel.setProducts(products)
     }
@@ -88,17 +176,9 @@ fun OrderScreen(
         Text("Error loading products: $it", color = Color.Red)
     }
 
-    // Dynamic category groups
-    val racks = filteredProducts
-        .groupBy { it.categoryName }
-        .map { (categoryName, productList) ->
-            ProductRack(
-                title = categoryName,
-                products = productList
-            )
-        }
-        .filter { it.products.isNotEmpty() }  // hide empty categories
-
+    // =====================================================
+    // UI START
+    // =====================================================
     Scaffold(
         containerColor = Color(0xFFF7F8FA),
         topBar = {
@@ -134,12 +214,6 @@ fun OrderScreen(
                         hint = "I'm Smart Search AI, looking for…",
                         onSearch = { query ->
                             orderViewModel.updateSearchQuery(query)
-
-//                            val customerId = customerSession?.customer?.customerId
-//                            if (customerId != null && query.isNotBlank()) {
-//                                orderViewModel.recordUserInteraction(customerId, query)
-//                                Timber.d("🔍 Search recorded: $query")
-//                            }
                         }
                     )
                     Spacer(Modifier.height(8.dp))
@@ -154,7 +228,9 @@ fun OrderScreen(
                 }
             }
 
-            // CATEGORY SECTIONS (Horizontal scroll)
+            // =====================================================
+            // CATEGORY SECTIONS (PROMO FIRST, THEN NORMAL RACKS)
+            // =====================================================
             items(racks.size) { index ->
                 val rack = racks[index]
 

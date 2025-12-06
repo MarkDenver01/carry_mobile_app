@@ -49,49 +49,43 @@ fun ProductCard(
     onRestore: () -> Unit,
     onDetailClick: () -> Unit
 ) {
-    // ================================
-    // PARSE EXPIRY DATE (yyyy-MM-dd ...)
-    // ================================
-    val today = LocalDate.now()
 
-    val daysLeft = remember(expiryDate) {
-        try {
-            if (!expiryDate.isNullOrBlank()) {
-                val dateOnly = expiryDate.substringBefore(" ")
-                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-                ChronoUnit.DAYS.between(
-                    today,
-                    LocalDate.parse(dateOnly, formatter)
-                ).toInt()
-            } else null
+    // ---------------------------------------------
+    // MATCH EXACT EXPIRY LOGIC FROM OrderScreen
+    // ---------------------------------------------
+    val today = LocalDate.now()
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+
+    fun parseDaysLeft(exp: String?): Int? {
+        return try {
+            if (exp.isNullOrBlank()) return null
+            val dateOnly = exp.substringBefore(" ")
+            ChronoUnit.DAYS.between(today, LocalDate.parse(dateOnly, formatter)).toInt()
         } catch (e: Exception) {
-            Timber.e("Expiry parse error: ${e.message}")
+            Timber.e("ProductCard expiry parse error: ${e.message}")
             null
         }
     }
 
-    val showPromo = daysLeft != null && daysLeft <= 60
+    val daysLeft = parseDaysLeft(expiryDate)
 
-    // ====================================
-    // CLICK-STATE FOR PROMO BADGE
-    // ====================================
+    // ---------------------------------------------
+    // RULE:
+    // ❌ Do NOT show badge if daysLeft <= 60
+    // ✔️ Show badge if daysLeft > 60
+    // ---------------------------------------------
+    val showPromo = daysLeft != null && daysLeft in 0..60
+
     var promoPressed by remember { mutableStateOf(false) }
-    val promoColor =
-        if (promoPressed) Color(0xFF0C6A2D) else Color(0xFF16A34A) // dark / medium green
+    val promoColor = if (promoPressed) Color(0xFF0C6A2D) else Color(0xFF16A34A)
 
-    // ====================================
-    // CARD UI
-    // ====================================
     var qty by remember { mutableStateOf(0) }
     val remainingStock = (sold - qty).coerceAtLeast(0)
 
     Card(
         modifier = Modifier
             .then(if (cardWidth != null) Modifier.width(cardWidth) else Modifier.fillMaxWidth())
-            .then(
-                if (cardHeight != null) Modifier.height(cardHeight)
-                else Modifier.wrapContentHeight()
-            )
+            .then(if (cardHeight != null) Modifier.height(cardHeight) else Modifier.wrapContentHeight())
             .clickable { onDetailClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(Color.White),
@@ -105,9 +99,7 @@ fun ProductCard(
                 .padding(10.dp)
         ) {
 
-            // =====================================================
-            // IMAGE SECTION (VARIABLE HEIGHT → STILL ALIGNS)
-            // =====================================================
+            // IMAGE
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -115,6 +107,7 @@ fun ProductCard(
                     .clip(RoundedCornerShape(12.dp))
                     .background(Color(0xFFF1F5F6))
             ) {
+
                 AsyncImage(
                     model = imageUrl,
                     contentDescription = name,
@@ -122,6 +115,7 @@ fun ProductCard(
                     modifier = Modifier.fillMaxSize()
                 )
 
+                // ✔️ BADGE ONLY IF > 60 days LEFT
                 if (showPromo) {
                     Box(
                         modifier = Modifier
@@ -144,17 +138,14 @@ fun ProductCard(
                 }
             }
 
-            // ===================================================
-            // CONTENT SECTION (KEEPS BOTTOM PERFECTLY ALIGNED)
-            // ===================================================
+            // BODY
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f, fill = true),   // ⭐ this makes all cards share same remaining space
+                    .weight(1f, fill = true),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
 
-                // ---------- TEXT BLOCK (top of content) ----------
                 Column {
                     Spacer(Modifier.height(10.dp))
 
@@ -169,19 +160,11 @@ fun ProductCard(
                     )
 
                     Spacer(Modifier.height(4.dp))
-
                     Text(weight, fontSize = 12.sp, color = Color(0xFF6B7D85))
-
                     Spacer(Modifier.height(4.dp))
-
-                    Text(
-                        "$remainingStock Stocks",
-                        fontSize = 12.sp,
-                        color = Color(0xFF118B3C)
-                    )
+                    Text("$remainingStock Stocks", fontSize = 12.sp, color = Color(0xFF118B3C))
                 }
 
-                // ---------- PRICE + STEPPER (bottom, always aligned) ----------
                 Column {
                     Spacer(Modifier.height(8.dp))
 
@@ -194,6 +177,7 @@ fun ProductCard(
 
                     Spacer(Modifier.height(10.dp))
 
+                    // STEPPER
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -216,20 +200,10 @@ fun ProductCard(
                             modifier = Modifier.width(48.dp),
                             contentPadding = PaddingValues(0.dp)
                         ) {
-                            Text(
-                                "–",
-                                color = Color(0xFF6B7D85),
-                                fontSize = 22.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Text("–", color = Color(0xFF6B7D85), fontSize = 22.sp, fontWeight = FontWeight.Bold)
                         }
 
-                        Text(
-                            text = qty.toString(),
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 16.sp,
-                            color = Color(0xFF0E1F22)
-                        )
+                        Text(qty.toString(), fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
 
                         TextButton(
                             onClick = {
@@ -242,12 +216,7 @@ fun ProductCard(
                             modifier = Modifier.width(48.dp),
                             contentPadding = PaddingValues(0.dp)
                         ) {
-                            Text(
-                                "+",
-                                color = Color(0xFF118B3C),
-                                fontSize = 22.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Text("+", color = Color(0xFF118B3C), fontSize = 22.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
