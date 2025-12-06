@@ -1,24 +1,27 @@
 package com.nathaniel.carryapp.presentation.ui.compose.orders.category
 
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.nathaniel.carryapp.R
 import com.nathaniel.carryapp.domain.mapper.ProductMapper.toShopProduct
 import com.nathaniel.carryapp.domain.model.Category
 import com.nathaniel.carryapp.navigation.Routes
@@ -30,6 +33,28 @@ import com.nathaniel.carryapp.presentation.ui.sharedViewModel
 import com.nathaniel.carryapp.presentation.ui.state.LoginUiAction
 import com.nathaniel.carryapp.presentation.ui.state.LoginUiEvent
 
+@Composable
+fun RotatingLoader(size: Int = 34, color: Color = Color(0xFF118B3C)) {
+    val infiniteTransition = rememberInfiniteTransition(label = "rotate")
+    val angle by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(900, easing = LinearEasing)
+        ),
+        label = "angle"
+    )
+
+    Icon(
+        painter = painterResource(R.drawable.ic_broken_image), // ⚠️ Replace with your loader icon
+        contentDescription = null,
+        tint = color,
+        modifier = Modifier
+            .size(size.dp)
+            .rotate(angle)
+    )
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoriesScreen(
@@ -38,20 +63,12 @@ fun CategoriesScreen(
     val orderViewModel: OrderViewModel = sharedViewModel()
     val products by orderViewModel.products.collectAsState()
 
-    // Convert DOMAIN → UI
     val shopProducts = products.map { it.toShopProduct() }
-    var selectedIndex by remember { mutableStateOf(0) }
 
-    // -------------------------------------
-    // BUILD CATEGORIES FROM REAL PRODUCT DATA
-    // -------------------------------------
     val categories: List<Category> = shopProducts
         .groupBy { it.categoryName }
         .map { (categoryName, items) ->
-            Category(
-                name = categoryName,
-                imageUrl = items.firstOrNull()?.imageUrl
-            )
+            Category(name = categoryName, imageUrl = items.firstOrNull()?.imageUrl)
         }
         .sortedBy { it.name }
 
@@ -66,14 +83,11 @@ fun CategoriesScreen(
                     }
                     orderViewModel.resetLoginAction()
                 }
-
-                is LoginUiAction.ShowToast -> "Order"
+                is LoginUiAction.ShowToast -> Unit
                 null -> Unit
             }
         }
     }
-
-
 
     Scaffold(
         topBar = {
@@ -152,27 +166,77 @@ fun CategoriesScreen(
     }
 }
 
+
 @Composable
 fun CategoryCard(
     title: String,
     imageUrl: String?,
     onClick: () -> Unit
 ) {
+    var isLoading by remember { mutableStateOf(true) }
+    var isError by remember { mutableStateOf(false) }
+    var showLoader by remember { mutableStateOf(true) }
+
+    // Delay hide logic
+    LaunchedEffect(isLoading) {
+        if (!isLoading) {
+            kotlinx.coroutines.delay(1000)
+            showLoader = false
+        } else {
+            showLoader = true
+        }
+    }
+
     Column(
         modifier = Modifier
             .width(100.dp)
             .padding(4.dp)
             .clickable { onClick() },
-        horizontalAlignment = Alignment.CenterHorizontally // <-- CENTER CONTENT
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        AsyncImage(
-            model = imageUrl,
-            contentDescription = title,
+        Box(
             modifier = Modifier
                 .height(80.dp)
                 .fillMaxWidth()
-        )
+                .background(Color(0xFFF1F5F6)),
+            contentAlignment = Alignment.Center
+        ) {
+
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = title,
+                modifier = Modifier.fillMaxSize(),
+                onLoading = {
+                    isLoading = true
+                    isError = false
+                    showLoader = true
+                },
+                onSuccess = {
+                    isLoading = false
+                    isError = false
+                },
+                onError = {
+                    isLoading = false
+                    isError = true
+                }
+            )
+
+            // ⭐ LOADING ROTATION
+            if (showLoader) {
+                RotatingLoader(size = 28)
+            }
+
+            // ❌ ERROR ICON
+            if (isError && !showLoader) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_broken_image),
+                    contentDescription = null,
+                    tint = Color.Gray,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+        }
 
         Spacer(Modifier.height(6.dp))
 
@@ -181,8 +245,8 @@ fun CategoryCard(
             fontSize = 12.sp,
             fontWeight = FontWeight.SemiBold,
             color = Color.Black,
-            textAlign = TextAlign.Center,        // <-- CENTER TEXT
-            modifier = Modifier.fillMaxWidth()   // <-- REQUIRED FOR TEXTALIGN
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }

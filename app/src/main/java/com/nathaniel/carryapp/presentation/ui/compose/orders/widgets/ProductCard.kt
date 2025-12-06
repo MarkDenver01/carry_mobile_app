@@ -2,6 +2,7 @@ package com.nathaniel.carryapp.presentation.ui.compose.orders.widgets
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -13,9 +14,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -28,6 +31,68 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
+/* ---------------------------------------------------------
+   OPTIONAL SHIMMER MODIFIER (CURRENTLY NOT USED)
+--------------------------------------------------------- */
+@Composable
+fun Modifier.shimmerEffect(): Modifier {
+    val shimmerColors = listOf(
+        Color.LightGray.copy(alpha = 0.4f),
+        Color.LightGray.copy(alpha = 0.2f),
+        Color.LightGray.copy(alpha = 0.4f)
+    )
+
+    val transition = rememberInfiniteTransition(label = "shimmer")
+    val translate by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1000f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 600, easing = LinearEasing)
+        ),
+        label = "shimmerFloat"
+    )
+
+    val brush = Brush.linearGradient(
+        colors = shimmerColors,
+        start = Offset(translate, translate),
+        end = Offset(translate + 200f, translate + 200f)
+    )
+
+    return this.background(brush)
+}
+
+/* ---------------------------------------------------------
+   ROTATING LOADING ICON
+   (Gamit ka ng sarili mong icon: ic_loading)
+--------------------------------------------------------- */
+@Composable
+fun RotatingLoader(
+    size: Dp = 36.dp,
+    color: Color = Color(0xFF118B3C)
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "loader")
+    val angle by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            tween(900, easing = LinearEasing)
+        ),
+        label = "rotationAnim"
+    )
+
+    Icon(
+        painter = painterResource(R.drawable.ic_broken_image), // 👉 palitan mo ng sariling loading icon
+        contentDescription = null,
+        tint = color,
+        modifier = Modifier
+            .size(size)
+            .rotate(angle)
+    )
+}
+
+/* ---------------------------------------------------------
+   PRODUCT CARD
+--------------------------------------------------------- */
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ProductCard(
@@ -49,10 +114,7 @@ fun ProductCard(
     onRestore: () -> Unit,
     onDetailClick: () -> Unit
 ) {
-
-    // ---------------------------------------------
-    // MATCH EXACT EXPIRY LOGIC FROM OrderScreen
-    // ---------------------------------------------
+    // ================= EXPIRY LOGIC =================
     val today = LocalDate.now()
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
@@ -68,12 +130,6 @@ fun ProductCard(
     }
 
     val daysLeft = parseDaysLeft(expiryDate)
-
-    // ---------------------------------------------
-    // RULE:
-    // ❌ Do NOT show badge if daysLeft <= 60
-    // ✔️ Show badge if daysLeft > 60
-    // ---------------------------------------------
     val showPromo = daysLeft != null && daysLeft in 0..60
 
     var promoPressed by remember { mutableStateOf(false) }
@@ -81,6 +137,11 @@ fun ProductCard(
 
     var qty by remember { mutableStateOf(0) }
     val remainingStock = (sold - qty).coerceAtLeast(0)
+
+    // ================= IMAGE LOADING STATES =================
+    var isLoading by remember { mutableStateOf(true) }
+    var isError by remember { mutableStateOf(false) }
+    var showLoader by remember { mutableStateOf(true) }   // controls visibility of loader
 
     Card(
         modifier = Modifier
@@ -99,7 +160,7 @@ fun ProductCard(
                 .padding(10.dp)
         ) {
 
-            // IMAGE
+            // ================= IMAGE SECTION =================
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -107,15 +168,68 @@ fun ProductCard(
                     .clip(RoundedCornerShape(12.dp))
                     .background(Color(0xFFF1F5F6))
             ) {
-
+                // IMAGE REQUEST
                 AsyncImage(
                     model = imageUrl,
                     contentDescription = name,
                     contentScale = ContentScale.Fit,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    onLoading = {
+                        isLoading = true
+                        isError = false
+                        showLoader = true
+                    },
+                    onSuccess = {
+                        isLoading = false
+                        isError = false
+                        // Huwag mag-LaunchedEffect DITO
+                    },
+                    onError = {
+                        isLoading = false
+                        isError = true
+                    }
                 )
 
-                // ✔️ BADGE ONLY IF > 60 days LEFT
+                // ✅ 1-SECOND DELAY HANDLED HERE (COMPOSABLE CONTEXT)
+                LaunchedEffect(isLoading) {
+                    if (!isLoading) {       // success or error
+                        kotlinx.coroutines.delay(500)
+                        showLoader = false
+                    } else {
+                        showLoader = true
+                    }
+                }
+
+                // ⭐ SHOW ROTATING LOADER WHILE LOADING
+                if (showLoader) {
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .background(Color(0x30FFFFFF)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        RotatingLoader(size = 40.dp)
+                    }
+                }
+
+                // ❌ ERROR OVERLAY (AFTER LOADER HIDDEN)
+                if (isError && !showLoader) {
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .background(Color(0xFFECECEC)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_broken_image),
+                            contentDescription = "Error",
+                            tint = Color.Gray,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                }
+
+                // ⭐ PROMO BADGE
                 if (showPromo) {
                     Box(
                         modifier = Modifier
@@ -138,7 +252,7 @@ fun ProductCard(
                 }
             }
 
-            // BODY
+            // ================= BODY =================
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -177,7 +291,6 @@ fun ProductCard(
 
                     Spacer(Modifier.height(10.dp))
 
-                    // STEPPER
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -200,7 +313,12 @@ fun ProductCard(
                             modifier = Modifier.width(48.dp),
                             contentPadding = PaddingValues(0.dp)
                         ) {
-                            Text("–", color = Color(0xFF6B7D85), fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                            Text(
+                                "–",
+                                color = Color(0xFF6B7D85),
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
 
                         Text(qty.toString(), fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
@@ -216,7 +334,12 @@ fun ProductCard(
                             modifier = Modifier.width(48.dp),
                             contentPadding = PaddingValues(0.dp)
                         ) {
-                            Text("+", color = Color(0xFF118B3C), fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                            Text(
+                                "+",
+                                color = Color(0xFF118B3C),
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
                 }
