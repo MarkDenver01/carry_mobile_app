@@ -9,7 +9,9 @@ data class Product(
     val imageUrl: String,
     val productDescription: String,
     val stocks: Int,
-    val categoryName: String
+    val categoryName: String,
+    val expiryDate: String?,
+    val inDate: String?,
 )
 
 data class ShopProduct(
@@ -21,6 +23,8 @@ data class ShopProduct(
     val price: Double,
     val imageUrl: String,
     val categoryName: String,
+    val expiryDate: String?,
+    val inDate: String?,
 
     val enabled: Boolean = true
 )

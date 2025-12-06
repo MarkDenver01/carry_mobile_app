@@ -4,13 +4,16 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.nathaniel.carryapp.R
@@ -39,10 +42,11 @@ fun OrderScreen(
     val error by orderViewModel.error.collectAsState()
     val cartCount by cartViewModel.cartCount.collectAsState()
     val customerSession by orderViewModel.customerSession.collectAsState()
-
-    // Convert from domain → UI
+    val configuration = LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp.dp
+    val cardWidth = (screenWidth / 2) - 24.dp
+    val cardHeight = 330.dp
     val shopProducts = products.map { it.toShopProduct() }
-
     val searchQuery by orderViewModel.searchQuery.collectAsState()
 
     // FILTER products globally
@@ -116,6 +120,7 @@ fun OrderScreen(
             )
         }
     ) { inner ->
+
         LazyColumn(
             modifier = Modifier
                 .padding(inner)
@@ -149,57 +154,57 @@ fun OrderScreen(
                 }
             }
 
-            // 🧩 Dynamic product racks
+            // CATEGORY SECTIONS (Horizontal scroll)
             items(racks.size) { index ->
                 val rack = racks[index]
 
-                // Header
+                // Section Header
                 SectionHeader(
                     title = rack.title,
                     actionText = "View More",
-                    onActionClick = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnViewMoreClicked) }
+                    onActionClick = {
+                        orderViewModel.onLoginClickEvent(LoginUiEvent.OnViewMoreClicked)
+                    }
                 )
 
-                // Product grid per rack
-                Spacer(Modifier.height(8.dp))
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                Spacer(Modifier.height(10.dp))
+
+                // 🔥 HORIZONTAL LIST OF PRODUCTS
+                LazyRow(
                     contentPadding = PaddingValues(horizontal = 12.dp),
-                    modifier = Modifier.heightIn(max = 460.dp) // limit height for each rack
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(rack.products, key = { it.id }) { p ->
+
                         ProductCard(
+                            cardWidth = cardWidth,
+                            cardHeight = cardHeight,
+                            nameMaxLines = 2,
                             imageUrl = p.imageUrl,
                             name = p.name,
                             weight = p.weight,
                             sold = p.sold,
                             price = p.price,
+                            expiryDate = p.expiryDate,
                             onFavorite = {},
                             onAdd = {
                                 cartViewModel.addProductOriginalDomain(p.id)
 
-                                // ✅ Record user interaction when product is added
                                 val customerId = customerSession?.customer?.customerId
                                 if (customerId != null) {
                                     orderViewModel.recordUserInteraction(customerId, p.name)
-                                    Timber.d("🛒 Recorded add-to-cart interaction for: ${p.name}")
                                 }
                             },
                             onMinus = {
                                 cartViewModel.removeProductOriginalDomain(p.id)
                             },
-                            onDeduct = { orderViewModel.deductStock(p.id) },
-                            onRestore = { orderViewModel.restoreStock(p.id) },
+                            onRestore = {},
+                            onDeduct = {},
                             onDetailClick = {
-                                // ✅ Optionally record when a product detail is viewed
                                 val customerId = customerSession?.customer?.customerId
                                 if (customerId != null) {
                                     orderViewModel.recordUserInteraction(customerId, p.name)
-                                    Timber.d("👀 Recorded product view for: ${p.name}")
                                 }
-
                                 navController.navigate("${Routes.PRODUCT_DETAIL}/${p.id}")
                             }
                         )

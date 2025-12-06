@@ -17,7 +17,7 @@ import com.nathaniel.carryapp.presentation.ui.compose.orders.account.CustomerReg
 import com.nathaniel.carryapp.presentation.ui.compose.orders.cart.CartScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.cart.CheckoutScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.category.CategoriesScreen
-import com.nathaniel.carryapp.presentation.ui.compose.orders.category.CategoryFilteredProductScreen
+import com.nathaniel.carryapp.presentation.ui.compose.orders.category.ListCategoryProductScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.location.DeliveryAddressScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.location.LocationConfirmationScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.main_screen.OrderScreen
@@ -96,7 +96,7 @@ fun NavGraphBuilder.orderGraph(navController: NavController) {
 
         val categoryName = backStackEntry.arguments?.getString("categoryName") ?: ""
 
-        CategoryFilteredProductScreen(
+        ListCategoryProductScreen(
             navController = navController,
             categoryName = categoryName
         )

@@ -1,38 +1,47 @@
 package com.nathaniel.carryapp.presentation.ui.compose.orders.widgets
 
-import androidx.compose.foundation.Image
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.clickable
 import coil.compose.AsyncImage
+import com.nathaniel.carryapp.R
+import timber.log.Timber
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ProductCard(
+    imageHeight: Dp = 140.dp,
+    cardWidth: Dp? = null,
+    cardHeight: Dp? = null,
+    nameMaxLines: Int = 2,
+    nameEllipsis: Boolean = true,
     imageUrl: String,
     name: String,
     weight: String,
     sold: Int,
     price: Double,
+    expiryDate: String?,
     onFavorite: () -> Unit,
     onAdd: () -> Unit,
     onMinus: () -> Unit,
@@ -40,159 +49,207 @@ fun ProductCard(
     onRestore: () -> Unit,
     onDetailClick: () -> Unit
 ) {
+    // ================================
+    // PARSE EXPIRY DATE (yyyy-MM-dd ...)
+    // ================================
+    val today = LocalDate.now()
+
+    val daysLeft = remember(expiryDate) {
+        try {
+            if (!expiryDate.isNullOrBlank()) {
+                val dateOnly = expiryDate.substringBefore(" ")
+                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                ChronoUnit.DAYS.between(
+                    today,
+                    LocalDate.parse(dateOnly, formatter)
+                ).toInt()
+            } else null
+        } catch (e: Exception) {
+            Timber.e("Expiry parse error: ${e.message}")
+            null
+        }
+    }
+
+    val showPromo = daysLeft != null && daysLeft <= 60
+
+    // ====================================
+    // CLICK-STATE FOR PROMO BADGE
+    // ====================================
+    var promoPressed by remember { mutableStateOf(false) }
+    val promoColor =
+        if (promoPressed) Color(0xFF0C6A2D) else Color(0xFF16A34A) // dark / medium green
+
+    // ====================================
+    // CARD UI
+    // ====================================
     var qty by remember { mutableStateOf(0) }
-    var isFavorite by remember { mutableStateOf(false) }
     val remainingStock = (sold - qty).coerceAtLeast(0)
 
     Card(
         modifier = Modifier
-            .fillMaxWidth()
+            .then(if (cardWidth != null) Modifier.width(cardWidth) else Modifier.fillMaxWidth())
+            .then(
+                if (cardHeight != null) Modifier.height(cardHeight)
+                else Modifier.wrapContentHeight()
+            )
             .clickable { onDetailClick() },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        colors = CardDefaults.cardColors(Color.White),
+        elevation = CardDefaults.cardElevation(0.dp)
     ) {
+
         Column(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
                 .border(1.dp, Color(0xFFE6ECEF), RoundedCornerShape(16.dp))
                 .padding(10.dp)
         ) {
-            // ✅ Image + heart
+
+            // =====================================================
+            // IMAGE SECTION (VARIABLE HEIGHT → STILL ALIGNS)
+            // =====================================================
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(140.dp)
+                    .height(imageHeight)
                     .clip(RoundedCornerShape(12.dp))
                     .background(Color(0xFFF1F5F6))
             ) {
                 AsyncImage(
                     model = imageUrl,
                     contentDescription = name,
-                    contentScale = ContentScale.Crop,
+                    contentScale = ContentScale.Fit,
                     modifier = Modifier.fillMaxSize()
                 )
 
-                // 💚 Heart (super clean + compact)
-                val heartTint by animateColorAsState(
-                    targetValue = if (isFavorite) Color(0xFF118B3C) else Color(0xFF8FA2AA)
-                )
-                val heartBg by animateColorAsState(
-                    targetValue = if (isFavorite) Color(0x22118B3C) else Color(0x88FFFFFF)
-                )
-                val heartScale by animateFloatAsState(
-                    targetValue = if (isFavorite) 1.1f else 1f
-                )
-
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(6.dp)
-                        .size(22.dp) // ✅ smaller compact circle
-                        .clip(CircleShape)
-                        .background(heartBg)
-                        .border(0.4.dp, Color(0xFFE6ECEF), CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    IconButton(
-                        onClick = {
-                            isFavorite = !isFavorite
-                            onFavorite()
-                        },
-                        modifier = Modifier.size(18.dp), // tighter fit to icon
-                        colors = IconButtonDefaults.iconButtonColors(containerColor = Color.Transparent),
-                        content = {
-                            Icon(
-                                imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-                                contentDescription = "Favorite",
-                                tint = heartTint,
-                                modifier = Modifier.scale(heartScale)
-                            )
-                        }
-                    )
+                if (showPromo) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(6.dp)
+                            .size(34.dp)
+                            .clip(CircleShape)
+                            .background(promoColor)
+                            .clickable { promoPressed = !promoPressed }
+                            .padding(6.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        AsyncImage(
+                            model = R.drawable.discount,
+                            contentScale = ContentScale.Fit,
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(Color.White)
+                        )
+                    }
                 }
             }
 
-            // ✅ Product info
-            Spacer(Modifier.height(10.dp))
-            Text(
-                text = name,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 16.sp,
-                color = Color(0xFF0E1F22),
-                maxLines = 2
-            )
-            Spacer(Modifier.height(2.dp))
-            Text(weight, fontSize = 12.sp, color = Color(0xFF6B7D85))
-            Spacer(Modifier.height(2.dp))
-            Text(
-                "$remainingStock Stocks",
-                fontSize = 12.sp,
-                color = Color(0xFF118B3C)
-            )
-            Spacer(Modifier.height(8.dp))
-            Text(
-                text = price.toString(),
-                fontWeight = FontWeight.ExtraBold,
-                fontSize = 18.sp,
-                color = Color(0xFF0E1F22)
-            )
-
-            // ✅ Stepper
-            Spacer(Modifier.height(10.dp))
-            Row(
+            // ===================================================
+            // CONTENT SECTION (KEEPS BOTTOM PERFECTLY ALIGNED)
+            // ===================================================
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(40.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .border(1.dp, Color(0xFFE6ECEF), RoundedCornerShape(10.dp))
-                    .background(Color.White),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .weight(1f, fill = true),   // ⭐ this makes all cards share same remaining space
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
-                TextButton(
-                    onClick = {
-                        if (qty > 0) {
-                            qty -= 1
-                            onMinus()
-                            onRestore()
-                        }
-                    },
-                    modifier = Modifier.width(48.dp),
-                    contentPadding = PaddingValues(0.dp)
-                ) {
+
+                // ---------- TEXT BLOCK (top of content) ----------
+                Column {
+                    Spacer(Modifier.height(10.dp))
+
                     Text(
-                        "–",
-                        color = Color(0xFF6B7D85),
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold
+                        text = name,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 16.sp,
+                        color = Color(0xFF0E1F22),
+                        maxLines = nameMaxLines,
+                        overflow = if (nameEllipsis) TextOverflow.Ellipsis else TextOverflow.Clip,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(Modifier.height(4.dp))
+
+                    Text(weight, fontSize = 12.sp, color = Color(0xFF6B7D85))
+
+                    Spacer(Modifier.height(4.dp))
+
+                    Text(
+                        "$remainingStock Stocks",
+                        fontSize = 12.sp,
+                        color = Color(0xFF118B3C)
                     )
                 }
 
-                Text(
-                    text = qty.toString(),
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 16.sp,
-                    color = Color(0xFF0E1F22)
-                )
+                // ---------- PRICE + STEPPER (bottom, always aligned) ----------
+                Column {
+                    Spacer(Modifier.height(8.dp))
 
-                TextButton(
-                    onClick = {
-                        if (remainingStock > 0) {
-                            qty += 1
-                            onAdd()
-                            onDeduct()
-                        }
-                    },
-                    modifier = Modifier.width(48.dp),
-                    contentPadding = PaddingValues(0.dp)
-                ) {
                     Text(
-                        "+",
-                        color = Color(0xFF118B3C),
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold
+                        text = price.toString(),
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 18.sp,
+                        color = Color(0xFF0E1F22)
                     )
+
+                    Spacer(Modifier.height(10.dp))
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(40.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .border(1.dp, Color(0xFF118B3C), RoundedCornerShape(10.dp))
+                            .background(Color.White),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+
+                        TextButton(
+                            onClick = {
+                                if (qty > 0) {
+                                    qty--
+                                    onMinus()
+                                    onRestore()
+                                }
+                            },
+                            modifier = Modifier.width(48.dp),
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text(
+                                "–",
+                                color = Color(0xFF6B7D85),
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        Text(
+                            text = qty.toString(),
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 16.sp,
+                            color = Color(0xFF0E1F22)
+                        )
+
+                        TextButton(
+                            onClick = {
+                                if (remainingStock > 0) {
+                                    qty++
+                                    onAdd()
+                                    onDeduct()
+                                }
+                            },
+                            modifier = Modifier.width(48.dp),
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text(
+                                "+",
+                                color = Color(0xFF118B3C),
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
                 }
             }
         }

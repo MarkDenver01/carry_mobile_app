@@ -157,6 +157,7 @@ fun DriverMainScreen(
                             weight = p.weight,
                             sold = p.sold,
                             price = p.price,
+                            expiryDate = p.expiryDate,
                             onFavorite = {},
                             onAdd = {
                                 cartViewModel.addProductOriginalDomain(p.id)

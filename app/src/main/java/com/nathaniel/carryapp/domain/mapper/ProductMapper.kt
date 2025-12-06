@@ -15,7 +15,9 @@ object ProductMapper {
             imageUrl = dto.productImgUrl,
             productDescription = dto.productDescription,
             stocks = dto.stocks,
-            categoryName = dto.categoryName
+            categoryName = dto.categoryName,
+            expiryDate = dto.expiryDate,
+            inDate = dto.productInDate
         )
     }
 
@@ -36,7 +38,9 @@ object ProductMapper {
             sold = stocks,
             price = price,
             imageUrl = imageUrl,
-            categoryName = categoryName
+            categoryName = categoryName,
+            expiryDate = expiryDate,
+            inDate = inDate
         )
     }
 }

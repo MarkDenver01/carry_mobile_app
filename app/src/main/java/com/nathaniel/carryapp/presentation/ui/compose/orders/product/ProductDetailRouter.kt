@@ -4,6 +4,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -56,9 +57,6 @@ fun ProductDetailRouter(
         }
     ) { innerPadding ->
 
-        // ----------------------------
-        // LOADING MAIN PRODUCT
-        // ----------------------------
         if (isProductsLoading) {
             Box(
                 modifier = Modifier
@@ -71,9 +69,6 @@ fun ProductDetailRouter(
             return@Scaffold
         }
 
-        // ----------------------------
-        // PRODUCT NOT FOUND
-        // ----------------------------
         val product = products.firstOrNull { it.id == productId }
         if (product == null) {
             Box(
@@ -87,9 +82,9 @@ fun ProductDetailRouter(
             return@Scaffold
         }
 
-        // ----------------------------
+        // ===============================
         // MAIN CONTENT
-        // ----------------------------
+        // ===============================
         LazyColumn(
             modifier = Modifier
                 .padding(innerPadding)
@@ -99,7 +94,7 @@ fun ProductDetailRouter(
         ) {
 
             // --------------------------------
-            // PRODUCT DETAIL TOP VIEW
+            // PRODUCT TOP VIEW
             // --------------------------------
             item {
                 ProductDetailScreen(
@@ -124,7 +119,7 @@ fun ProductDetailRouter(
             }
 
             // --------------------------------
-            // RELATED LOADING
+            // LOADING STATE
             // --------------------------------
             if (isRelatedLoading) {
                 item {
@@ -142,39 +137,49 @@ fun ProductDetailRouter(
             }
 
             // --------------------------------
-            // RELATED PRODUCTS
+            // ⭐⭐ HORIZONTAL SCROLLABLE PRODUCT CARDS ⭐⭐
             // --------------------------------
             if (!isRelatedLoading && related.isNotEmpty()) {
-                items(related) { p ->
-                    ProductCard(
-                        imageUrl = p.imageUrl,
-                        name = p.name,
-                        weight = p.size,
-                        sold = 0,
-                        price = p.price,
-                        onFavorite = {},
-                        onAdd = {
-                            cartViewModel.addProductOriginalDomain(p.id)
-                            val customerId = customerSession?.customer?.customerId
-                            if (customerId != null) {
-                                orderViewModel.recordUserInteraction(customerId, p.name)
-                                Timber.d("🛒 Added: ${p.name}")
-                            }
-                        },
-                        onMinus = {
-                            cartViewModel.removeProductOriginalDomain(p.id)
-                        },
-                        onDeduct = { orderViewModel.deductStock(p.id) },
-                        onRestore = { orderViewModel.restoreStock(p.id) },
+                item {
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(related) { p ->
+                            ProductCard(
+                                imageHeight = 220.dp,
+                                cardWidth = 240.dp,     // ⭐ Perfect fit for horizontal scrolling
+                                cardHeight = 430.dp,
+                                imageUrl = p.imageUrl,
+                                name = p.name,
+                                weight = p.size,
+                                sold = p.stocks,
+                                price = p.price,
+                                expiryDate = p.expiryDate,
+                                onFavorite = {},
+                                onAdd = {
+                                    cartViewModel.addProductOriginalDomain(p.id)
 
-                        onDetailClick = {
-                            val customerId = customerSession?.customer?.customerId
-                            if (customerId != null) {
-                                orderViewModel.recordUserInteraction(customerId, p.name)
-                            }
-                            navController.navigate("${Routes.PRODUCT_DETAIL}/${p.id}")
+                                    val customerId = customerSession?.customer?.customerId
+                                    if (customerId != null) {
+                                        orderViewModel.recordUserInteraction(customerId, p.name)
+                                    }
+                                },
+                                onMinus = {
+                                    cartViewModel.removeProductOriginalDomain(p.id)
+                                },
+                                onDeduct = { orderViewModel.deductStock(p.id) },
+                                onRestore = { orderViewModel.restoreStock(p.id) },
+                                onDetailClick = {
+                                    val customerId = customerSession?.customer?.customerId
+                                    if (customerId != null) {
+                                        orderViewModel.recordUserInteraction(customerId, p.name)
+                                    }
+                                    navController.navigate("${Routes.PRODUCT_DETAIL}/${p.id}")
+                                }
+                            )
                         }
-                    )
+                    }
                 }
             }
 
