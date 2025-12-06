@@ -126,7 +126,9 @@ fun AccountScreen(navController: NavController) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_wallet),
                                 contentDescription = "",
-                                tint = Color(0xFF0E1F22),
+                                tint = Color(
+                                    0xFF118B3C
+                                ),
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(Modifier.width(6.dp))
@@ -213,7 +215,7 @@ fun AccountScreen(navController: NavController) {
                     ) {
 
                         Image(
-                            painter = painterResource(R.drawable.membership), // 🔥 Add your own icon
+                            painter = painterResource(R.drawable.ic_membership), // 🔥 Add your own icon
                             contentDescription = "",
                             modifier = Modifier
                                 .size(70.dp)
@@ -272,9 +274,12 @@ fun AccountScreen(navController: NavController) {
                         modifier = Modifier.fillMaxWidth()
                     ) {
 
-                        Image(
-                            painter = painterResource(R.drawable.ic_empty_basket),
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_empty_basket),
                             contentDescription = "",
+                            tint = Color(
+                                0xFF118B3C
+                            ),
                             modifier = Modifier.size(80.dp)
                         )
 
@@ -307,9 +312,12 @@ fun AccountScreen(navController: NavController) {
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Image(
-                            painter = painterResource(R.drawable.ic_reciept),
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_reciept),
                             contentDescription = "",
+                            tint = Color(
+                                0xFF118B3C
+                            ),
                             modifier = Modifier.size(80.dp)
                         )
                         Spacer(Modifier.height(12.dp))
@@ -416,14 +424,15 @@ fun AccountScreen(navController: NavController) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
 
-                        Image(
-                            painter = painterResource(R.drawable.ic_support),
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_support),
                             contentDescription = "",
-                            modifier = Modifier
-                                .size(70.dp)
-                                .clip(RoundedCornerShape(40.dp)),
-                            contentScale = ContentScale.Crop
+                            tint = Color(
+                                0xFF118B3C
+                            ),
+                            modifier = Modifier.size(70.dp)
                         )
+
 
                         Spacer(Modifier.width(14.dp))
 
