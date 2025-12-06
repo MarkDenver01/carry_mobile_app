@@ -62,7 +62,7 @@ fun InitialScreen(
         ) {
             // 🔰 App Logo
             Image(
-                painter = painterResource(id = R.drawable.logo_final),
+                painter = painterResource(id = R.drawable.logo_final_v),
                 contentDescription = "App Logo",
                 modifier = Modifier
                     .size(sizes.logoSize)

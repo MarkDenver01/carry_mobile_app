@@ -173,7 +173,7 @@ fun AccountScreen(navController: NavController) {
                                         0xFF118B3C
                                     )
                                 ),
-                                shape = RoundedCornerShape(10.dp)
+                                shape = RoundedCornerShape(15.dp)
                             ) {
                                 Text(
                                     "Cash in",
@@ -200,6 +200,61 @@ fun AccountScreen(navController: NavController) {
                 }
                 Spacer(Modifier.height(20.dp))
             }
+
+            // ================================
+            // ⭐ SUKI MEMBERSHIP PROGRAM
+            // ================================
+            item {
+                SectionCard(title = "Suki Membership Program") {
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+
+                        Image(
+                            painter = painterResource(R.drawable.membership), // 🔥 Add your own icon
+                            contentDescription = "",
+                            modifier = Modifier
+                                .size(70.dp)
+                                .clip(RoundedCornerShape(12.dp)),
+                            contentScale = ContentScale.Crop
+                        )
+
+                        Spacer(Modifier.width(14.dp))
+
+                        Column(modifier = Modifier.weight(1f)) {
+
+                            Text(
+                                "Become a Suki Member!",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFF0E1F22)
+                            )
+
+                            Text(
+                                "Enjoy exclusive discounts, points, and freebies every order.",
+                                fontSize = 13.sp,
+                                color = Color(0xFF6F7F85)
+                            )
+                        }
+
+                        // 👉 BUTTON
+                        Button(
+                            onClick = {
+                                //navController.navigate(Routes.MEMBERSHIP)
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF118B3C)),
+                            shape = RoundedCornerShape(15.dp)
+                        ) {
+                            Text("Join", color = Color.White, fontWeight = FontWeight.SemiBold)
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(20.dp))
+            }
+
 
             // ================================
             // 📦 MY ORDERS (EMPTY)
@@ -395,7 +450,7 @@ fun AccountScreen(navController: NavController) {
                 Button(
                     onClick = {},
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF118B3C)),
-                    shape = RoundedCornerShape(10.dp),
+                    shape = RoundedCornerShape(15.dp),
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
                         .fillMaxWidth()

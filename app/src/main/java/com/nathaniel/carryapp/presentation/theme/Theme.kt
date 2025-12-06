@@ -86,7 +86,7 @@ data class ResponsiveSizes(
 
 val LocalResponsiveSizes = staticCompositionLocalOf {
     ResponsiveSizes(
-        logoSize = 200.dp,
+        logoSize = 250.dp,
         buttonHeight = 64.dp,
         buttonWidth = 170.dp,
         titleFontSize = 24.sp,
