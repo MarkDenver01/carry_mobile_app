@@ -2,18 +2,9 @@ package com.nathaniel.carryapp.presentation.ui.compose.orders.category
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -24,11 +15,7 @@ import com.nathaniel.carryapp.domain.model.ProductRack
 import com.nathaniel.carryapp.navigation.Routes
 import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
 import com.nathaniel.carryapp.presentation.ui.compose.orders.cart.CartViewModel
-import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.BannerItem
-import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.PromoBanner
-import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.ShopBottomBar
-import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.ShopHeader
-import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.ShopSearchBar
+import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.*
 import com.nathaniel.carryapp.presentation.ui.sharedViewModel
 import com.nathaniel.carryapp.presentation.ui.state.LoginUiAction
 import com.nathaniel.carryapp.presentation.ui.state.LoginUiEvent
@@ -38,7 +25,7 @@ import com.nathaniel.carryapp.presentation.ui.state.LoginUiEvent
 @Composable
 fun ListCategoryProductScreen(
     navController: NavController,
-    categoryName: String,
+    categoryName: String,  // ← Category from OrderScreen
 ) {
     val orderViewModel: OrderViewModel = sharedViewModel()
     val cartViewModel: CartViewModel = sharedViewModel()
@@ -50,20 +37,24 @@ fun ListCategoryProductScreen(
 
     val shopProducts = products.map { it.toShopProduct() }
 
-    // GROUP PRODUCTS BY CATEGORY
+    // Group by category
     val racks = shopProducts
         .groupBy { it.categoryName }
-        .map { (categoryName, prodList) ->
-            ProductRack(
-                title = categoryName,
-                products = prodList
-            )
-        }
+        .map { (cat, list) -> ProductRack(cat, list) }
+
+    // ⭐ Selected category (auto from OrderScreen)
+    var selectedCategory by remember { mutableStateOf(categoryName) }
+
+    // ⭐ Filter products for the selected category
+    val filteredProducts = remember(selectedCategory, racks) {
+        racks.find { it.title == selectedCategory }?.products ?: emptyList()
+    }
 
     LaunchedEffect(products) {
         cartViewModel.setProducts(products)
     }
 
+    // Handle navigation actions
     LaunchedEffect(Unit) {
         orderViewModel.loginUiAction.collect { action ->
             when (action) {
@@ -79,6 +70,9 @@ fun ListCategoryProductScreen(
         }
     }
 
+    // -------------------------------------------------------
+    // UI Layout
+    // -------------------------------------------------------
     Scaffold(
         containerColor = Color(0xFFF7F8FA),
         topBar = {
@@ -107,6 +101,7 @@ fun ListCategoryProductScreen(
                 .fillMaxSize()
         ) {
 
+            // Search
             ShopSearchBar(
                 hint = "I'm Smart Search AI, looking for…",
                 onSearch = { query ->
@@ -119,6 +114,7 @@ fun ListCategoryProductScreen(
 
             Spacer(Modifier.height(8.dp))
 
+            // Banner
             PromoBanner(
                 banners = listOf(
                     BannerItem(R.drawable.banner_wrap_n_carry),
@@ -133,8 +129,13 @@ fun ListCategoryProductScreen(
                 Text("⚠ Error loading products: $error", color = Color.Red)
             }
 
+            // ⭐ Final Display (left menu + grid)
             CategoryProduct(
-                racks = racks,
+                racks = listOf(ProductRack(selectedCategory, filteredProducts)), // filtered
+                originalRacks = racks,                      // full category list
+                selectedCategory = selectedCategory,         // highlight selected
+                onCategorySelected = { selectedCategory = it },
+
                 onProductClick = { id ->
                     navController.navigate("${Routes.PRODUCT_DETAIL}/$id")
                 },

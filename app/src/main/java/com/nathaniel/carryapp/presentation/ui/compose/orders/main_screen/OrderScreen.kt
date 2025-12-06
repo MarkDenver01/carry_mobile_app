@@ -163,7 +163,9 @@ fun OrderScreen(
                     title = rack.title,
                     actionText = "View More",
                     onActionClick = {
-                        orderViewModel.onLoginClickEvent(LoginUiEvent.OnViewMoreClicked)
+                        navController.navigate("${Routes.SORT_PRODUCT_BY_CATEGORY}/${rack.title}") {
+                            popUpTo(Routes.ORDERS) { inclusive = false }
+                        }
                     }
                 )
 

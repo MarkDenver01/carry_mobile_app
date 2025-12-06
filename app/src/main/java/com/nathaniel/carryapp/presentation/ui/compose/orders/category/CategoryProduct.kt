@@ -1,24 +1,9 @@
 package com.nathaniel.carryapp.presentation.ui.compose.orders.category
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -27,16 +12,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -47,58 +26,68 @@ import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.ProductCard
 
 @Composable
 fun CategoryProduct(
-    racks: List<ProductRack>,
+    racks: List<ProductRack>,              // filtered (1 category)
+    originalRacks: List<ProductRack>,      // full category list (left menu)
+    selectedCategory: String,              // current selected
+    onCategorySelected: (String) -> Unit,  // callback
     onProductClick: (Long) -> Unit,
     onAdd: (Long) -> Unit,
     onMinus: (Long) -> Unit
 ) {
     if (racks.isEmpty()) return
 
-    var selectedIndex by remember { mutableStateOf(0) }
-    val cardHeight = LocalConfiguration.current.screenWidthDp.dp * 0.90f
+    // ⭐ Auto-locate selected category index
+    var selectedIndex by remember(selectedCategory) {
+        mutableStateOf(
+            originalRacks.indexOfFirst { it.title == selectedCategory }
+                .coerceAtLeast(0)
+        )
+    }
+
+    val selectedRack = racks.firstOrNull() ?: return
 
     Row(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = Modifier.fillMaxSize()
     ) {
 
-        /* ============================================================
-           LEFT CATEGORY LIST — BALANCED WIDTH
-           Now uses weight(0.28f) instead of fixed 125.dp
-        ============================================================ */
+        // ---------------------------------------------------------
+        // LEFT MENU (All categories)
+        // ---------------------------------------------------------
         LazyColumn(
             modifier = Modifier
-                .weight(0.28f)   // ← 28% of screen width
+                .weight(0.28f)
                 .fillMaxHeight()
-                .background(
-                    Color.White,
-                    shape = RoundedCornerShape(10.dp)),
+                .background(Color.White, shape = RoundedCornerShape(10.dp)),
             verticalArrangement = Arrangement.Top
         ) {
-            items(racks.size) { index ->
+            items(originalRacks.size) { index ->
 
-                val rack = racks[index]
-                val iconUrl = rack.products.firstOrNull()?.imageUrl
+                val rack = originalRacks[index]
                 val isSelected = selectedIndex == index
 
                 val bgColor by animateColorAsState(
                     if (isSelected) Color(0xFF0F8B3C).copy(alpha = 0.15f)
                     else Color.White
                 )
+
                 val textColor by animateColorAsState(
-                    if (isSelected) Color(0xFF0F8B3C) else Color.DarkGray
+                    if (isSelected) Color(0xFF0F8B3C)
+                    else Color.DarkGray
                 )
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { selectedIndex = index }
+                        .clickable {
+                            selectedIndex = index
+                            onCategorySelected(rack.title)
+                        }
                         .background(bgColor, MaterialTheme.shapes.medium)
                         .padding(vertical = 6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
 
-                    // Green indicator bar
+                    // Indicator bar
                     Box(
                         modifier = Modifier
                             .width(6.dp)
@@ -109,16 +98,14 @@ fun CategoryProduct(
                             )
                     )
 
-                    // Centered icon + text column
                     Column(
                         modifier = Modifier
-                            .fillMaxWidth()              // important for centering
+                            .fillMaxWidth()
                             .padding(horizontal = 6.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-
                         AsyncImage(
-                            model = iconUrl,
+                            model = rack.products.firstOrNull()?.imageUrl,
                             contentDescription = rack.title,
                             modifier = Modifier
                                 .size(50.dp)
@@ -142,18 +129,14 @@ fun CategoryProduct(
             }
         }
 
-        Spacer(Modifier.width(4.dp))
-
-        /* ============================================================
-//           RIGHT PRODUCT GRID — BALANCED WIDTH
-           Uses weight(0.72f)
-        ============================================================ */
-        val selectedRack = racks[selectedIndex]
+        // ---------------------------------------------------------
+        // RIGHT PRODUCT GRID
+        // ---------------------------------------------------------
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             modifier = Modifier
-                .weight(0.72f)   // ← takes remaining width
+                .weight(0.72f)
                 .fillMaxHeight()
                 .padding(horizontal = 12.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -164,7 +147,7 @@ fun CategoryProduct(
 
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth()                        // responsive width
+                        .fillMaxWidth()
                         .background(Color.White, RoundedCornerShape(16.dp))
                 ) {
                     ProductCard(
