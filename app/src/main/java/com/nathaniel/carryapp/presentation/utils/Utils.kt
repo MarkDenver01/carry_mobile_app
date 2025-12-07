@@ -39,3 +39,20 @@ fun getAppVersionName(context: Context): String {
     }
 }
 
+fun shouldShowPromoToday(context: Context): Boolean {
+    val prefs = context.getSharedPreferences("promo_prefs", Context.MODE_PRIVATE)
+
+    val lastShown = prefs.getLong("last_shown_time", 0L)
+    val currentTime = System.currentTimeMillis()
+
+    val oneDayMillis = 24 * 60 * 60 * 1000 // ✅ 24 hours
+
+    return if (currentTime - lastShown >= oneDayMillis) {
+        prefs.edit().putLong("last_shown_time", currentTime).apply()
+        true // ✅ SHOW PROMO
+    } else {
+        false // ❌ DO NOT SHOW
+    }
+}
+
+

@@ -73,6 +73,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -230,6 +231,9 @@ class OrderViewModel @Inject constructor(
     private val _productBanners = MutableStateFlow<List<ProductBanner>>(emptyList())
     val productBanners: StateFlow<List<ProductBanner>> = _productBanners
 
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing = _isRefreshing.asStateFlow()
+
     val bannerCount: StateFlow<Int> = productBanners.map { it.size }
         .stateIn(
             scope = viewModelScope,
@@ -245,6 +249,23 @@ class OrderViewModel @Inject constructor(
         checkLoginStatus()
         loadCustomerSession()
         loadProductBanners()
+    }
+
+    fun refreshProducts() {
+        viewModelScope.launch {
+            try {
+                _isRefreshing.emit(true)
+                loadRegions()
+                loadProvinces()
+                loadSavedAddress()
+                loadSavedMobileOrEmail()
+                checkLoginStatus()
+                loadCustomerSession()
+                loadProductBanners()
+            } finally {
+                _isRefreshing.emit(false)
+            }
+        }
     }
 
     fun loadProductBanners() {

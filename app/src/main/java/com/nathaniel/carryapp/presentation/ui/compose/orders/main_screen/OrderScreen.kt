@@ -6,11 +6,16 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.nathaniel.carryapp.R
@@ -23,19 +28,30 @@ import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.*
 import com.nathaniel.carryapp.presentation.ui.sharedViewModel
 import com.nathaniel.carryapp.presentation.ui.state.LoginUiAction
 import com.nathaniel.carryapp.presentation.ui.state.LoginUiEvent
+import com.nathaniel.carryapp.presentation.utils.PromoPopupDialog
+import com.nathaniel.carryapp.presentation.utils.shouldShowPromoToday
+import kotlinx.coroutines.delay
 import timber.log.Timber
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
 @RequiresApi(Build.VERSION_CODES.O)
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun OrderScreen(
     navController: NavController,
 ) {
     val orderViewModel: OrderViewModel = sharedViewModel()
     val cartViewModel: CartViewModel = sharedViewModel()
+
+    val isRefreshing by orderViewModel.isRefreshing.collectAsState()
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = isRefreshing,
+        onRefresh = {
+            orderViewModel.refreshProducts() // ✅ USE YOUR VM FUNCTION
+        }
+    )
 
     val products by orderViewModel.products.collectAsState()
     val error by orderViewModel.error.collectAsState()
@@ -46,6 +62,9 @@ fun OrderScreen(
     val screenWidth = configuration.screenWidthDp.dp
     val cardWidth = (screenWidth / 2) - 24.dp
     val cardHeight = 330.dp
+
+    val context = LocalContext.current
+    var showPromoPopup by remember { mutableStateOf(shouldShowPromoToday(context)) }
 
     // DOMAIN -> UI
     val shopProducts = products.map { it.toShopProduct() }
@@ -79,7 +98,7 @@ fun OrderScreen(
     val today = LocalDate.now()
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
-    fun daysLeft(expiryDate: String?): Int? {
+    fun daysLeft(expiryDate: String?): Int? {isRefreshing
         return try {
             if (!expiryDate.isNullOrBlank()) {
                 val dateOnly = expiryDate.substringBefore(" ")
@@ -208,91 +227,108 @@ fun OrderScreen(
             )
         }
     ) { inner ->
-
-        LazyColumn(
+        Box(
             modifier = Modifier
                 .padding(inner)
-                .fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 96.dp)
+                .fillMaxSize()
         ) {
-            // 🔍 Search + Banner
-            item {
-                Column {
-                    ShopSearchBar(
-                        hint = "I'm Smart Search AI, looking for…",
-                        onSearch = { query ->
-                            orderViewModel.updateSearchQuery(query)
-                        }
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    PromoBanner(banners = productBanners)
-                    Spacer(Modifier.height(16.dp))
-                }
-            }
-
-            // =====================================================
-            // CATEGORY SECTIONS (PROMO FIRST, THEN NORMAL RACKS)
-            // =====================================================
-            items(racks.size) { index ->
-                val rack = racks[index]
-
-                // Section Header
-                SectionHeader(
-                    title = rack.title,
-                    actionText = "View More",
-                    onActionClick = {
-                        navController.navigate("${Routes.SORT_PRODUCT_BY_CATEGORY}/${rack.title}") {
-                            popUpTo(Routes.ORDERS) { inclusive = false }
-                        }
-                    }
-                )
-
-                Spacer(Modifier.height(10.dp))
-
-                // 🔥 HORIZONTAL LIST OF PRODUCTS
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(rack.products, key = { it.id }) { p ->
-
-                        ProductCard(
-                            cardWidth = cardWidth,
-                            cardHeight = cardHeight,
-                            nameMaxLines = 2,
-                            imageUrl = p.imageUrl,
-                            name = p.name,
-                            weight = p.weight,
-                            sold = p.sold,
-                            price = p.price,
-                            expiryDate = p.expiryDate,
-                            onFavorite = {},
-                            onAdd = {
-                                cartViewModel.addProductOriginalDomain(p.id)
-
-                                val customerId = customerSession?.customer?.customerId
-                                if (customerId != null) {
-                                    orderViewModel.recordUserInteraction(customerId, p.name)
-                                }
-                            },
-                            onMinus = {
-                                cartViewModel.removeProductOriginalDomain(p.id)
-                            },
-                            onRestore = {},
-                            onDeduct = {},
-                            onDetailClick = {
-                                val customerId = customerSession?.customer?.customerId
-                                if (customerId != null) {
-                                    orderViewModel.recordUserInteraction(customerId, p.name)
-                                }
-                                navController.navigate("${Routes.PRODUCT_DETAIL}/${p.id}")
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(bottom = 96.dp)
+            ) {
+                // 🔍 Search + Banner
+                item {
+                    Column {
+                        ShopSearchBar(
+                            hint = "I'm Smart Search AI, looking for…",
+                            onSearch = { query ->
+                                orderViewModel.updateSearchQuery(query)
                             }
                         )
+                        Spacer(Modifier.height(8.dp))
+                        PromoBanner(banners = productBanners)
+                        Spacer(Modifier.height(16.dp))
                     }
                 }
 
-                Spacer(Modifier.height(24.dp))
+                // =====================================================
+                // CATEGORY SECTIONS (PROMO FIRST, THEN NORMAL RACKS)
+                // =====================================================
+                items(racks.size) { index ->
+                    val rack = racks[index]
+
+                    // Section Header
+                    SectionHeader(
+                        title = rack.title,
+                        actionText = "View More",
+                        onActionClick = {
+                            navController.navigate("${Routes.SORT_PRODUCT_BY_CATEGORY}/${rack.title}") {
+                                popUpTo(Routes.ORDERS) { inclusive = false }
+                            }
+                        }
+                    )
+
+                    Spacer(Modifier.height(10.dp))
+
+                    // 🔥 HORIZONTAL LIST OF PRODUCTS
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(rack.products, key = { it.id }) { p ->
+
+                            ProductCard(
+                                cardWidth = cardWidth,
+                                cardHeight = cardHeight,
+                                nameMaxLines = 2,
+                                imageUrl = p.imageUrl,
+                                name = p.name,
+                                weight = p.weight,
+                                sold = p.sold,
+                                price = p.price,
+                                expiryDate = p.expiryDate,
+                                onFavorite = {},
+                                onAdd = {
+                                    cartViewModel.addProductOriginalDomain(p.id)
+
+                                    val customerId = customerSession?.customer?.customerId
+                                    if (customerId != null) {
+                                        orderViewModel.recordUserInteraction(customerId, p.name)
+                                    }
+                                },
+                                onMinus = {
+                                    cartViewModel.removeProductOriginalDomain(p.id)
+                                },
+                                onRestore = {},
+                                onDeduct = {},
+                                onDetailClick = {
+                                    val customerId = customerSession?.customer?.customerId
+                                    if (customerId != null) {
+                                        orderViewModel.recordUserInteraction(customerId, p.name)
+                                    }
+                                    navController.navigate("${Routes.PRODUCT_DETAIL}/${p.id}")
+                                }
+                            )
+                        }
+                    }
+
+                    Spacer(Modifier.height(24.dp))
+                }
             }
+
+            PromoPopupDialog(
+                isVisible = showPromoPopup,
+                promoImage = R.drawable.ic_promo_per_day, // 🔁 Replace with your banner
+                onDismiss = {
+                    showPromoPopup = false
+                }
+            )
+
+            PullRefreshIndicator(
+                refreshing = isRefreshing,
+                state = pullRefreshState,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
         }
     }
 }

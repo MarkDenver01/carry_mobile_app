@@ -11,6 +11,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.HoverInteraction
@@ -24,6 +25,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -39,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
@@ -69,6 +72,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
@@ -1048,6 +1053,63 @@ fun LoadingOverlay(isLoading: Boolean) {
                 color = Color.White,
                 strokeWidth = 4.dp
             )
+        }
+    }
+}
+
+@Composable
+fun PromoPopupDialog(
+    isVisible: Boolean,
+    onDismiss: () -> Unit,
+    promoImage: Int
+) {
+    if (!isVisible) return
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.45f))
+            .pointerInput(Unit) { }  // ✅ BLOCK ALL TOUCHES BEHIND
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            ) { /* DO NOTHING */ },   // ✅ DO NOT DISMISS ON OUTSIDE TAP
+        contentAlignment = Alignment.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(0.88f)
+                .aspectRatio(0.75f)
+                .clip(RoundedCornerShape(18.dp))
+                .background(Color.White)
+        ) {
+
+            // ✅ PROMO IMAGE
+            Image(
+                painter = painterResource(id = promoImage),
+                contentDescription = null,
+                contentScale = ContentScale.FillBounds, // ✅ FORCE FULL WIDTH & HEIGHT
+                modifier = Modifier.fillMaxSize()
+            )
+
+            // ✅ ONLY WAY TO CLOSE → X BUTTON
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(10.dp)
+                    .size(34.dp)
+                    .clip(CircleShape)
+                    .background(Color.White)
+                    .clickable { onDismiss() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Close",
+                    tint = Color.Black,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
         }
     }
 }
