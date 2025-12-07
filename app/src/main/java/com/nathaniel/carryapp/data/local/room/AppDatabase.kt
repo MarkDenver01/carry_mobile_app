@@ -8,6 +8,7 @@ import com.nathaniel.carryapp.data.local.room.dao.CustomerDao
 import com.nathaniel.carryapp.data.local.room.dao.DeliveryAddressDao
 import com.nathaniel.carryapp.data.local.room.dao.DriverDao
 import com.nathaniel.carryapp.data.local.room.dao.LoginDao
+import com.nathaniel.carryapp.data.local.room.dao.ReorderDao
 import com.nathaniel.carryapp.data.local.room.entity.AgreementTermsEntity
 import com.nathaniel.carryapp.data.local.room.entity.CartItemEntity
 import com.nathaniel.carryapp.data.local.room.entity.CustomerDetailsEntity
@@ -16,6 +17,7 @@ import com.nathaniel.carryapp.data.local.room.entity.DeliveryAddressEntity
 import com.nathaniel.carryapp.data.local.room.entity.DriverEntity
 import com.nathaniel.carryapp.data.local.room.entity.LoginEntity
 import com.nathaniel.carryapp.data.local.room.entity.LoginSessionEntity
+import com.nathaniel.carryapp.data.local.room.entity.ReorderEntity
 
 @Database(
     entities = [
@@ -26,9 +28,10 @@ import com.nathaniel.carryapp.data.local.room.entity.LoginSessionEntity
         DeliveryAddressEntity::class,
         CustomerDetailsEntity::class,
         CartItemEntity::class,
-        AgreementTermsEntity::class
+        AgreementTermsEntity::class,
+        ReorderEntity::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = true
 )
 abstract class CarryDatabase : RoomDatabase() {
@@ -38,4 +41,5 @@ abstract class CarryDatabase : RoomDatabase() {
     abstract fun deliveryAddressDao(): DeliveryAddressDao
     abstract fun cartDao(): CartDao
     abstract fun agreementTermsDao(): AgreementTermsDao
+    abstract fun reOderDao(): ReorderDao
 }

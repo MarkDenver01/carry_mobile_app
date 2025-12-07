@@ -205,6 +205,10 @@ fun CheckoutScreen(
             isSingleButton = true,
             onConfirm = {
                 showDialogSuccessPayment = false
+
+                // save re-order history
+                cartViewModel.saveToReOrderHistory()
+
                 // Wallet deduction
                 if (selectedPayment == "WALLET") {
                     customerViewModel.refreshWallet()

@@ -2,6 +2,7 @@ package com.nathaniel.carryapp.presentation.ui.compose.orders.cart
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nathaniel.carryapp.data.local.room.entity.ReorderEntity
 import com.nathaniel.carryapp.domain.model.CartDisplayItem
 import com.nathaniel.carryapp.domain.model.Product
 import com.nathaniel.carryapp.domain.request.CheckoutRequest
@@ -12,6 +13,7 @@ import com.nathaniel.carryapp.domain.usecase.ClearCartUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCartCountUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCartSummaryUseCase
 import com.nathaniel.carryapp.domain.usecase.RemoveFromCartUseCase
+import com.nathaniel.carryapp.domain.usecase.SaveReorderHistoryUseCase
 import com.nathaniel.carryapp.presentation.ui.compose.orders.CartSummary
 import com.nathaniel.carryapp.presentation.utils.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,7 +30,8 @@ class CartViewModel @Inject constructor(
     private val getCartCountUseCase: GetCartCountUseCase,
     private val getCartSummaryUseCase: GetCartSummaryUseCase,
     private val checkoutUseCase: CheckoutUseCase,
-    private val clearCartUseCase: ClearCartUseCase
+    private val clearCartUseCase: ClearCartUseCase,
+    private val saveReorderHistoryUseCase: SaveReorderHistoryUseCase,
 ) : ViewModel() {
     private val _products = MutableStateFlow<List<Product>>(emptyList())
     val products: StateFlow<List<Product>> = _products.asStateFlow()
@@ -126,6 +129,27 @@ class CartViewModel @Inject constructor(
 
             val result = checkoutUseCase(request)
             _checkoutState.value = result
+        }
+    }
+
+    fun saveToReOrderHistory() {
+        viewModelScope.launch {
+            val entities = cartItems.value.map { item ->
+                ReorderEntity(
+                    productId = item.productId,
+                    name = item.name,
+                    imageUrl = item.imageUrl,
+                    weight = item.weight,
+                    price = item.price,
+                    qty = item.qty,
+                    categoryName = _products.value
+                        .firstOrNull { it.id == item.productId }
+                        ?.categoryName ?: "Others",
+                    expiryDate = null,
+                    inDate = null
+                )
+            }
+            saveReorderHistoryUseCase(entities)
         }
     }
 

@@ -41,4 +41,7 @@ object DatabaseModule {
 
     @Provides
     fun provideAgreementTermsDao(db: CarryDatabase) = db.agreementTermsDao()
+
+    @Provides
+    fun providesReorderDao(db: CarryDatabase) = db.reOderDao()
 }

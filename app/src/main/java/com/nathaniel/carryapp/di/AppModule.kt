@@ -46,6 +46,7 @@ import com.nathaniel.carryapp.domain.usecase.SaveAgreementUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveCustomerDetailsUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveLoginSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveMobileOrEmailUseCase
+import com.nathaniel.carryapp.domain.usecase.SaveReorderHistoryUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveUserHistoryUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveUserSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.SearchProductsUseCase
@@ -349,4 +350,10 @@ object AppModule {
     fun provideSearchProductUseCase(
         apiRepository: ApiRepository
     ): SearchProductsUseCase = SearchProductsUseCase(apiRepository)
+
+    @Provides
+    @Singleton
+    fun provideSaveReorderHistoryUseCase(
+        localRepository: LocalRepository
+    ): SaveReorderHistoryUseCase = SaveReorderHistoryUseCase(localRepository)
 }

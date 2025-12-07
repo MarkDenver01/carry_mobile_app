@@ -5,6 +5,7 @@ import com.nathaniel.carryapp.data.local.room.entity.AgreementTermsEntity
 import com.nathaniel.carryapp.data.local.room.entity.CustomerDetailsEntity
 import com.nathaniel.carryapp.data.local.room.entity.DeliveryAddressEntity
 import com.nathaniel.carryapp.data.local.room.entity.LoginSessionEntity
+import com.nathaniel.carryapp.data.local.room.entity.ReorderEntity
 import com.nathaniel.carryapp.domain.datasource.AddressDatasource
 import com.nathaniel.carryapp.domain.datasource.AgreementDatasource
 import com.nathaniel.carryapp.domain.datasource.CartDatasource
@@ -109,4 +110,10 @@ class LocalRepository @Inject constructor(
     }
 
     suspend fun clearAll() = cartDataSource.clearAll()
+
+    suspend fun saveReorderHistory(items: List<ReorderEntity>) {
+        cartDataSource.saveOrderHistory(items)
+    }
+
+    fun getOrderHistory() = cartDataSource.getOrderHistory()
 }
