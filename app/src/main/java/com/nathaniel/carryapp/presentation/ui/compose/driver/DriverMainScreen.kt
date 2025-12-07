@@ -150,6 +150,10 @@ fun DriverMainScreen(
                     modifier = Modifier.heightIn(max = 460.dp) // limit height for each rack
                 ) {
                     items(rack.products, key = { it.id }) { p ->
+
+                        val qty by cartViewModel.getQty(p.id)
+                            .collectAsState(initial = 0)
+
                         ProductCard(
                             imageUrl = p.imageUrl,
                             name = p.name,
@@ -157,6 +161,7 @@ fun DriverMainScreen(
                             sold = p.sold,
                             price = p.price,
                             expiryDate = p.expiryDate,
+                            qty = qty,
                             onFavorite = {},
                             onAdd = {
                                 cartViewModel.addProductOriginalDomain(p.id)

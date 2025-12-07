@@ -172,8 +172,11 @@ fun ListCategoryProductScreen(
                 Text("⚠ Error loading products: $error", color = Color.Red)
             }
 
+
+
             // ⭐ FULL CATEGORY UI: Left menu + products
             CategoryProduct(
+                cartViewModel,
                 racks = listOf(ProductRack(selectedCategory, selectedProducts)),
                 originalRacks = finalCategoryList,
                 selectedCategory = selectedCategory,

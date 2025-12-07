@@ -160,6 +160,9 @@ fun ReOrderScreen(navController: NavController) {
                     ) {
                         items(rack.products) { p ->
 
+                            val qty by cartViewModel.getQty(p.id)
+                                .collectAsState(initial = 0)
+
                             ProductCard(
                                 cardWidth = cardWidth,
                                 cardHeight = cardHeight,
@@ -169,6 +172,7 @@ fun ReOrderScreen(navController: NavController) {
                                 sold = p.sold,
                                 price = p.price,
                                 expiryDate = p.expiryDate,
+                                qty = qty,
                                 onFavorite = {},
                                 onAdd = {
                                     cartViewModel.addProductOriginalDomain(p.id)

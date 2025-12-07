@@ -146,6 +146,10 @@ fun ProductDetailRouter(
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(related) { p ->
+
+                            val qty by cartViewModel.getQty(p.id)
+                                .collectAsState(initial = 0)
+
                             ProductCard(
                                 imageHeight = 220.dp,
                                 cardWidth = 240.dp,     // ⭐ Perfect fit for horizontal scrolling
@@ -156,6 +160,7 @@ fun ProductDetailRouter(
                                 sold = p.stocks,
                                 price = p.price,
                                 expiryDate = p.expiryDate,
+                                qty = qty,
                                 onFavorite = {},
                                 onAdd = {
                                     cartViewModel.addProductOriginalDomain(p.id)

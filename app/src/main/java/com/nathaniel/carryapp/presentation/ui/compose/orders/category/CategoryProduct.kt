@@ -22,10 +22,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.nathaniel.carryapp.domain.model.ProductRack
+import com.nathaniel.carryapp.presentation.ui.compose.orders.cart.CartViewModel
 import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.ProductCard
 
 @Composable
 fun CategoryProduct(
+    cartViewModel: CartViewModel,
     racks: List<ProductRack>,              // filtered (1 category)
     originalRacks: List<ProductRack>,      // full category list (left menu)
     selectedCategory: String,              // current selected
@@ -150,6 +152,9 @@ fun CategoryProduct(
                         .fillMaxWidth()
                         .background(Color.White, RoundedCornerShape(16.dp))
                 ) {
+                    val qty by cartViewModel.getQty(p.id)
+                        .collectAsState(initial = 0)
+
                     ProductCard(
                         cardHeight = 320.dp,
                         imageHeight = 120.dp,
@@ -160,6 +165,7 @@ fun CategoryProduct(
                         sold = p.sold,
                         price = p.price,
                         expiryDate = p.expiryDate,
+                        qty = qty,
                         onFavorite = {},
                         onAdd = { onAdd(p.id) },
                         onMinus = { onMinus(p.id) },

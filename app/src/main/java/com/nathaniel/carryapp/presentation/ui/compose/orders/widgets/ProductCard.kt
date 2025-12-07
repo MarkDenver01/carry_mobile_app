@@ -107,6 +107,7 @@ fun ProductCard(
     sold: Int,
     price: Double,
     expiryDate: String?,
+    qty: Int,
     onFavorite: () -> Unit,
     onAdd: () -> Unit,
     onMinus: () -> Unit,
@@ -135,7 +136,7 @@ fun ProductCard(
     var promoPressed by remember { mutableStateOf(false) }
     val promoColor = if (promoPressed) Color(0xFF0C6A2D) else Color(0xFF16A34A)
 
-    var qty by remember { mutableStateOf(0) }
+    //var qty by remember { mutableStateOf(0) }
     val remainingStock = (sold - qty).coerceAtLeast(0)
 
     // ================= IMAGE LOADING STATES =================
@@ -305,9 +306,7 @@ fun ProductCard(
                         TextButton(
                             onClick = {
                                 if (qty > 0) {
-                                    qty--
                                     onMinus()
-                                    onRestore()
                                 }
                             },
                             modifier = Modifier.width(48.dp),
@@ -326,9 +325,7 @@ fun ProductCard(
                         TextButton(
                             onClick = {
                                 if (remainingStock > 0) {
-                                    qty++
                                     onAdd()
-                                    onDeduct()
                                 }
                             },
                             modifier = Modifier.width(48.dp),
