@@ -53,13 +53,11 @@ fun CheckoutScreen(
     val total = cartItems.sumOf { it.subtotal }
 
     // Observe result
-    LaunchedEffect(Unit) {
+    LaunchedEffect(true) {
         cartViewModel.checkoutState.collect { result ->
             when (result) {
-
-                is NetworkResult.Loading -> {
-                    // TODO: Add loader if you want
-                }
+                is NetworkResult.Idle,
+                is NetworkResult.Loading -> Unit
 
                 is NetworkResult.Success -> {
                     showDialogSuccessPayment = true
@@ -68,8 +66,6 @@ fun CheckoutScreen(
                 is NetworkResult.Error -> {
                     showDialogErrorPayment = true
                 }
-
-                else -> Unit
             }
         }
     }

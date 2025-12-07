@@ -75,7 +75,7 @@ fun CartScreen(
                 total = total,
                 onClick = {
                     navController.navigate(Routes.CHECKOUT) {
-                        popUpTo(Routes.CATEGORIES) { inclusive = true }
+                        popUpTo(Routes.CART) { inclusive = true }
                     }
                 }
             )

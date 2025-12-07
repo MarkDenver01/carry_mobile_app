@@ -17,8 +17,10 @@ import com.nathaniel.carryapp.domain.usecase.SaveReorderHistoryUseCase
 import com.nathaniel.carryapp.presentation.ui.compose.orders.CartSummary
 import com.nathaniel.carryapp.presentation.utils.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -45,8 +47,8 @@ class CartViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    private val _checkoutState = MutableStateFlow<NetworkResult<OrderResponse>?>(null)
-    val checkoutState = _checkoutState
+    private val _checkoutState = MutableSharedFlow<NetworkResult<OrderResponse>>(replay = 0)
+    val checkoutState = _checkoutState.asSharedFlow()
 
     init {
         // para may initial value agad pag pumasok sa app
@@ -129,10 +131,10 @@ class CartViewModel @Inject constructor(
 
     fun checkout(request: CheckoutRequest) {
         viewModelScope.launch {
-            _checkoutState.value = NetworkResult.Loading()
+            _checkoutState.emit(NetworkResult.Loading())
 
             val result = checkoutUseCase(request)
-            _checkoutState.value = result
+            _checkoutState.emit(result)
         }
     }
 

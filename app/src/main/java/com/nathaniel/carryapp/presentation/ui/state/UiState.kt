@@ -3,6 +3,13 @@ package com.nathaniel.carryapp.presentation.ui.state
 import android.net.Uri
 
 /**
+ * Used for cart ui click event.
+ */
+sealed class CartUiEvent {
+    object on
+}
+
+/**
  * Used for login ui click event.
  */
 sealed class LoginUiEvent {
