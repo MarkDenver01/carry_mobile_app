@@ -22,16 +22,19 @@ import com.nathaniel.carryapp.domain.enum.AlertType
 import com.nathaniel.carryapp.domain.model.ProductRack
 import com.nathaniel.carryapp.domain.model.toShopProduct
 import com.nathaniel.carryapp.navigation.Routes
+import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
 import com.nathaniel.carryapp.presentation.ui.compose.orders.cart.CartViewModel
 import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.*
 import com.nathaniel.carryapp.presentation.ui.sharedViewModel
+import com.nathaniel.carryapp.presentation.ui.state.LoginUiAction
+import com.nathaniel.carryapp.presentation.ui.state.LoginUiEvent
 import com.nathaniel.carryapp.presentation.utils.SweetAlertDialog
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReOrderScreen(navController: NavController) {
-
+    val orderViewModel: OrderViewModel = sharedViewModel()
     val reorderViewModel: ReorderViewModel = sharedViewModel()
     val cartViewModel: CartViewModel = sharedViewModel()
 
@@ -56,6 +59,22 @@ fun ReOrderScreen(navController: NavController) {
             }
     }
 
+    LaunchedEffect(orderViewModel.loginUiAction) {
+        orderViewModel.loginUiAction.collect { action ->
+            when (action) {
+                is LoginUiAction.Navigate -> {
+                    navController.navigate(action.route) {
+                        popUpTo(Routes.SIGN_IN) { inclusive = false }
+                    }
+                    orderViewModel.resetLoginAction()
+                }
+
+                is LoginUiAction.ShowToast -> "ReOrder"
+                null -> Unit
+            }
+        }
+    }
+
     Scaffold(
         containerColor = Color(0xFFF7F8FA),
         topBar = {
@@ -68,12 +87,12 @@ fun ReOrderScreen(navController: NavController) {
         },
         bottomBar = {
             ShopBottomBar(
-                selectedIndex = 2,
-                onItemSelected = {},
-                onHome = {},
-                onCategories = {},
-                onReorder = {},
-                onAccount = {}
+                selectedIndex = orderViewModel.selectedTab.collectAsState().value,
+                onItemSelected = { orderViewModel.updateSelectedTab(it) },
+                onHome = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnHomeClicked) },
+                onCategories = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnCategoriesClicked) },
+                onReorder = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnReorderClicked) },
+                onAccount = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnAccountClicked) }
             )
         }
     ) { inner ->
@@ -180,7 +199,9 @@ fun ReOrderScreen(navController: NavController) {
                     dismissText = "Cancel",
                     onConfirm = {
                         showRestoreAllConfirm = false
-                        reorderViewModel.restoreAllWithQuantities()
+                        reorderViewModel.restoreAllWithQuantities {
+                            cartViewModel.refreshCartFromOutside()
+                        }
                     },
                     onDismiss = {
                         showRestoreAllConfirm = false

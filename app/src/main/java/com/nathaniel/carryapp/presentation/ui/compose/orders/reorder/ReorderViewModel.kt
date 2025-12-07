@@ -35,13 +35,14 @@ class ReorderViewModel @Inject constructor(
     }
 
     /** ✅ NEW: RESTORE ALL WITH EXACT QUANTITIES */
-    fun restoreAllWithQuantities() {
+    fun restoreAllWithQuantities(onFinished: () -> Unit) {
         viewModelScope.launch {
             history.value.forEach { item ->
                 repeat(item.qty) {
                     cartUseCase(item.productId)
                 }
             }
+            onFinished() // ✅ notify UI to refresh cart
         }
     }
 }

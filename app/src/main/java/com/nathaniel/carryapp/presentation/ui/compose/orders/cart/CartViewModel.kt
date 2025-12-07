@@ -84,6 +84,10 @@ class CartViewModel @Inject constructor(
         }
     }
 
+    fun refreshCartFromOutside() {
+        refreshCart()
+    }
+
     private fun refreshCart() {
         viewModelScope.launch {
             val summaries: List<CartSummary> = getCartSummaryUseCase()
