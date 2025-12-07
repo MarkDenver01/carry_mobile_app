@@ -134,4 +134,30 @@ class CustomerViewModel @Inject constructor(
         }
     }
 
+    fun deductWallet(totalAmount: Double) {
+        viewModelScope.launch {
+            val mobile = customerDetails.value?.mobileNumber ?: return@launch
+
+            val req = UpdateWalletBalanceRequest(
+                mobileNumber = mobile,
+                amount = totalAmount.toBigDecimal(),  // ✅ TOTAL ang binabawas
+                isDeduct = true                       // ✅ DEDUCT na ngayon
+            )
+
+
+            when (val result = updateWalletBalanceUseCase(req)) {
+                is NetworkResult.Success -> {
+                    _walletBalance.value = result.data?.balance?.toDouble() ?: 0.0
+                }
+
+                is NetworkResult.Error -> {
+                    Timber.e("WALLET DEDUCTION FAILED")
+                }
+
+                else -> Unit
+            }
+        }
+    }
+
+
 }

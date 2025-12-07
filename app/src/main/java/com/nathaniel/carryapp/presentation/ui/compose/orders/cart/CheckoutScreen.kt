@@ -41,23 +41,23 @@ fun CheckoutScreen(
     val cartViewModel: CartViewModel = sharedViewModel()
     val customerViewModel: CustomerViewModel = sharedViewModel()
     val orderViewModel: OrderViewModel = sharedViewModel()
-    val cartItems by cartViewModel.cartItems.collectAsState()
 
-    var voucherCode by remember { mutableStateOf("") }
-    var selectedPayment by remember { mutableStateOf("COD") }
+    val cartItems by cartViewModel.cartItems.collectAsState()
     val walletBalance by customerViewModel.walletBalance.collectAsState()
+
+    var selectedPayment by remember { mutableStateOf("COD") }
     var showConfirmDialog by remember { mutableStateOf(false) }
     var showDialogErrorPayment by remember { mutableStateOf(false) }
     var showDialogSuccessPayment by remember { mutableStateOf(false) }
 
     val total = cartItems.sumOf { it.subtotal }
 
-    // Observe result
+    // ✅ OBSERVE CHECKOUT RESULT
     LaunchedEffect(true) {
         cartViewModel.checkoutState.collect { result ->
             when (result) {
-                is NetworkResult.Idle,
                 is NetworkResult.Loading -> Unit
+                is NetworkResult.Idle -> Unit
 
                 is NetworkResult.Success -> {
                     showDialogSuccessPayment = true
@@ -69,7 +69,6 @@ fun CheckoutScreen(
             }
         }
     }
-
 
     Scaffold(
         topBar = {
@@ -88,7 +87,6 @@ fun CheckoutScreen(
         },
         containerColor = Color(0xFFF7F8FA),
 
-        // ⭐ FIXED CONFIRM BUTTON AT BOTTOM
         bottomBar = {
             Column(
                 Modifier
@@ -96,6 +94,7 @@ fun CheckoutScreen(
                     .navigationBarsPadding()
                     .padding(16.dp)
             ) {
+
                 Row(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -132,14 +131,12 @@ fun CheckoutScreen(
         }
     ) { inner ->
 
-        // ⭐ EVERYTHING SCROLLABLE NOW
         LazyColumn(
             modifier = Modifier
                 .padding(inner)
                 .fillMaxSize()
         ) {
 
-            // CART TITLE
             item {
                 Text(
                     "Cart",
@@ -149,14 +146,12 @@ fun CheckoutScreen(
                 )
             }
 
-            // EACH ITEM
             items(cartItems.size) { index ->
                 CheckoutItemCard(cartItems[index])
             }
 
             item { Spacer(Modifier.height(16.dp)) }
 
-            // PAYMENT METHOD TITLE
             item {
                 Text(
                     "Payment Method",
@@ -166,7 +161,6 @@ fun CheckoutScreen(
                 )
             }
 
-            // PAYMENT OPTIONS
             item {
                 Column(Modifier.padding(16.dp)) {
 
@@ -187,10 +181,11 @@ fun CheckoutScreen(
                 }
             }
 
-            item { Spacer(Modifier.height(100.dp)) } // SPACE ABOVE BOTTOM BUTTON
+            item { Spacer(Modifier.height(100.dp)) }
         }
     }
 
+    // ✅ ✅ ✅ SUCCESS DIALOG — WALANG LOCAL WALLET DEDUCT
     if (showDialogSuccessPayment) {
         SweetAlertDialog(
             type = AlertType.SUCCESS,
@@ -202,24 +197,24 @@ fun CheckoutScreen(
             onConfirm = {
                 showDialogSuccessPayment = false
 
-                // save re-order history
+                // ✅ SAVE REORDER
                 cartViewModel.saveToReOrderHistory()
 
-                // Wallet deduction
-                if (selectedPayment == "WALLET") {
-                    customerViewModel.refreshWallet()
-                }
-
-                // Clear cart after successful checkout
+                // ✅ CLEAR CART
                 cartViewModel.clearCart()
 
-                // Navigate to success screen
+                // ✅ REFRESH WALLET FROM BACKEND
+                customerViewModel.refreshWallet()
+
+                // ✅ NAVIGATE
                 navController.navigate(Routes.ORDERS) {
                     popUpTo(Routes.CHECKOUT) { inclusive = true }
                 }
-            })
+            }
+        )
     }
 
+    // ✅ ERROR DIALOG
     if (showDialogErrorPayment) {
         SweetAlertDialog(
             type = AlertType.ERROR,
@@ -230,11 +225,11 @@ fun CheckoutScreen(
             isSingleButton = true,
             onConfirm = {
                 showDialogErrorPayment = false
-                // Perform your action here
-            })
+            }
+        )
     }
 
-    // ⭐ BOTTOM CONFIRMATION POPUP
+    // ✅ CONFIRMATION POPUP
     if (showConfirmDialog) {
         Box(
             modifier = Modifier
@@ -281,27 +276,18 @@ fun CheckoutScreen(
 
                             val customerId =
                                 orderViewModel.customerSession.value?.customer?.customerId
+
                             val deliveryAddress =
                                 orderViewModel.reverseAddress.value.fullAddressLine
-                            val notes: String? = null
 
-                            if (customerId == null) {
-                                // TODO: Show error dialog
-                                return@Button
-                            }
+                            if (customerId == null) return@Button
 
-                            val amount = String.format("%.2f", walletBalance)
-                            customerViewModel.updateWalletBalance(amount)
-
+                            // ✅ Frontend wallet validation (UI only)
                             if (selectedPayment == "WALLET" && walletBalance < total) {
-                                showConfirmDialog = false
-                                // YOUR ALERT
                                 println("Insufficient Wallet Balance")
                                 return@Button
                             }
 
-
-                            // Build checkout items from cart
                             val checkoutItems = cartItems.map {
                                 CheckoutItemRequest(
                                     productId = it.productId,
@@ -309,7 +295,8 @@ fun CheckoutScreen(
                                 )
                             }
 
-                            val backendPayment = if (selectedPayment == "COD") "COD" else "WALLET"
+                            val backendPayment =
+                                if (selectedPayment == "COD") "COD" else "WALLET"
 
                             val request = CheckoutRequest(
                                 customerId = customerId,
@@ -317,7 +304,7 @@ fun CheckoutScreen(
                                 deliveryFee = 0.0,
                                 discount = 0.0,
                                 deliveryAddress = deliveryAddress ?: "",
-                                notes = notes,
+                                notes = null,
                                 items = checkoutItems
                             )
 
@@ -347,8 +334,8 @@ fun CheckoutScreen(
             }
         }
     }
-
 }
+
 
 
 @Composable
