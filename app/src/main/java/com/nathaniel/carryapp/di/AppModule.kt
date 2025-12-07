@@ -26,6 +26,7 @@ import com.nathaniel.carryapp.domain.usecase.DeleteLoginSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.ForwardGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.GetAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.GetAllCategoryUseCase
+import com.nathaniel.carryapp.domain.usecase.GetAllProductBannerUseCase
 import com.nathaniel.carryapp.domain.usecase.GetAllProductsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetBarangaysByCityUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCartCountUseCase
@@ -39,6 +40,7 @@ import com.nathaniel.carryapp.domain.usecase.GetRecommendationsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetUserHistoryUseCase
 import com.nathaniel.carryapp.domain.usecase.GetUserSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.GetWalletBalanceUseCase
+import com.nathaniel.carryapp.domain.usecase.ProductBannerResult
 import com.nathaniel.carryapp.domain.usecase.RemoveFromCartUseCase
 import com.nathaniel.carryapp.domain.usecase.ReverseGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveAddressUseCase
@@ -356,4 +358,10 @@ object AppModule {
     fun provideSaveReorderHistoryUseCase(
         localRepository: LocalRepository
     ): SaveReorderHistoryUseCase = SaveReorderHistoryUseCase(localRepository)
+
+    @Provides
+    @Singleton
+    fun provideGetAllProductBannerUseCase(
+        apiRepository: ApiRepository
+    ): GetAllProductBannerUseCase = GetAllProductBannerUseCase(apiRepository)
 }

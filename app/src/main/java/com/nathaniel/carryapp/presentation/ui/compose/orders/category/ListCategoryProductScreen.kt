@@ -97,6 +97,9 @@ fun ListCategoryProductScreen(
     // If categoryName = real category, OK
     // If categoryName happens to be promo, also OK
 
+    val bannerCount by orderViewModel.bannerCount.collectAsState()
+    val productBanners by orderViewModel.productBanners.collectAsState()
+
     val selectedProducts = remember(selectedCategory, finalCategoryList) {
         finalCategoryList.find { it.title == selectedCategory }?.products ?: emptyList()
     }
@@ -132,12 +135,14 @@ fun ListCategoryProductScreen(
         },
         bottomBar = {
             ShopBottomBar(
+                offersCount = bannerCount,
                 selectedIndex = orderViewModel.selectedTab.collectAsState().value,
                 onItemSelected = { orderViewModel.updateSelectedTab(it) },
                 onHome = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnHomeClicked) },
                 onCategories = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnCategoriesClicked) },
                 onReorder = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnReorderClicked) },
-                onAccount = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnAccountClicked) }
+                onAccount = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnAccountClicked) },
+                onPromo = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnPromoClicked) }
             )
         }
     ) { inner ->
@@ -160,15 +165,7 @@ fun ListCategoryProductScreen(
             )
 
             Spacer(Modifier.height(8.dp))
-
-            PromoBanner(
-                banners = listOf(
-                    BannerItem(R.drawable.banner_wrap_n_carry),
-                    BannerItem(R.drawable.banner_wrap_n_carry),
-                    BannerItem(R.drawable.banner_wrap_n_carry)
-                )
-            )
-
+            PromoBanner(banners = productBanners)
             Spacer(Modifier.height(12.dp))
 
             if (error != null) {

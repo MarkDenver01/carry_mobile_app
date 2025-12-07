@@ -23,6 +23,7 @@ import com.nathaniel.carryapp.presentation.ui.compose.orders.location.LocationCo
 import com.nathaniel.carryapp.presentation.ui.compose.orders.main_screen.OrderScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.product.ProductDetailRouter
 import com.nathaniel.carryapp.presentation.ui.compose.orders.reorder.ReOrderScreen
+import com.nathaniel.carryapp.presentation.ui.compose.promo.PromoBannerListScreen
 import com.nathaniel.carryapp.presentation.ui.compose.signin.OtpVerificationScreen
 import com.nathaniel.carryapp.presentation.ui.compose.signin.SignInScreen
 import com.nathaniel.carryapp.presentation.ui.compose.terms.AgreementTermsPrivacyScreen
@@ -144,6 +145,10 @@ fun NavGraphBuilder.orderGraph(navController: NavController) {
     // TODO -recreate the UI for driver main screen
     composable(Routes.DRIVER_MAIN_SCREEN) {
         DriverMainScreen(navController = navController)
+    }
+
+    composable(Routes.PROMO_BANNERS) {
+        PromoBannerListScreen(navController)
     }
 
 }

@@ -74,6 +74,8 @@ fun CategoriesScreen(
 
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
 
+    val bannerCount by orderViewModel.bannerCount.collectAsState()
+
     LaunchedEffect(orderViewModel.loginUiAction) {
         orderViewModel.loginUiAction.collect { action ->
             when (action) {
@@ -104,12 +106,14 @@ fun CategoriesScreen(
         },
         bottomBar = {
             ShopBottomBar(
+                offersCount = bannerCount,
                 selectedIndex = orderViewModel.selectedTab.collectAsState().value,
                 onItemSelected = { orderViewModel.updateSelectedTab(it) },
                 onHome = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnHomeClicked) },
                 onCategories = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnCategoriesClicked) },
                 onReorder = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnReorderClicked) },
-                onAccount = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnAccountClicked) }
+                onAccount = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnAccountClicked) },
+                onPromo = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnPromoClicked) }
             )
         },
         containerColor = Color.White

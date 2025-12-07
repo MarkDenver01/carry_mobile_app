@@ -42,6 +42,9 @@ fun DriverMainScreen(
     val shopProducts = products.map { it.toShopProduct() }
 
     var selectedIndex by remember { mutableStateOf(0) }
+    val bannerCount by orderViewModel.bannerCount.collectAsState()
+    val productBanners by orderViewModel.productBanners.collectAsState()
+
 
     LaunchedEffect(products) {
         cartViewModel.setProducts(products)
@@ -90,12 +93,14 @@ fun DriverMainScreen(
         },
         bottomBar = {
             ShopBottomBar(
+                offersCount = bannerCount,
                 selectedIndex = orderViewModel.selectedTab.collectAsState().value,
                 onItemSelected = { orderViewModel.updateSelectedTab(it) },
                 onHome = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnHomeClicked) },
                 onCategories = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnCategoriesClicked) },
                 onReorder = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnReorderClicked) },
-                onAccount = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnAccountClicked) }
+                onAccount = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnAccountClicked) },
+                onPromo = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnPromoClicked) }
             )
         }
     ) { inner ->
@@ -119,13 +124,7 @@ fun DriverMainScreen(
                         }
                     )
                     Spacer(Modifier.height(8.dp))
-                    PromoBanner(
-                        banners = listOf(
-                            BannerItem(R.drawable.banner_wrap_n_carry),
-                            BannerItem(R.drawable.banner_wrap_n_carry),
-                            BannerItem(R.drawable.banner_wrap_n_carry)
-                        )
-                    )
+                    PromoBanner(banners = productBanners)
                     Spacer(Modifier.height(16.dp))
                 }
             }

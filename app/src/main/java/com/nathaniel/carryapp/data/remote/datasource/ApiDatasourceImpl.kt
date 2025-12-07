@@ -3,6 +3,7 @@ package com.nathaniel.carryapp.data.remote.datasource
 import com.nathaniel.carryapp.data.remote.api.ApiService
 import com.nathaniel.carryapp.data.remote.api.PsgcApiService
 import com.nathaniel.carryapp.domain.datasource.ApiDatasource
+import com.nathaniel.carryapp.domain.model.ProductBannerResponse
 import com.nathaniel.carryapp.domain.request.CashInRequest
 import com.nathaniel.carryapp.domain.request.CheckoutRequest
 import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
@@ -99,6 +100,10 @@ class ApiDatasourceImpl @Inject constructor(
 
     override suspend fun searchProducts(query: String): Response<List<ProductResponse>> {
         return apiService.smartSearch(query)
+    }
+
+    override suspend fun getProductBanner(): Response<List<ProductBannerResponse>> {
+        return apiService.getProductBanner()
     }
 
 

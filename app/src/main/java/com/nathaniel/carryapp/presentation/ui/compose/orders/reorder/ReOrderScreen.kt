@@ -47,6 +47,7 @@ fun ReOrderScreen(navController: NavController) {
     val screenWidth = configuration.screenWidthDp.dp
     val cardWidth = (screenWidth / 2.2f)   // ✅ Slightly smaller = more breathing room
     val cardHeight = 330.dp
+    val bannerCount by orderViewModel.bannerCount.collectAsState()
 
     val racks = remember(reorderHistory) {
         reorderHistory
@@ -87,12 +88,14 @@ fun ReOrderScreen(navController: NavController) {
         },
         bottomBar = {
             ShopBottomBar(
+                offersCount = bannerCount,
                 selectedIndex = orderViewModel.selectedTab.collectAsState().value,
                 onItemSelected = { orderViewModel.updateSelectedTab(it) },
                 onHome = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnHomeClicked) },
                 onCategories = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnCategoriesClicked) },
                 onReorder = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnReorderClicked) },
-                onAccount = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnAccountClicked) }
+                onAccount = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnAccountClicked) },
+                onPromo = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnPromoClicked) }
             )
         }
     ) { inner ->

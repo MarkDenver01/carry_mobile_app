@@ -1,5 +1,6 @@
 package com.nathaniel.carryapp.data.remote.api
 
+import com.nathaniel.carryapp.domain.model.ProductBannerResponse
 import com.nathaniel.carryapp.domain.request.CashInRequest
 import com.nathaniel.carryapp.domain.request.CheckoutRequest
 import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
@@ -117,4 +118,7 @@ interface ApiService {
 
     @GET("/user/public/search")
     suspend fun smartSearch(@Query("query") query: String): Response<List<ProductResponse>>
+
+    @GET("/api/product-banners")
+    suspend fun getProductBanner(): Response<List<ProductBannerResponse>>
 }

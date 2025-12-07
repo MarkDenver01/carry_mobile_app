@@ -19,6 +19,7 @@ import com.nathaniel.carryapp.domain.mapper.CustomerDetailsMapper
 import com.nathaniel.carryapp.domain.model.Barangay
 import com.nathaniel.carryapp.domain.model.City
 import com.nathaniel.carryapp.domain.model.Product
+import com.nathaniel.carryapp.domain.model.ProductBanner
 import com.nathaniel.carryapp.domain.model.Province
 import com.nathaniel.carryapp.domain.request.CustomerRegistrationRequest
 import com.nathaniel.carryapp.domain.request.DeliveryAddressMapper
@@ -30,6 +31,7 @@ import com.nathaniel.carryapp.domain.usecase.CityResult
 import com.nathaniel.carryapp.domain.usecase.ForwardGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.GeocodeResult
 import com.nathaniel.carryapp.domain.usecase.GetAddressUseCase
+import com.nathaniel.carryapp.domain.usecase.GetAllProductBannerUseCase
 import com.nathaniel.carryapp.domain.usecase.GetAllProductsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetBarangaysByCityUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCitiesByProvinceUseCase
@@ -41,6 +43,7 @@ import com.nathaniel.carryapp.domain.usecase.GetRelatedProductsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetUserHistoryResult
 import com.nathaniel.carryapp.domain.usecase.GetUserHistoryUseCase
 import com.nathaniel.carryapp.domain.usecase.GetUserSessionUseCase
+import com.nathaniel.carryapp.domain.usecase.ProductBannerResult
 import com.nathaniel.carryapp.domain.usecase.ProductResult
 import com.nathaniel.carryapp.domain.usecase.ProvinceResult
 import com.nathaniel.carryapp.domain.usecase.RecommendationResult
@@ -68,11 +71,15 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
+import kotlin.math.log
 
 private const val REGION_IV_A = "040000000"
 
@@ -123,6 +130,7 @@ class OrderViewModel @Inject constructor(
     private val getRelatedProductsUseCase: GetRelatedProductsUseCase,
     private val checkLoginSessionUseCase: CheckLoginSessionUseCase,
     private val searchProductsUseCase: SearchProductsUseCase,
+    private val getAllProductBannerUseCase: GetAllProductBannerUseCase,
     private val apiRepository: ApiRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
@@ -219,6 +227,16 @@ class OrderViewModel @Inject constructor(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
 
+    private val _productBanners = MutableStateFlow<List<ProductBanner>>(emptyList())
+    val productBanners: StateFlow<List<ProductBanner>> = _productBanners
+
+    val bannerCount: StateFlow<Int> = productBanners.map { it.size }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = 0
+        )
+
     init {
         loadRegions()
         loadProvinces()
@@ -226,6 +244,21 @@ class OrderViewModel @Inject constructor(
         loadSavedMobileOrEmail()
         checkLoginStatus()
         loadCustomerSession()
+        loadProductBanners()
+    }
+
+    fun loadProductBanners() {
+        viewModelScope.launch {
+            when (val result = getAllProductBannerUseCase()) {
+                is ProductBannerResult.Success -> {
+                    _productBanners.value = result.productBanners
+                }
+
+                is ProductBannerResult.Error -> {
+                    Timber.e("Banner Error: ${result.message}")
+                }
+            }
+        }
     }
 
     private fun loadSavedMobileOrEmail() {
@@ -929,6 +962,12 @@ class OrderViewModel @Inject constructor(
                     )
                 }
 
+                // promo
+                LoginUiEvent.OnPromoClicked -> {
+                    _loginUiAction.value = LoginUiAction.Navigate(
+                        if (loggedIn) Routes.PROMO_BANNERS else Routes.SIGN_IN
+                    )
+                }
             }
         }
     }

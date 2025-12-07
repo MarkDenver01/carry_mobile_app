@@ -1,5 +1,6 @@
 package com.nathaniel.carryapp.domain.datasource
 
+import com.nathaniel.carryapp.domain.model.ProductBannerResponse
 import com.nathaniel.carryapp.domain.request.CashInRequest
 import com.nathaniel.carryapp.domain.request.CheckoutRequest
 import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
@@ -61,4 +62,6 @@ interface ApiDatasource {
     suspend fun updateDriverLocation(dto: DriverLocationUpdateRequest)
 
     suspend fun searchProducts(query: String): Response<List<ProductResponse>>
+
+    suspend fun getProductBanner(): Response<List<ProductBannerResponse>>
 }

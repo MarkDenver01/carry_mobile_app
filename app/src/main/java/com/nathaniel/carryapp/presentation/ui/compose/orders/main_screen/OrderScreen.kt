@@ -68,6 +68,12 @@ fun OrderScreen(
     }
 
     // =====================================================
+    // PRODUCT BANNER COUNT
+    // =====================================================
+    val bannerCount by orderViewModel.bannerCount.collectAsState()
+    val productBanners by orderViewModel.productBanners.collectAsState()
+
+    // =====================================================
     // 🔥 EXPIRY CALC (SAME LOGIC AS ProductCard)
     // =====================================================
     val today = LocalDate.now()
@@ -191,12 +197,14 @@ fun OrderScreen(
         },
         bottomBar = {
             ShopBottomBar(
+                offersCount = bannerCount,
                 selectedIndex = orderViewModel.selectedTab.collectAsState().value,
                 onItemSelected = { orderViewModel.updateSelectedTab(it) },
                 onHome = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnHomeClicked) },
                 onCategories = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnCategoriesClicked) },
                 onReorder = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnReorderClicked) },
-                onAccount = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnAccountClicked) }
+                onAccount = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnAccountClicked) },
+                onPromo = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnPromoClicked) }
             )
         }
     ) { inner ->
@@ -217,13 +225,7 @@ fun OrderScreen(
                         }
                     )
                     Spacer(Modifier.height(8.dp))
-                    PromoBanner(
-                        banners = listOf(
-                            BannerItem(R.drawable.banner_wrap_n_carry),
-                            BannerItem(R.drawable.banner_wrap_n_carry),
-                            BannerItem(R.drawable.banner_wrap_n_carry)
-                        )
-                    )
+                    PromoBanner(banners = productBanners)
                     Spacer(Modifier.height(16.dp))
                 }
             }

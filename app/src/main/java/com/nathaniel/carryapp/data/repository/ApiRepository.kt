@@ -16,6 +16,9 @@ import com.nathaniel.carryapp.domain.mapper.ProvinceMapper
 import com.nathaniel.carryapp.domain.model.Barangay
 import com.nathaniel.carryapp.domain.model.City
 import com.nathaniel.carryapp.domain.model.Product
+import com.nathaniel.carryapp.domain.model.ProductBanner
+import com.nathaniel.carryapp.domain.model.ProductBannerMapper
+import com.nathaniel.carryapp.domain.model.ProductBannerResponse
 import com.nathaniel.carryapp.domain.model.Province
 import com.nathaniel.carryapp.domain.request.CashInRequest
 import com.nathaniel.carryapp.domain.request.CheckoutRequest
@@ -438,6 +441,26 @@ class ApiRepository @Inject constructor(
 
         } catch (e: Exception) {
             NetworkResult.Error(HttpStatus.ERROR, e.message ?: "Search error")
+        }
+    }
+
+    suspend fun getProductBanner(): NetworkResult<List<ProductBanner>> {
+        return try {
+            val response = remote.getProductBanner()
+            if (response.isSuccessful) {
+                val body = response.body()
+
+                if (body != null) {
+                    val mapped = ProductBannerMapper.toDomainList(body)
+                    NetworkResult.Success(HttpStatus.SUCCESS, mapped)
+                } else {
+                    NetworkResult.Error(HttpStatus.ERROR, "unexpected error")
+                }
+            } else {
+                NetworkResult.Error(HttpStatus.ERROR, "unexpected error")
+            }
+        } catch (e: Exception) {
+            NetworkResult.Error(HttpStatus.ERROR, e.message ?: "unexpected error")
         }
     }
 

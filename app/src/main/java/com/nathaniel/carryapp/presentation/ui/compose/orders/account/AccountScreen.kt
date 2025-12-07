@@ -55,6 +55,7 @@ fun AccountScreen(navController: NavController) {
     val isLoading by customerViewModel.isLoading.collectAsState()
     val cartCount by cartViewModel.cartCount.collectAsState()
     var selectedIndex by remember { mutableStateOf(0) }
+    val bannerCount by orderViewModel.bannerCount.collectAsState()
 
     LaunchedEffect(orderViewModel.loginUiAction) {
         orderViewModel.loginUiAction.collect { action ->
@@ -84,12 +85,14 @@ fun AccountScreen(navController: NavController) {
         },
         bottomBar = {
             ShopBottomBar(
+                offersCount = bannerCount,
                 selectedIndex = orderViewModel.selectedTab.collectAsState().value,
                 onItemSelected = { orderViewModel.updateSelectedTab(it) },
                 onHome = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnHomeClicked) },
                 onCategories = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnCategoriesClicked) },
                 onReorder = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnReorderClicked) },
-                onAccount = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnAccountClicked) }
+                onAccount = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnAccountClicked) },
+                onPromo = { orderViewModel.onLoginClickEvent(LoginUiEvent.OnPromoClicked) }
             )
         }
     ) { inner ->

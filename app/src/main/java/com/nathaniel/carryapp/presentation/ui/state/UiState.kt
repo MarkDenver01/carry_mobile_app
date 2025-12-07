@@ -19,6 +19,8 @@ sealed class LoginUiEvent {
     object OnAccountClicked : LoginUiEvent()
     object OnSearchClicked : LoginUiEvent()
     object OnViewMoreClicked : LoginUiEvent()
+
+    object OnPromoClicked: LoginUiEvent()
 }
 
 /**
