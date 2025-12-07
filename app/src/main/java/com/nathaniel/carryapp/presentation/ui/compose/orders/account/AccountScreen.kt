@@ -57,6 +57,32 @@ fun AccountScreen(navController: NavController) {
     var selectedIndex by remember { mutableStateOf(0) }
     val bannerCount by orderViewModel.bannerCount.collectAsState()
 
+    var searchQuery by remember { mutableStateOf("") }
+
+    val sectionMap = mapOf(
+        "wallet" to "Wallet",
+        "my information" to "My Information",
+        "suki" to "Suki Membership Program",
+        "membership" to "Suki Membership Program",
+        "orders" to "My Orders",
+        "transactions" to "Transactions",
+        "delivery" to "Delivery Address",
+        "address" to "Delivery Address",
+        "support" to "Support",
+        "logout" to "Log out",
+        "delete" to "Delete Account"
+    )
+
+    val isSearchActive = searchQuery.isNotBlank()
+
+    fun shouldShowSection(tag: String): Boolean {
+        if (!isSearchActive) return true
+        return sectionMap.entries.any {
+            it.value == tag && it.key.contains(searchQuery.lowercase())
+        }
+                || tag.lowercase().contains(searchQuery.lowercase())
+    }
+
     LaunchedEffect(orderViewModel.loginUiAction) {
         orderViewModel.loginUiAction.collect { action ->
             when (action) {
@@ -111,7 +137,9 @@ fun AccountScreen(navController: NavController) {
                 Column {
                     ShopSearchBar(
                         hint = "I'm looking for…",
-                        onSearch = {}
+                        onSearch = { query ->
+                            searchQuery = query
+                        }
                     )
                     Spacer(Modifier.height(12.dp))
                 }
@@ -120,58 +148,139 @@ fun AccountScreen(navController: NavController) {
             // ================================
             // 💳 WALLET CARD
             // ================================
-            item {
-                AccountCard {
-                    Column(Modifier.padding(18.dp)) {
+            if (shouldShowSection("Wallet")) {
+                item {
+                    AccountCard {
+                        Column(Modifier.padding(18.dp)) {
 
-                        // Wallet Header
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_wallet),
-                                contentDescription = "",
-                                tint = Color(
-                                    0xFF118B3C
-                                ),
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(Modifier.width(6.dp))
-                            Text(
-                                "Wallet",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF0E1F22)
-                            )
-                        }
-
-                        Spacer(Modifier.height(20.dp))
-
-                        // Wallet Balance + Cash In Button
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-
-                            Column {
-                                Text(
-                                    "WALLET BALANCE",
-                                    fontSize = 13.sp,
-                                    color = Color(0xFF6F7F85)
+                            // Wallet Header
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_wallet),
+                                    contentDescription = "",
+                                    tint = Color(
+                                        0xFF118B3C
+                                    ),
+                                    modifier = Modifier.size(20.dp)
                                 )
-
+                                Spacer(Modifier.width(6.dp))
                                 Text(
-                                    "₱${"%,.2f".format(walletBalance)}",
-                                    fontSize = 28.sp,
+                                    "Wallet",
+                                    fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFF0E1F22)
                                 )
                             }
 
+                            Spacer(Modifier.height(20.dp))
+
+                            // Wallet Balance + Cash In Button
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+
+                                Column {
+                                    Text(
+                                        "WALLET BALANCE",
+                                        fontSize = 13.sp,
+                                        color = Color(0xFF6F7F85)
+                                    )
+
+                                    Text(
+                                        "₱${"%,.2f".format(walletBalance)}",
+                                        fontSize = 28.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF0E1F22)
+                                    )
+                                }
+
+                                Button(
+                                    onClick = {
+                                        navController.navigate(Routes.CASH_IN) {
+                                            popUpTo(Routes.ACCOUNT) { inclusive = true }
+                                        }
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(
+                                            0xFF118B3C
+                                        )
+                                    ),
+                                    shape = RoundedCornerShape(15.dp)
+                                ) {
+                                    Text(
+                                        "Cash in",
+                                        color = Color.White,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(Modifier.height(20.dp))
+                }
+            }
+
+            // ================================
+            // 👤 MY INFORMATION
+            // ================================
+            if (shouldShowSection("My Information")) {
+                item {
+                    SectionCard(title = "My Information") {
+                        InfoRow("Name", customer?.userName ?: "")
+                        InfoRow("Mobile Number", customer?.mobileNumber ?: "")
+                        InfoRow("Email Address", customer?.email ?: "")
+                        InfoRow("Deliver To", customer?.address ?: "")
+                    }
+                    Spacer(Modifier.height(20.dp))
+                }
+            }
+
+            // ================================
+            // ⭐ SUKI MEMBERSHIP PROGRAM
+            // ================================
+            if (shouldShowSection("Suki Membership Program")) {
+                item {
+                    SectionCard(title = "Suki Membership Program") {
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+
+                            Image(
+                                painter = painterResource(R.drawable.ic_membership), // 🔥 Add your own icon
+                                contentDescription = "",
+                                modifier = Modifier
+                                    .size(70.dp)
+                                    .clip(RoundedCornerShape(12.dp)),
+                                contentScale = ContentScale.Crop
+                            )
+
+                            Spacer(Modifier.width(14.dp))
+
+                            Column(modifier = Modifier.weight(1f)) {
+
+                                Text(
+                                    "Become a Suki Member!",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color(0xFF0E1F22)
+                                )
+
+                                Text(
+                                    "Enjoy exclusive discounts, points, and freebies every order.",
+                                    fontSize = 13.sp,
+                                    color = Color(0xFF6F7F85)
+                                )
+                            }
+
+                            // 👉 BUTTON
                             Button(
                                 onClick = {
-                                    navController.navigate(Routes.CASH_IN) {
-                                        popUpTo(Routes.ACCOUNT) { inclusive = true }
-                                    }
+                                    //navController.navigate(Routes.MEMBERSHIP)
                                 },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(
@@ -180,279 +289,216 @@ fun AccountScreen(navController: NavController) {
                                 ),
                                 shape = RoundedCornerShape(15.dp)
                             ) {
-                                Text(
-                                    "Cash in",
-                                    color = Color.White,
-                                    fontWeight = FontWeight.SemiBold
-                                )
+                                Text("Join", color = Color.White, fontWeight = FontWeight.SemiBold)
                             }
                         }
                     }
+
+                    Spacer(Modifier.height(20.dp))
                 }
-
-                Spacer(Modifier.height(20.dp))
-            }
-
-            // ================================
-            // 👤 MY INFORMATION
-            // ================================
-            item {
-                SectionCard(title = "My Information") {
-                    InfoRow("Name", customer?.userName ?: "")
-                    InfoRow("Mobile Number", customer?.mobileNumber ?: "")
-                    InfoRow("Email Address", customer?.email ?: "")
-                    InfoRow("Deliver To", customer?.address ?: "")
-                }
-                Spacer(Modifier.height(20.dp))
-            }
-
-            // ================================
-            // ⭐ SUKI MEMBERSHIP PROGRAM
-            // ================================
-            item {
-                SectionCard(title = "Suki Membership Program") {
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-
-                        Image(
-                            painter = painterResource(R.drawable.ic_membership), // 🔥 Add your own icon
-                            contentDescription = "",
-                            modifier = Modifier
-                                .size(70.dp)
-                                .clip(RoundedCornerShape(12.dp)),
-                            contentScale = ContentScale.Crop
-                        )
-
-                        Spacer(Modifier.width(14.dp))
-
-                        Column(modifier = Modifier.weight(1f)) {
-
-                            Text(
-                                "Become a Suki Member!",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF0E1F22)
-                            )
-
-                            Text(
-                                "Enjoy exclusive discounts, points, and freebies every order.",
-                                fontSize = 13.sp,
-                                color = Color(0xFF6F7F85)
-                            )
-                        }
-
-                        // 👉 BUTTON
-                        Button(
-                            onClick = {
-                                //navController.navigate(Routes.MEMBERSHIP)
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF118B3C)),
-                            shape = RoundedCornerShape(15.dp)
-                        ) {
-                            Text("Join", color = Color.White, fontWeight = FontWeight.SemiBold)
-                        }
-                    }
-                }
-
-                Spacer(Modifier.height(20.dp))
             }
 
 
             // ================================
             // 📦 MY ORDERS (EMPTY)
             // ================================
-            item {
-                SectionCard(
-                    title = "My Orders",
-                    rightText = "View all"
-                ) {
-
-                    Spacer(Modifier.height(4.dp))
-
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.fillMaxWidth()
+            if (shouldShowSection("My Orders")) {
+                item {
+                    SectionCard(
+                        title = "My Orders",
+                        rightText = "View all"
                     ) {
 
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_empty_basket),
-                            contentDescription = "",
-                            tint = Color(
-                                0xFF118B3C
-                            ),
-                            modifier = Modifier.size(80.dp)
-                        )
+                        Spacer(Modifier.height(4.dp))
 
-                        Spacer(Modifier.height(10.dp))
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
 
-                        Text(
-                            "You don't have any orders yet.",
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFF0E1F22),
-                            textAlign = TextAlign.Center
-                        )
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_empty_basket),
+                                contentDescription = "",
+                                tint = Color(
+                                    0xFF118B3C
+                                ),
+                                modifier = Modifier.size(80.dp)
+                            )
 
-                        Text(
-                            "Your orders will appear here.",
-                            fontSize = 13.sp,
-                            color = Color(0xFF75828A),
-                            textAlign = TextAlign.Center
-                        )
+                            Spacer(Modifier.height(10.dp))
+
+                            Text(
+                                "You don't have any orders yet.",
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFF0E1F22),
+                                textAlign = TextAlign.Center
+                            )
+
+                            Text(
+                                "Your orders will appear here.",
+                                fontSize = 13.sp,
+                                color = Color(0xFF75828A),
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
+                    Spacer(Modifier.height(20.dp))
                 }
-                Spacer(Modifier.height(20.dp))
             }
 
             // ================================
             // 🧾 TRANSACTIONS (EMPTY)
             // ================================
-            item {
-                SectionCard {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_reciept),
-                            contentDescription = "",
-                            tint = Color(
-                                0xFF118B3C
-                            ),
-                            modifier = Modifier.size(80.dp)
-                        )
-                        Spacer(Modifier.height(12.dp))
+            if (shouldShowSection("Transactions")) {
+                item {
+                    SectionCard {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_reciept),
+                                contentDescription = "",
+                                tint = Color(
+                                    0xFF118B3C
+                                ),
+                                modifier = Modifier.size(80.dp)
+                            )
+                            Spacer(Modifier.height(12.dp))
 
-                        Text(
-                            "No transactions yet",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp,
-                            textAlign = TextAlign.Center
-                        )
+                            Text(
+                                "No transactions yet",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp,
+                                textAlign = TextAlign.Center
+                            )
 
-                        Text(
-                            "Your payment transactions will appear here.",
-                            fontSize = 13.sp,
-                            color = Color(0xFF75828A),
-                            textAlign = TextAlign.Center
-                        )
+                            Text(
+                                "Your payment transactions will appear here.",
+                                fontSize = 13.sp,
+                                color = Color(0xFF75828A),
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
+                    Spacer(Modifier.height(20.dp))
                 }
-                Spacer(Modifier.height(20.dp))
             }
 
             // ================================
             // 📍 DELIVERY ADDRESS — LIVE MAP + REVERSE ADDRESS
-            item {
+            if (shouldShowSection("Delivery Address")) {
+                item {
 
-                val reverseAddress by orderViewModel.reverseAddress.collectAsState()
-                val pinPosition by orderViewModel.selectedLatLng.collectAsState()
+                    val reverseAddress by orderViewModel.reverseAddress.collectAsState()
+                    val pinPosition by orderViewModel.selectedLatLng.collectAsState()
 
-                // Load map UI
-                SectionCard(title = "Delivery Address") {
+                    // Load map UI
+                    SectionCard(title = "Delivery Address") {
 
-                    Text(
-                        "Problem with your delivery address? Request Change",
-                        color = Color(0xFF118B3C),
-                        fontSize = 13.sp
-                    )
-
-                    Spacer(Modifier.height(14.dp))
-
-                    // GOOGLE MAP DISPLAY
-                    val cameraPositionState = rememberCameraPositionState {
-                        position = CameraPosition.fromLatLngZoom(
-                            pinPosition ?: LatLng(14.0645, 121.1460),
-                            16f
+                        Text(
+                            "Problem with your delivery address? Request Change",
+                            color = Color(0xFF118B3C),
+                            fontSize = 13.sp
                         )
-                    }
 
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                    ) {
-                        GoogleMap(
-                            modifier = Modifier.fillMaxSize(),
-                            cameraPositionState = cameraPositionState,
-                            uiSettings = MapUiSettings(
-                                zoomControlsEnabled = false,
-                                myLocationButtonEnabled = false
+                        Spacer(Modifier.height(14.dp))
+
+                        // GOOGLE MAP DISPLAY
+                        val cameraPositionState = rememberCameraPositionState {
+                            position = CameraPosition.fromLatLngZoom(
+                                pinPosition ?: LatLng(14.0645, 121.1460),
+                                16f
                             )
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp)
+                                .clip(RoundedCornerShape(12.dp))
                         ) {
-                            pinPosition?.let {
-                                Marker(
-                                    state = MarkerState(position = it),
-                                    title = "Your Delivery Address"
+                            GoogleMap(
+                                modifier = Modifier.fillMaxSize(),
+                                cameraPositionState = cameraPositionState,
+                                uiSettings = MapUiSettings(
+                                    zoomControlsEnabled = false,
+                                    myLocationButtonEnabled = false
                                 )
+                            ) {
+                                pinPosition?.let {
+                                    Marker(
+                                        state = MarkerState(position = it),
+                                        title = "Your Delivery Address"
+                                    )
+                                }
                             }
                         }
-                    }
 
-                    Spacer(Modifier.height(10.dp))
+                        Spacer(Modifier.height(10.dp))
 
-                    // SHOW EXACT REVERSE GEOCODED ADDRESS
-                    reverseAddress.fullAddressLine?.let {
+                        // SHOW EXACT REVERSE GEOCODED ADDRESS
+                        reverseAddress.fullAddressLine?.let {
+                            Text(
+                                it,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+
+                        Spacer(Modifier.height(10.dp))
+
                         Text(
-                            it,
+                            "View Details →",
+                            color = Color(0xFF118B3C),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium
                         )
                     }
 
-                    Spacer(Modifier.height(10.dp))
-
-                    Text(
-                        "View Details →",
-                        color = Color(0xFF118B3C),
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                    Spacer(Modifier.height(20.dp))
                 }
-
-                Spacer(Modifier.height(20.dp))
             }
 
 
             // ================================
             // 💬 SUPPORT
             // ================================
-            item {
-                AccountCard {
-                    Row(
-                        modifier = Modifier.padding(18.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+            if (shouldShowSection("Support")) {
+                item {
+                    AccountCard {
+                        Row(
+                            modifier = Modifier.padding(18.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
 
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_support),
-                            contentDescription = "",
-                            tint = Color(
-                                0xFF118B3C
-                            ),
-                            modifier = Modifier.size(70.dp)
-                        )
-
-
-                        Spacer(Modifier.width(14.dp))
-
-                        Column {
-                            Text(
-                                "Having problems with your balances and payments?",
-                                fontWeight = FontWeight.SemiBold
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_support),
+                                contentDescription = "",
+                                tint = Color(
+                                    0xFF118B3C
+                                ),
+                                modifier = Modifier.size(70.dp)
                             )
-                            Text(
-                                "Chat with Support →",
-                                fontSize = 14.sp,
-                                color = Color(0xFF118B3C)
-                            )
+
+
+                            Spacer(Modifier.width(14.dp))
+
+                            Column {
+                                Text(
+                                    "Having problems with your balances and payments?",
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Text(
+                                    "Chat with Support →",
+                                    fontSize = 14.sp,
+                                    color = Color(0xFF118B3C)
+                                )
+                            }
                         }
                     }
+                    Spacer(Modifier.height(28.dp))
                 }
-                Spacer(Modifier.height(28.dp))
             }
 
             // ================================
