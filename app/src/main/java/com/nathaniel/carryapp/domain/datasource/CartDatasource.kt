@@ -13,4 +13,6 @@ interface CartDatasource {
     suspend fun clearAll()
     suspend fun saveOrderHistory(items: List<ReorderEntity>)
     fun getOrderHistory(): Flow<List<ReorderEntity>>
+    suspend fun clearOrderHistory()
+
 }

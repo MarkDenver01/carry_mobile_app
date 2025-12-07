@@ -36,10 +36,15 @@ class CartDatasourceImpl @Inject constructor(
     override suspend fun clearAll() = cartDao.clearAll()
 
     override suspend fun saveOrderHistory(items: List<ReorderEntity>) {
+        reorderDao.clearAll()
         reorderDao.insertAll(items)
     }
 
     override fun getOrderHistory(): Flow<List<ReorderEntity>> {
         return reorderDao.getAllHistory()
+    }
+
+    override suspend fun clearOrderHistory() {
+        reorderDao.clearAll()
     }
 }
