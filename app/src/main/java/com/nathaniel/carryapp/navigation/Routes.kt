@@ -28,4 +28,6 @@ object Routes {
     const val CUSTOMER_REG_SUCCESS = "customer_registration_success"
     const val DRIVER_MAIN_SCREEN = "driver_main_screen"
     const val PROMO_BANNERS = "promo_banners"
+
+    const val NOTIFICATIONS = "notifications"
 }

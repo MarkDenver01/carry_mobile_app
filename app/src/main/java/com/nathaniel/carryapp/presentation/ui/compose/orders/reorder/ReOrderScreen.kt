@@ -40,6 +40,7 @@ fun ReOrderScreen(navController: NavController) {
 
     val reorderHistory by reorderViewModel.history.collectAsState()
     val cartCount by cartViewModel.cartCount.collectAsState()
+    val unreadCount by orderViewModel.unreadCount.collectAsState()
 
     var showRestoreAllConfirm by remember { mutableStateOf(false) }
 
@@ -80,10 +81,10 @@ fun ReOrderScreen(navController: NavController) {
         containerColor = Color(0xFFF7F8FA),
         topBar = {
             ShopHeader(
-                notifications = 0,
+                notifications = unreadCount,
                 cartCount = cartCount,
                 onCartClick = { navController.navigate(Routes.CART) },
-                onNotificationClick = {}
+                onNotificationClick = { navController.navigate(Routes.NOTIFICATIONS) }
             )
         },
         bottomBar = {

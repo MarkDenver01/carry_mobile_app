@@ -31,6 +31,7 @@ import com.nathaniel.carryapp.domain.usecase.CityResult
 import com.nathaniel.carryapp.domain.usecase.ForwardGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.GeocodeResult
 import com.nathaniel.carryapp.domain.usecase.GetAddressUseCase
+import com.nathaniel.carryapp.domain.usecase.GetAllNotificationsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetAllProductBannerUseCase
 import com.nathaniel.carryapp.domain.usecase.GetAllProductsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetBarangaysByCityUseCase
@@ -40,9 +41,11 @@ import com.nathaniel.carryapp.domain.usecase.GetMobileOrEmailUseCase
 import com.nathaniel.carryapp.domain.usecase.GetProvincesByRegionUseCase
 import com.nathaniel.carryapp.domain.usecase.GetRecommendationsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetRelatedProductsUseCase
+import com.nathaniel.carryapp.domain.usecase.GetUnreadNotificationCountUseCase
 import com.nathaniel.carryapp.domain.usecase.GetUserHistoryResult
 import com.nathaniel.carryapp.domain.usecase.GetUserHistoryUseCase
 import com.nathaniel.carryapp.domain.usecase.GetUserSessionUseCase
+import com.nathaniel.carryapp.domain.usecase.MarkAllNotificationsReadUseCase
 import com.nathaniel.carryapp.domain.usecase.ProductBannerResult
 import com.nathaniel.carryapp.domain.usecase.ProductResult
 import com.nathaniel.carryapp.domain.usecase.ProvinceResult
@@ -132,6 +135,9 @@ class OrderViewModel @Inject constructor(
     private val checkLoginSessionUseCase: CheckLoginSessionUseCase,
     private val searchProductsUseCase: SearchProductsUseCase,
     private val getAllProductBannerUseCase: GetAllProductBannerUseCase,
+    private val getAllNotificationsUseCase: GetAllNotificationsUseCase,
+    private val getUnreadNotificationCountUseCase: GetUnreadNotificationCountUseCase,
+    private val markAllNotificationsReadUseCase: MarkAllNotificationsReadUseCase,
     private val apiRepository: ApiRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
@@ -234,13 +240,6 @@ class OrderViewModel @Inject constructor(
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing = _isRefreshing.asStateFlow()
 
-    val bannerCount: StateFlow<Int> = productBanners.map { it.size }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = 0
-        )
-
     init {
         loadRegions()
         loadProvinces()
@@ -249,6 +248,31 @@ class OrderViewModel @Inject constructor(
         checkLoginStatus()
         loadCustomerSession()
         loadProductBanners()
+    }
+
+    val bannerCount: StateFlow<Int> = productBanners.map { it.size }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = 0
+        )
+
+    val notifications = getAllNotificationsUseCase().stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptyList()
+    )
+
+    val unreadCount = getUnreadNotificationCountUseCase().stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        0
+    )
+
+    fun markAllRead() {
+        viewModelScope.launch {
+            markAllNotificationsReadUseCase()
+        }
     }
 
     fun refreshProducts() {

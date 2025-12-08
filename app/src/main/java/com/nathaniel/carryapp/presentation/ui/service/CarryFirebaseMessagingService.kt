@@ -11,6 +11,7 @@ import androidx.core.app.NotificationManagerCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.nathaniel.carryapp.R
+import com.nathaniel.carryapp.data.local.room.entity.NotificationEntity
 import com.nathaniel.carryapp.presentation.ui.MainActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -45,6 +46,17 @@ class CarryFirebaseMessagingService : FirebaseMessagingService() {
         // ✅ Custom data from backend (type, orderId)
         val type = message.data["type"]
         val orderId = message.data["orderId"]
+
+        val notification = NotificationEntity(
+            title = title,
+            body = body,
+            type = type,
+            orderId = orderId
+        )
+
+        CoroutineScope(Dispatchers.IO).launch {
+            ServiceLocator.localRepository.saveNotification(notification)
+        }
 
         showNotification(title, body, type, orderId)
     }

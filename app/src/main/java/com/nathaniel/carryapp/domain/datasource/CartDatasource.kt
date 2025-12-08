@@ -1,6 +1,7 @@
 package com.nathaniel.carryapp.domain.datasource
 
 import com.nathaniel.carryapp.data.local.room.entity.CartGroupEntity
+import com.nathaniel.carryapp.data.local.room.entity.NotificationEntity
 import com.nathaniel.carryapp.data.local.room.entity.ReorderEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -14,5 +15,8 @@ interface CartDatasource {
     suspend fun saveOrderHistory(items: List<ReorderEntity>)
     fun getOrderHistory(): Flow<List<ReorderEntity>>
     suspend fun clearOrderHistory()
-
+    suspend fun save(notification: NotificationEntity)
+    fun getAll(): Flow<List<NotificationEntity>>
+    fun unreadCount(): Flow<Int>
+    suspend fun markAllRead()
 }

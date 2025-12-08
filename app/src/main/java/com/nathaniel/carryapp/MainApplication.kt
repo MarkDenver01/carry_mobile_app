@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.os.Build
 import com.google.firebase.FirebaseApp
 import com.nathaniel.carryapp.data.repository.ApiRepository
+import com.nathaniel.carryapp.data.repository.LocalRepository
 import com.nathaniel.carryapp.presentation.ui.service.ServiceLocator
 import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber
@@ -17,6 +18,9 @@ class MainApplication : Application() {
     @Inject
     lateinit var apiRepository: ApiRepository
 
+    @Inject
+    lateinit var localRepository: LocalRepository
+
     override fun onCreate() {
         super.onCreate()
         if (FirebaseApp.getApps(this).isEmpty()) {
@@ -24,6 +28,7 @@ class MainApplication : Application() {
         }
         Timber.plant(Timber.DebugTree())
         ServiceLocator.apiRepository = apiRepository
+        ServiceLocator.localRepository = localRepository
 
         createDefaultNotificationChannel()
     }

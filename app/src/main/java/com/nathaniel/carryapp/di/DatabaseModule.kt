@@ -44,4 +44,7 @@ object DatabaseModule {
 
     @Provides
     fun providesReorderDao(db: CarryDatabase) = db.reOderDao()
+
+    @Provides
+    fun providesNotificationDao(db: CarryDatabase) = db.notificationDao()
 }

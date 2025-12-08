@@ -1,9 +1,11 @@
 package com.nathaniel.carryapp.data.local.datasource
 
 import com.nathaniel.carryapp.data.local.room.dao.CartDao
+import com.nathaniel.carryapp.data.local.room.dao.NotificationDao
 import com.nathaniel.carryapp.data.local.room.dao.ReorderDao
 import com.nathaniel.carryapp.data.local.room.entity.CartGroupEntity
 import com.nathaniel.carryapp.data.local.room.entity.CartItemEntity
+import com.nathaniel.carryapp.data.local.room.entity.NotificationEntity
 import com.nathaniel.carryapp.data.local.room.entity.ReorderEntity
 import com.nathaniel.carryapp.domain.datasource.CartDatasource
 import kotlinx.coroutines.flow.Flow
@@ -12,6 +14,7 @@ import javax.inject.Inject
 class CartDatasourceImpl @Inject constructor(
     private val cartDao: CartDao,
     private val reorderDao: ReorderDao,
+    private val notificationDao: NotificationDao,
 ) : CartDatasource {
     override suspend fun addItem(productId: Long) {
         cartDao.insertItem(CartItemEntity(productId = productId))
@@ -47,4 +50,12 @@ class CartDatasourceImpl @Inject constructor(
     override suspend fun clearOrderHistory() {
         reorderDao.clearAll()
     }
+
+    override suspend fun save(notification: NotificationEntity) = notificationDao.insert(notification)
+
+    override fun getAll() = notificationDao.getAll()
+
+    override fun unreadCount() = notificationDao.unreadCount()
+
+    override suspend fun markAllRead() = notificationDao.markAllRead()
 }

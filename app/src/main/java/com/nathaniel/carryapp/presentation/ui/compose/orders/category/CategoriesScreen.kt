@@ -26,6 +26,7 @@ import com.nathaniel.carryapp.domain.mapper.ProductMapper.toShopProduct
 import com.nathaniel.carryapp.domain.model.Category
 import com.nathaniel.carryapp.navigation.Routes
 import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
+import com.nathaniel.carryapp.presentation.ui.compose.orders.cart.CartViewModel
 import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.ShopBottomBar
 import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.ShopHeader
 import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.ShopSearchBar
@@ -60,6 +61,7 @@ fun RotatingLoader(size: Int = 34, color: Color = Color(0xFF118B3C)) {
 fun CategoriesScreen(
     navController: NavController
 ) {
+    val cartViewModel: CartViewModel = sharedViewModel()
     val orderViewModel: OrderViewModel = sharedViewModel()
     val products by orderViewModel.products.collectAsState()
 
@@ -75,6 +77,8 @@ fun CategoriesScreen(
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
 
     val bannerCount by orderViewModel.bannerCount.collectAsState()
+    val unreadCount by orderViewModel.unreadCount.collectAsState()
+    val cartCount by cartViewModel.cartCount.collectAsState()
 
     LaunchedEffect(orderViewModel.loginUiAction) {
         orderViewModel.loginUiAction.collect { action ->
@@ -94,14 +98,14 @@ fun CategoriesScreen(
     Scaffold(
         topBar = {
             ShopHeader(
-                notifications = 12,
-                cartCount = 15,
+                notifications = unreadCount,
+                cartCount = cartCount,
                 onCartClick = {
                     navController.navigate(Routes.CART) {
                         popUpTo(Routes.ORDERS) { inclusive = true }
                     }
                 },
-                onNotificationClick = {}
+                onNotificationClick = {  navController.navigate(Routes.NOTIFICATIONS)  }
             )
         },
         bottomBar = {

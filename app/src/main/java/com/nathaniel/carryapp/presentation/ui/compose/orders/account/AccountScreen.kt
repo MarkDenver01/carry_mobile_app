@@ -56,6 +56,7 @@ fun AccountScreen(navController: NavController) {
     val cartCount by cartViewModel.cartCount.collectAsState()
     var selectedIndex by remember { mutableStateOf(0) }
     val bannerCount by orderViewModel.bannerCount.collectAsState()
+    val unreadCount by orderViewModel.unreadCount.collectAsState()
 
     var searchQuery by remember { mutableStateOf("") }
 
@@ -103,10 +104,10 @@ fun AccountScreen(navController: NavController) {
         containerColor = Color(0xFFF7F8FA),
         topBar = {
             ShopHeader(
-                notifications = 12,
+                notifications = unreadCount,
                 cartCount = cartCount,
                 onCartClick = { navController.navigate(Routes.CART) },
-                onNotificationClick = {}
+                onNotificationClick = {  navController.navigate(Routes.NOTIFICATIONS)  }
             )
         },
         bottomBar = {

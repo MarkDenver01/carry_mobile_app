@@ -38,6 +38,7 @@ fun ListCategoryProductScreen(
     val customerSession by orderViewModel.customerSession.collectAsState()
     val cartCount by cartViewModel.cartCount.collectAsState()
     val error by orderViewModel.error.collectAsState()
+    val unreadCount by orderViewModel.unreadCount.collectAsState()
 
     val shopProducts = products.map { it.toShopProduct() }
 
@@ -118,6 +119,7 @@ fun ListCategoryProductScreen(
                     }
                     orderViewModel.resetLoginAction()
                 }
+
                 else -> Unit
             }
         }
@@ -127,10 +129,10 @@ fun ListCategoryProductScreen(
         containerColor = Color(0xFFF7F8FA),
         topBar = {
             ShopHeader(
-                notifications = 12,
+                notifications = unreadCount,
                 cartCount = cartCount,
                 onCartClick = { navController.navigate(Routes.CART) },
-                onNotificationClick = {}
+                onNotificationClick = { navController.navigate(Routes.NOTIFICATIONS) }
             )
         },
         bottomBar = {
@@ -171,7 +173,6 @@ fun ListCategoryProductScreen(
             if (error != null) {
                 Text("⚠ Error loading products: $error", color = Color.Red)
             }
-
 
 
             // ⭐ FULL CATEGORY UI: Left menu + products

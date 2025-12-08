@@ -34,7 +34,8 @@ fun ProductDetailRouter(
 
     val products by orderViewModel.products.collectAsState()
     val related by orderViewModel.related.collectAsState()
-
+    val unreadCount by orderViewModel.unreadCount.collectAsState()
+    val cartCount by cartViewModel.cartCount.collectAsState()
     val isProductsLoading by orderViewModel.isProductsLoading.collectAsState()
     val isRelatedLoading by orderViewModel.isRelatedLoading.collectAsState()
 
@@ -49,10 +50,10 @@ fun ProductDetailRouter(
         containerColor = Color(0xFFF7F8FA),
         topBar = {
             ShopHeader(
-                notifications = 0,
-                cartCount = cartViewModel.cartCount.collectAsState().value,
+                notifications = unreadCount,
+                cartCount = cartCount,
                 onCartClick = { navController.navigate(Routes.CART) },
-                onNotificationClick = {}
+                onNotificationClick = {  navController.navigate(Routes.NOTIFICATIONS)  }
             )
         }
     ) { innerPadding ->

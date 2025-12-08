@@ -26,6 +26,7 @@ import com.nathaniel.carryapp.domain.usecase.DeleteLoginSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.ForwardGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.GetAddressUseCase
 import com.nathaniel.carryapp.domain.usecase.GetAllCategoryUseCase
+import com.nathaniel.carryapp.domain.usecase.GetAllNotificationsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetAllProductBannerUseCase
 import com.nathaniel.carryapp.domain.usecase.GetAllProductsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetBarangaysByCityUseCase
@@ -37,9 +38,11 @@ import com.nathaniel.carryapp.domain.usecase.GetCustomerDetailsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetMobileOrEmailUseCase
 import com.nathaniel.carryapp.domain.usecase.GetProvincesByRegionUseCase
 import com.nathaniel.carryapp.domain.usecase.GetRecommendationsUseCase
+import com.nathaniel.carryapp.domain.usecase.GetUnreadNotificationCountUseCase
 import com.nathaniel.carryapp.domain.usecase.GetUserHistoryUseCase
 import com.nathaniel.carryapp.domain.usecase.GetUserSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.GetWalletBalanceUseCase
+import com.nathaniel.carryapp.domain.usecase.MarkAllNotificationsReadUseCase
 import com.nathaniel.carryapp.domain.usecase.UpdateFcmTokenOwnerUseCase
 import com.nathaniel.carryapp.domain.usecase.RemoveFromCartUseCase
 import com.nathaniel.carryapp.domain.usecase.ReverseGeocodeUseCase
@@ -370,4 +373,22 @@ object AppModule {
     fun provideRegisterAndroidFcmTokenUseCase(
         apiRepository: ApiRepository
     ): UpdateFcmTokenOwnerUseCase = UpdateFcmTokenOwnerUseCase(apiRepository)
+
+    @Provides
+    @Singleton
+    fun provideGetAllNotificationsUseCase(
+        localRepository: LocalRepository
+    ): GetAllNotificationsUseCase = GetAllNotificationsUseCase(localRepository)
+
+    @Provides
+    @Singleton
+    fun provideGetUnreadNotificationCountUseCase(
+        localRepository: LocalRepository
+    ): GetUnreadNotificationCountUseCase = GetUnreadNotificationCountUseCase(localRepository)
+
+    @Provides
+    @Singleton
+    fun provideMarkAllNotificationReadUseCase(
+        localRepository: LocalRepository
+    ): MarkAllNotificationsReadUseCase = MarkAllNotificationsReadUseCase(localRepository)
 }

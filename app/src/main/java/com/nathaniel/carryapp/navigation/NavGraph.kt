@@ -8,6 +8,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.nathaniel.carryapp.presentation.ui.compose.driver.DriverMainScreen
 import com.nathaniel.carryapp.presentation.ui.compose.initial.InitialScreen
+import com.nathaniel.carryapp.presentation.ui.compose.notifications.NotificationHistoryScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.location.DeliveryAreaScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.account.AccountScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.account.CashInFailedScreen
@@ -137,7 +138,6 @@ fun NavGraphBuilder.orderGraph(navController: NavController) {
         SignUpSuccessScreen(navController = navController)
     }
 
-    // TODO - recreate the UI for re-order
     composable(Routes.REORDER) {
         ReOrderScreen(navController = navController)
     }
@@ -151,4 +151,7 @@ fun NavGraphBuilder.orderGraph(navController: NavController) {
         PromoBannerListScreen(navController)
     }
 
+    composable(Routes.NOTIFICATIONS) {
+        NotificationHistoryScreen(navController)
+    }
 }

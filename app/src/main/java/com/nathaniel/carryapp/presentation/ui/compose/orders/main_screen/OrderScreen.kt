@@ -57,6 +57,7 @@ fun OrderScreen(
     val error by orderViewModel.error.collectAsState()
     val cartCount by cartViewModel.cartCount.collectAsState()
     val customerSession by orderViewModel.customerSession.collectAsState()
+    val unreadCount by orderViewModel.unreadCount.collectAsState()
 
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
@@ -209,10 +210,10 @@ fun OrderScreen(
         containerColor = Color(0xFFF7F8FA),
         topBar = {
             ShopHeader(
-                notifications = 12,
+                notifications = unreadCount,
                 cartCount = cartCount,
                 onCartClick = { navController.navigate(Routes.CART) },
-                onNotificationClick = {}
+                onNotificationClick = { navController.navigate(Routes.NOTIFICATIONS) }
             )
         },
         bottomBar = {

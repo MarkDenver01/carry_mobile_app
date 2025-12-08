@@ -5,6 +5,7 @@ import com.nathaniel.carryapp.data.local.room.entity.AgreementTermsEntity
 import com.nathaniel.carryapp.data.local.room.entity.CustomerDetailsEntity
 import com.nathaniel.carryapp.data.local.room.entity.DeliveryAddressEntity
 import com.nathaniel.carryapp.data.local.room.entity.LoginSessionEntity
+import com.nathaniel.carryapp.data.local.room.entity.NotificationEntity
 import com.nathaniel.carryapp.data.local.room.entity.ReorderEntity
 import com.nathaniel.carryapp.domain.datasource.AddressDatasource
 import com.nathaniel.carryapp.domain.datasource.AgreementDatasource
@@ -15,7 +16,9 @@ import com.nathaniel.carryapp.domain.model.ShopProduct
 import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
 import com.nathaniel.carryapp.presentation.ui.compose.orders.CartSummary
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 import kotlin.math.log
 
@@ -28,6 +31,18 @@ class LocalRepository @Inject constructor(
 ) {
     private val _products = MutableStateFlow<List<ShopProduct>>(emptyList())
     fun getProductsFlow(): StateFlow<List<ShopProduct>> = _products
+
+    fun getAllNotifications() = cartDataSource.getAll()
+
+    fun unreadNotificationCount() = cartDataSource.unreadCount()
+
+    suspend fun saveNotification(notification: NotificationEntity) {
+        cartDataSource.save(notification)
+    }
+
+    suspend fun markAllNotificationsRead() {
+        cartDataSource.markAllRead()
+    }
 
     fun saveUserSession(session: Boolean) {
         tokenManager.userSession(session)
