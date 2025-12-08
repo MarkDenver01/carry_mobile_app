@@ -1,6 +1,9 @@
 package com.nathaniel.carryapp
 
 import android.app.Application
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.os.Build
 import com.google.firebase.FirebaseApp
 import com.nathaniel.carryapp.data.repository.ApiRepository
 import com.nathaniel.carryapp.presentation.ui.service.ServiceLocator
@@ -21,5 +24,22 @@ class MainApplication : Application() {
         }
         Timber.plant(Timber.DebugTree())
         ServiceLocator.apiRepository = apiRepository
+
+        createDefaultNotificationChannel()
+    }
+
+    private fun createDefaultNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                "carry_order_notifications",
+                "Order Notifications",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Wrap & Carry order updates"
+            }
+
+            val manager = getSystemService(NotificationManager::class.java)
+            manager.createNotificationChannel(channel)
+        }
     }
 }

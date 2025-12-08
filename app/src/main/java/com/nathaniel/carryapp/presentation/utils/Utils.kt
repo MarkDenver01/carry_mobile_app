@@ -1,12 +1,21 @@
 package com.nathaniel.carryapp.presentation.utils
 
+import android.Manifest
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
+import android.provider.Settings
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.nathaniel.carryapp.R
 import com.nathaniel.carryapp.domain.enum.BadgeStatus
 import com.nathaniel.carryapp.presentation.theme.AppSpacing
@@ -53,6 +62,33 @@ fun shouldShowPromoToday(context: Context): Boolean {
     } else {
         false // ❌ DO NOT SHOW
     }
+}
+
+
+fun areNotificationsEnabled(context: Context): Boolean {
+    return NotificationManagerCompat.from(context).areNotificationsEnabled()
+}
+
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+fun requestPermission(activity: Activity) {
+    if (ContextCompat.checkSelfPermission(
+            activity,
+            Manifest.permission.POST_NOTIFICATIONS
+        ) != PackageManager.PERMISSION_GRANTED
+    ) {
+        ActivityCompat.requestPermissions(
+            activity,
+            arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+            1001
+        )
+    }
+}
+
+fun openSettings(context: Context) {
+    val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+        putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+    }
+    context.startActivity(intent)
 }
 
 

@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.nathaniel.carryapp.R
@@ -55,6 +56,11 @@ class CarryFirebaseMessagingService : FirebaseMessagingService() {
         type: String?,
         orderId: String?
     ) {
+        if (!NotificationManagerCompat.from(this).areNotificationsEnabled()) {
+            Timber.w("❌ Notifications are BLOCKED by user")
+            return
+        }
+
         val channelId = "carry_order_notifications"
 
         val intent = Intent(this, MainActivity::class.java).apply {
@@ -84,7 +90,8 @@ class CarryFirebaseMessagingService : FirebaseMessagingService() {
         }
 
         val notification = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.drawable.ic_launcher_foreground) // palitan kung may custom icon ka
+            .setSmallIcon(R.drawable.ic_notif_icon) // palitan kung may custom icon ka
+            .setColor(getColor(R.color.white))
             .setContentTitle(title)
             .setContentText(body)
             .setAutoCancel(true)

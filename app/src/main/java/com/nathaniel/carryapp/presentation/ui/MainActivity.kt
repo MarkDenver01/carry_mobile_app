@@ -17,6 +17,9 @@ import com.nathaniel.carryapp.navigation.orderGraph
 import com.nathaniel.carryapp.navigation.signInGraph
 import com.nathaniel.carryapp.presentation.theme.CarryappTheme
 import com.nathaniel.carryapp.presentation.ui.compose.orders.account.CustomerViewModel
+import com.nathaniel.carryapp.presentation.utils.areNotificationsEnabled
+import com.nathaniel.carryapp.presentation.utils.openSettings
+import com.nathaniel.carryapp.presentation.utils.requestPermission
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -28,6 +31,16 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestPermission(this)
+        }
+
+        if (!areNotificationsEnabled(this)) {
+            openSettings(this)
+        }
+
+
         setContent {
             CarryappTheme {
                 val navController = rememberNavController()
