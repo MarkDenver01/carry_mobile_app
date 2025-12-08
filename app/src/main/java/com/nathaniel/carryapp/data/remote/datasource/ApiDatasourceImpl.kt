@@ -106,5 +106,15 @@ class ApiDatasourceImpl @Inject constructor(
         return apiService.getProductBanner()
     }
 
+    override suspend fun registerToken(token: String, customerId: Long?, driverId: Long?) {
+        val body = mutableMapOf(
+            "token" to token,
+            "platform" to "ANDROID"
+        )
 
+        customerId?.let { body["customerId"] = it.toString() }
+        driverId?.let { body["driverId"] = it.toString() }
+
+        apiService.registerToken(body)
+    }
 }

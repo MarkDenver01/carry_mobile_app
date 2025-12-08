@@ -40,7 +40,7 @@ import com.nathaniel.carryapp.domain.usecase.GetRecommendationsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetUserHistoryUseCase
 import com.nathaniel.carryapp.domain.usecase.GetUserSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.GetWalletBalanceUseCase
-import com.nathaniel.carryapp.domain.usecase.ProductBannerResult
+import com.nathaniel.carryapp.domain.usecase.UpdateFcmTokenOwnerUseCase
 import com.nathaniel.carryapp.domain.usecase.RemoveFromCartUseCase
 import com.nathaniel.carryapp.domain.usecase.ReverseGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveAddressUseCase
@@ -364,4 +364,10 @@ object AppModule {
     fun provideGetAllProductBannerUseCase(
         apiRepository: ApiRepository
     ): GetAllProductBannerUseCase = GetAllProductBannerUseCase(apiRepository)
+
+    @Provides
+    @Singleton
+    fun provideRegisterAndroidFcmTokenUseCase(
+        apiRepository: ApiRepository
+    ): UpdateFcmTokenOwnerUseCase = UpdateFcmTokenOwnerUseCase(apiRepository)
 }

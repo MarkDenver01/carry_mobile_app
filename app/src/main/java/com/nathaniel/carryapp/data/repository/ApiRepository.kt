@@ -464,5 +464,7 @@ class ApiRepository @Inject constructor(
         }
     }
 
-
+    suspend fun registerAndroidToken(token: String, customerId: Long? = null, driverId: Long? = null) {
+        remote.registerToken(token, customerId, driverId)
+    }
 }

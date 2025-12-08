@@ -4,11 +4,12 @@ import com.nathaniel.carryapp.data.repository.ApiRepository
 import com.nathaniel.carryapp.domain.mapper.LoginMapper
 import com.nathaniel.carryapp.presentation.utils.NetworkResult
 import javax.inject.Inject
+import kotlin.math.log
 
 sealed class VerifyOtpResult {
-    object CustomerLogin : VerifyOtpResult()
-    object DriverLogin : VerifyOtpResult()
-    object NewUser : VerifyOtpResult()
+    data class CustomerLogin(val customerId: Long) : VerifyOtpResult()
+    data class DriverLogin(val driverId: Long) : VerifyOtpResult()
+    data class NewUser(val customerId: Long) : VerifyOtpResult()
     data class Error(val message: String) : VerifyOtpResult()
 }
 
@@ -39,18 +40,23 @@ class VerifyOtpUseCase @Inject constructor(
                     driverEntity = driverEntity
                 )
 
+
                 // ✅ Use boolean conditions in a when { } block (not when(data.role))
                 // ✅ Use driverEntity for driver branch (not customerEntity)
-                when {
-                    data.role == "CUSTOMER" && customerEntity != null -> {
-                        VerifyOtpResult.CustomerLogin
+                return when {
+                    data.role == "CUSTOMER" && customerEntity?.customerId    != null -> {
+                        VerifyOtpResult.CustomerLogin(
+                            customerId = customerEntity.customerId
+                        )
                     }
 
-                    data.role == "DRIVER" && driverEntity != null -> {
-                        VerifyOtpResult.DriverLogin
+                    data.role == "DRIVER" && driverEntity?.driverId != null -> {
+                        VerifyOtpResult.DriverLogin(
+                            driverId = driverEntity.driverId
+                        )
                     }
 
-                    else -> VerifyOtpResult.NewUser
+                    else -> VerifyOtpResult.NewUser(customerEntity!!.customerId)
                 }
             }
 

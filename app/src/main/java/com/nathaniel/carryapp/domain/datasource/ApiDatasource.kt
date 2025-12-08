@@ -64,4 +64,6 @@ interface ApiDatasource {
     suspend fun searchProducts(query: String): Response<List<ProductResponse>>
 
     suspend fun getProductBanner(): Response<List<ProductBannerResponse>>
+
+    suspend fun registerToken(token: String, customerId: Long?, driverId: Long?)
 }

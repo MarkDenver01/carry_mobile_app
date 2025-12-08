@@ -33,9 +33,4 @@ class TokenManager @Inject constructor(
 
     fun getUserSession(): Boolean = prefs.getBoolean("session_key", false)
 
-
-    fun clearToken() {
-        prefs.edit().remove("jwt_token").apply()
-        prefs.edit().remove("mobile_email").apply()
-    }
 }

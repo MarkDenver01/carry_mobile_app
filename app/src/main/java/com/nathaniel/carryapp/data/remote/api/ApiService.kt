@@ -121,4 +121,9 @@ interface ApiService {
 
     @GET("/api/product-banners")
     suspend fun getProductBanner(): Response<List<ProductBannerResponse>>
+
+    @POST("/notifications/register-token")
+    suspend fun registerToken(
+        @Body body: Map<String, String>
+    ): Response<ResponseBody>
 }

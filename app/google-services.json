@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "112696723226",
+    "project_id": "wrapandcarry-c95b4",
+    "storage_bucket": "wrapandcarry-c95b4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:112696723226:android:1416a78b983b968bd08ea3",
+        "android_client_info": {
+          "package_name": "com.nathaniel.carryapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBqAXvtgsbc7-BQuCR8lGQABAMN7xiWInw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

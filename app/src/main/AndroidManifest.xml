@@ -11,7 +11,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
-
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <!-- Required for Android 13+ -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
 
@@ -72,9 +72,19 @@
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="location"/>
+        <service
+            android:name=".presentation.ui.service.CarryFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="carry_order_notifications" />
 
     </application>
 </manifest>

@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.google.services)
     alias(libs.plugins.hilt)
     kotlin("kapt")
 }
@@ -167,4 +168,6 @@ dependencies {
     implementation(libs.google.accompanist.navigation.animation)
     implementation(libs.google.maps.compose)
     implementation(libs.google.play.services.maps)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging)
 }

@@ -3,18 +3,18 @@ package com.nathaniel.carryapp.presentation.ui.compose.signin
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import com.google.firebase.messaging.FirebaseMessaging
 import com.nathaniel.carryapp.data.repository.ApiRepository
 import com.nathaniel.carryapp.domain.model.AgreementMapper
 import com.nathaniel.carryapp.domain.model.AgreementRequest
 import com.nathaniel.carryapp.domain.model.LoginSessionMapper
 import com.nathaniel.carryapp.domain.model.LoginSessionRequest
 import com.nathaniel.carryapp.domain.usecase.CheckAgreementStatusUseCase
-import com.nathaniel.carryapp.domain.usecase.CheckLoginSessionUseCase
-import com.nathaniel.carryapp.domain.usecase.ClearAgreementStatusUseCase
 import com.nathaniel.carryapp.domain.usecase.DeleteLoginSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveAgreementUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveLoginSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.SaveMobileOrEmailUseCase
+import com.nathaniel.carryapp.domain.usecase.UpdateFcmTokenOwnerUseCase
 import com.nathaniel.carryapp.domain.usecase.VerifyOtpResult
 import com.nathaniel.carryapp.domain.usecase.VerifyOtpUseCase
 import com.nathaniel.carryapp.navigation.Routes
@@ -36,6 +36,7 @@ sealed class AuthUiEvent {
     data class NavigateToDriver(val mobileOrEmail: String) : AuthUiEvent(
 
     )
+
     object NavigateToHome : AuthUiEvent()
     data class ShowError(val message: String) : AuthUiEvent()
 }
@@ -54,6 +55,7 @@ class SignInViewModel @Inject constructor(
     private val checkAgreementStatusUseCase: CheckAgreementStatusUseCase,
     private val saveLoginSessionUseCase: SaveLoginSessionUseCase,
     private val deleteLoginSessionUseCase: DeleteLoginSessionUseCase,
+    private val updateFcmTokenOwnerUseCase: UpdateFcmTokenOwnerUseCase,
     private val repository: ApiRepository
 ) : ViewModel() {
 
@@ -96,7 +98,15 @@ class SignInViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true) }
 
             when (val result = verifyOtpUseCase(mobileOrEmail, otp)) {
+
                 is VerifyOtpResult.DriverLogin -> {
+                    _uiState.update { it.copy(isLoading = false, verified = true) }
+
+                    val driverId = result.driverId
+
+                    // REGISTER TOKEN AFTER LOGIN
+                    registerFcmTokenAfterLogin(driverId = driverId)
+
                     val agreed = checkAgreementStatusUseCase(mobileOrEmail)
                     if (agreed == true) {
                         _eventFlow.emit(AuthUiEvent.NavigateToHome)
@@ -105,16 +115,31 @@ class SignInViewModel @Inject constructor(
                     }
                 }
 
-                is VerifyOtpResult.CustomerLogin,
-                is VerifyOtpResult.NewUser -> {
-                    val agreed = checkAgreementStatusUseCase(mobileOrEmail)
-
+                is VerifyOtpResult.CustomerLogin -> {
                     _uiState.update { it.copy(isLoading = false, verified = true) }
+
+                    val customerId = result.customerId
+
+                    // ✅ REGISTER TOKEN AFTER LOGIN
+                    registerFcmTokenAfterLogin(customerId = customerId)
+
+                    val agreed = checkAgreementStatusUseCase(mobileOrEmail)
                     if (agreed == true) {
                         _eventFlow.emit(AuthUiEvent.NavigateToHome)
                     } else {
                         _eventFlow.emit(AuthUiEvent.NavigateToTerms(mobileOrEmail))
                     }
+                }
+
+                is VerifyOtpResult.NewUser -> {
+                    _uiState.update { it.copy(isLoading = false, verified = true) }
+
+                    val customerId = result.customerId
+
+                    // ✅ REGISTER TOKEN ALSO FOR NEW USER
+                    registerFcmTokenAfterLogin(customerId = customerId)
+
+                    _eventFlow.emit(AuthUiEvent.NavigateToTerms(mobileOrEmail))
                 }
 
                 is VerifyOtpResult.Error -> {
@@ -155,4 +180,24 @@ class SignInViewModel @Inject constructor(
     fun deleteLoginSession() {
         viewModelScope.launch { deleteLoginSessionUseCase.invoke() }
     }
+
+    private fun registerFcmTokenAfterLogin(customerId: Long? = null, driverId: Long? = null) {
+        FirebaseMessaging.getInstance().token
+            .addOnSuccessListener { token ->
+                Timber.d("✅ Latest FCM token: $token")
+
+                viewModelScope.launch {
+                    try {
+                        updateFcmTokenOwnerUseCase.invoke(token, customerId, driverId)
+                        Timber.d("✅ ANDROID FCM token registered to backend")
+                    } catch (e: Exception) {
+                        Timber.e("❌ Failed to register token: ${e.message}")
+                    }
+                }
+            }
+            .addOnFailureListener {
+                Timber.e("❌ Failed to get FCM token")
+            }
+    }
+
 }
