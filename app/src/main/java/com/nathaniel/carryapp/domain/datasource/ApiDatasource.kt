@@ -74,4 +74,8 @@ interface ApiDatasource {
     suspend fun availMembership(customerId: Long): Response<ResponseBody>
 
     suspend fun getMyMembership(customerId: Long): Response<MembershipResponse>
+
+    suspend fun addPoints(customerId: Long, points: Int)
+
+    suspend fun usePoints(customerId: Long, points: Int)
 }

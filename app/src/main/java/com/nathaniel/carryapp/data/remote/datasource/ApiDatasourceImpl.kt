@@ -137,4 +137,12 @@ class ApiDatasourceImpl @Inject constructor(
     override suspend fun getMyMembership(customerId: Long): Response<MembershipResponse> {
         return apiService.getMyMembership(customerId)
     }
+
+    override suspend fun addPoints(customerId: Long, points: Int) {
+        apiService.addPoints(customerId, points)
+    }
+
+    override suspend fun usePoints(customerId: Long, points: Int) {
+        apiService.usePoints(customerId, points)
+    }
 }

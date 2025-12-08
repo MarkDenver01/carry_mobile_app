@@ -22,3 +22,19 @@ class AvailMembershipUseCase @Inject constructor(
         return repository.availMembership(customerId)
     }
 }
+
+class AddPointsMembershipUseCase @Inject constructor(
+    private val repository: ApiRepository
+) {
+    suspend operator fun invoke(customerId: Long, points: Int) {
+        repository.addPoints(customerId, points)
+    }
+}
+
+class DeductPointsMembershipUseCase @Inject constructor(
+    private val repository: ApiRepository
+) {
+    suspend operator fun invoke(customerId: Long, points: Int) {
+        repository.usePoints(customerId, points)
+    }
+}

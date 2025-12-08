@@ -145,4 +145,16 @@ interface ApiService {
     suspend fun getMyMembership(
         @Path("customerId") customerId: Long
     ): Response<MembershipResponse>
+
+    @POST("/user/public/api/membership/customer/{customerId}/add-points")
+    suspend fun addPoints(
+        @Path("customerId") customerId: Long,
+        @Query("points") points: Int
+    ): Response<ResponseBody>
+
+    @POST("/user/public/api/membership/customer/{customerId}/use-points")
+    suspend fun usePoints(
+        @Path("customerId") customerId: Long,
+        @Query("points") points: Int
+    ): Response<ResponseBody>
 }

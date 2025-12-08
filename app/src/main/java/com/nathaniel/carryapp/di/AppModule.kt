@@ -15,6 +15,7 @@ import com.nathaniel.carryapp.domain.datasource.AgreementDatasource
 import com.nathaniel.carryapp.domain.datasource.ApiDatasource
 import com.nathaniel.carryapp.domain.datasource.CartDatasource
 import com.nathaniel.carryapp.domain.datasource.LoginDatasource
+import com.nathaniel.carryapp.domain.usecase.AddPointsMembershipUseCase
 import com.nathaniel.carryapp.domain.usecase.AddToCartUseCase
 import com.nathaniel.carryapp.domain.usecase.AvailMembershipUseCase
 import com.nathaniel.carryapp.domain.usecase.CashInUseCase
@@ -23,6 +24,7 @@ import com.nathaniel.carryapp.domain.usecase.CheckLoginSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.CheckoutUseCase
 import com.nathaniel.carryapp.domain.usecase.ClearAgreementStatusUseCase
 import com.nathaniel.carryapp.domain.usecase.ClearCartUseCase
+import com.nathaniel.carryapp.domain.usecase.DeductPointsMembershipUseCase
 import com.nathaniel.carryapp.domain.usecase.DeleteLoginSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.ForwardGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.GetAddressUseCase
@@ -412,4 +414,16 @@ object AppModule {
     fun provideGetMyMembershipUseCase(
         apiRepository: ApiRepository
     ): GetMyMembershipUseCase = GetMyMembershipUseCase(apiRepository)
+
+    @Provides
+    @Singleton
+    fun provideAddPointsMembershipUseCase(
+        apiRepository: ApiRepository
+    ): AddPointsMembershipUseCase = AddPointsMembershipUseCase(apiRepository)
+
+    @Provides
+    @Singleton
+    fun provideDeductPointsMembershipUseCase(
+        apiRepository: ApiRepository
+    ): DeductPointsMembershipUseCase = DeductPointsMembershipUseCase(apiRepository)
 }

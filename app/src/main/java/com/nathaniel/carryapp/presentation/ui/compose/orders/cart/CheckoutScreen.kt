@@ -24,6 +24,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.nathaniel.carryapp.domain.enum.AlertType
 import com.nathaniel.carryapp.domain.model.CartDisplayItem
+import com.nathaniel.carryapp.domain.model.MembershipResponse
 import com.nathaniel.carryapp.domain.request.CheckoutItemRequest
 import com.nathaniel.carryapp.domain.request.CheckoutRequest
 import com.nathaniel.carryapp.navigation.Routes
@@ -32,6 +33,7 @@ import com.nathaniel.carryapp.presentation.ui.compose.orders.account.CustomerVie
 import com.nathaniel.carryapp.presentation.ui.sharedViewModel
 import com.nathaniel.carryapp.presentation.utils.NetworkResult
 import com.nathaniel.carryapp.presentation.utils.SweetAlertDialog
+import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,7 +43,8 @@ fun CheckoutScreen(
     val cartViewModel: CartViewModel = sharedViewModel()
     val customerViewModel: CustomerViewModel = sharedViewModel()
     val orderViewModel: OrderViewModel = sharedViewModel()
-
+    val membership by orderViewModel.membership.collectAsState()
+    val customerSession by orderViewModel.customerSession.collectAsState()
     val cartItems by cartViewModel.cartItems.collectAsState()
     val walletBalance by customerViewModel.walletBalance.collectAsState()
 
@@ -49,6 +52,8 @@ fun CheckoutScreen(
     var showConfirmDialog by remember { mutableStateOf(false) }
     var showDialogErrorPayment by remember { mutableStateOf(false) }
     var showDialogSuccessPayment by remember { mutableStateOf(false) }
+    var showUsePointsDialog by remember { mutableStateOf(false) }
+    var usePoints by remember { mutableStateOf(false) }
 
     val total = cartItems.sumOf { it.subtotal }
 
@@ -197,6 +202,17 @@ fun CheckoutScreen(
             onConfirm = {
                 showDialogSuccessPayment = false
 
+                // ✅ Add membership points
+                val customerId =
+                    orderViewModel.customerSession.value?.customer?.customerId
+
+                if (customerId != null) {
+                    orderViewModel.addPointsAfterPurchase(
+                        customerId = customerId,
+                        totalAmount = total   // ✅ eto ang base ng 500 pesos computation
+                    )
+                }
+
                 // ✅ SAVE REORDER
                 cartViewModel.saveToReOrderHistory()
 
@@ -277,6 +293,8 @@ fun CheckoutScreen(
                             val customerId =
                                 orderViewModel.customerSession.value?.customer?.customerId
 
+                            val membership = orderViewModel.membership.value
+
                             val deliveryAddress =
                                 orderViewModel.reverseAddress.value.fullAddressLine
 
@@ -334,6 +352,18 @@ fun CheckoutScreen(
             }
         }
     }
+
+    if (showUsePointsDialog) {
+        UsePointsDialog(
+            membership = membership,
+            total = total,
+            customerId = customerSession?.customer?.customerId,
+            orderViewModel = orderViewModel,
+            cartViewModel = cartViewModel,
+            onClose = { showUsePointsDialog = false }
+        )
+    }
+
 }
 
 
@@ -452,4 +482,90 @@ fun PaymentOption(
             if (sub.isNotEmpty()) Text(sub, fontSize = 13.sp, color = Color.Gray)
         }
     }
+}
+
+@Composable
+fun UsePointsDialog(
+    membership: MembershipResponse?,
+    total: Double,
+    customerId: Long?,
+    orderViewModel: OrderViewModel,
+    cartViewModel: CartViewModel,
+    onClose: () -> Unit
+) {
+    if (membership == null || customerId == null) return
+
+    var usePoints by remember { mutableStateOf(true) }
+
+    AlertDialog(
+        onDismissRequest = onClose,
+        title = { Text("Use Points?") },
+        text = {
+            Column {
+                Text("You have ${membership.pointsBalance} points")
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(
+                        selected = usePoints,
+                        onClick = { usePoints = true }
+                    )
+                    Text("Use my points")
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = {
+
+                val discount = if (usePoints)
+                    orderViewModel.computeDiscount(membership.pointsBalance)
+                else 0.0
+
+                val finalRequest = CheckoutRequest(
+                    customerId = customerId,
+                    paymentMethod = "WALLET",
+                    deliveryFee = 0.0,
+                    discount = discount,
+                    deliveryAddress = "",
+                    notes = null,
+                    items = cartViewModel.cartItems.value.map {
+                        CheckoutItemRequest(it.productId, it.qty)
+                    }
+                )
+
+                cartViewModel.checkout(finalRequest)
+
+                // ✅ DEDUCT POINTS
+                if (usePoints) {
+                    val pointsToDeduct = (discount / 100 * 1000).toInt()
+                    orderViewModel.deductPoints(customerId, pointsToDeduct)
+                }
+
+                onClose()
+            }) {
+                Text("Yes")
+            }
+        },
+        dismissButton = {
+            Button(onClick = {
+                val normalRequest = CheckoutRequest(
+                    customerId = customerId,
+                    paymentMethod = "WALLET",
+                    deliveryFee = 0.0,
+                    discount = 0.0,
+                    deliveryAddress = "",
+                    notes = null,
+                    items = cartViewModel.cartItems.value.map {
+                        CheckoutItemRequest(it.productId, it.qty)
+                    }
+                )
+
+                cartViewModel.checkout(normalRequest)
+                onClose()
+            }) {
+                Text("No")
+            }
+        }
+    )
 }

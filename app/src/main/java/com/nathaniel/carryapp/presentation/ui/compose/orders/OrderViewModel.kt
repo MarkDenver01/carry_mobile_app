@@ -28,10 +28,12 @@ import com.nathaniel.carryapp.domain.request.DeliveryAddressRequest
 import com.nathaniel.carryapp.domain.response.CustomerOrderResponse
 import com.nathaniel.carryapp.domain.response.OrderResponse
 import com.nathaniel.carryapp.domain.response.ProductCategoryResponse
+import com.nathaniel.carryapp.domain.usecase.AddPointsMembershipUseCase
 import com.nathaniel.carryapp.domain.usecase.AvailMembershipUseCase
 import com.nathaniel.carryapp.domain.usecase.BarangayResult
 import com.nathaniel.carryapp.domain.usecase.CheckLoginSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.CityResult
+import com.nathaniel.carryapp.domain.usecase.DeductPointsMembershipUseCase
 import com.nathaniel.carryapp.domain.usecase.ForwardGeocodeUseCase
 import com.nathaniel.carryapp.domain.usecase.GeocodeResult
 import com.nathaniel.carryapp.domain.usecase.GetAddressUseCase
@@ -147,6 +149,8 @@ class OrderViewModel @Inject constructor(
     private val getMyOrdersUseCase: GetMyOrdersUseCase,
     private val getMyMembershipUseCase: GetMyMembershipUseCase,
     private val availMembershipUseCase: AvailMembershipUseCase,
+    private val addMembershipPointsUseCase: AddPointsMembershipUseCase,
+    private val deductPointsMembershipUseCase: DeductPointsMembershipUseCase,
     private val apiRepository: ApiRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
@@ -267,6 +271,50 @@ class OrderViewModel @Inject constructor(
         loadCustomerSession()
         loadProductBanners()
     }
+
+    fun addPointsAfterPurchase(customerId: Long, totalAmount: Double) {
+        val pointsToAdd = ((totalAmount / 500).toInt()) * 50
+
+        if (pointsToAdd <= 0) {
+            Timber.d("No points earned for this purchase")
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                addMembershipPointsUseCase(customerId, pointsToAdd)
+                Timber.d("✅ $pointsToAdd points added to customer $customerId")
+            } catch (e: Exception) {
+                Timber.e("❌ Failed to add points: ${e.message}")
+            }
+        }
+    }
+
+    fun computeDiscount(points: Int): Double {
+        return if (points >= 1000) {
+            (points / 1000) * 100.0
+        } else 0.0
+    }
+
+    fun deductPoints(customerId: Long, points: Int) {
+        viewModelScope.launch {
+            try {
+                apiRepository.addPoints(
+                    customerId = customerId,
+                    points = -points // ✅ NEGATIVE para magbawas
+                )
+
+                // ✅ Reload membership after deduct
+                loadMembership(customerId)
+
+                Timber.d("✅ Deducted $points points from customer $customerId")
+
+            } catch (e: Exception) {
+                Timber.e("❌ Failed deducting points: ${e.message}")
+            }
+        }
+    }
+
 
     fun loadMembership(customerId: Long) {
         viewModelScope.launch {

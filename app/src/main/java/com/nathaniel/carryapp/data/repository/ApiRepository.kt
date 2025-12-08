@@ -505,4 +505,12 @@ class ApiRepository @Inject constructor(
         }
     }
 
+    suspend fun addPoints(customerId: Long, points: Int) {
+        remote.addPoints(customerId, points)
+    }
+
+    suspend fun usePoints(customerId: Long, points: Int) {
+        remote.usePoints(customerId, points)
+    }
+
 }
