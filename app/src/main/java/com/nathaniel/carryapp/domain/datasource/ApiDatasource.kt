@@ -12,6 +12,7 @@ import com.nathaniel.carryapp.domain.response.BarangayResponse
 import com.nathaniel.carryapp.domain.response.CashInInitResponse
 import com.nathaniel.carryapp.domain.response.CityResponse
 import com.nathaniel.carryapp.domain.response.CustomerDetailResponse
+import com.nathaniel.carryapp.domain.response.CustomerOrderResponse
 import com.nathaniel.carryapp.domain.response.OrderResponse
 import com.nathaniel.carryapp.domain.response.ProductCategoryResponse
 import com.nathaniel.carryapp.domain.response.ProductResponse
@@ -66,4 +67,6 @@ interface ApiDatasource {
     suspend fun getProductBanner(): Response<List<ProductBannerResponse>>
 
     suspend fun registerToken(token: String, customerId: Long?, driverId: Long?)
+
+    suspend fun getCustomerOrders(customerId: Long): List<CustomerOrderResponse>
 }

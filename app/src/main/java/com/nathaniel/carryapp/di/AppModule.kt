@@ -36,6 +36,7 @@ import com.nathaniel.carryapp.domain.usecase.GetCitiesByProvinceUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCurrentLocationUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCustomerDetailsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetMobileOrEmailUseCase
+import com.nathaniel.carryapp.domain.usecase.GetMyOrdersUseCase
 import com.nathaniel.carryapp.domain.usecase.GetProvincesByRegionUseCase
 import com.nathaniel.carryapp.domain.usecase.GetRecommendationsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetUnreadNotificationCountUseCase
@@ -391,4 +392,10 @@ object AppModule {
     fun provideMarkAllNotificationReadUseCase(
         localRepository: LocalRepository
     ): MarkAllNotificationsReadUseCase = MarkAllNotificationsReadUseCase(localRepository)
+
+    @Provides
+    @Singleton
+    fun provideGetMyOrdersUseCase(
+        apiRepository: ApiRepository
+    ): GetMyOrdersUseCase = GetMyOrdersUseCase(apiRepository)
 }

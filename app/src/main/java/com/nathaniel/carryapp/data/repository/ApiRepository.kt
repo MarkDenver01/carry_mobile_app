@@ -29,6 +29,7 @@ import com.nathaniel.carryapp.domain.request.UpdateWalletBalanceRequest
 import com.nathaniel.carryapp.domain.request.UserHistoryRequest
 import com.nathaniel.carryapp.domain.response.CashInInitResponse
 import com.nathaniel.carryapp.domain.response.CustomerDetailResponse
+import com.nathaniel.carryapp.domain.response.CustomerOrderResponse
 import com.nathaniel.carryapp.domain.response.OrderResponse
 import com.nathaniel.carryapp.domain.response.ProductCategoryResponse
 import com.nathaniel.carryapp.domain.response.UserHistoryResponse
@@ -466,5 +467,9 @@ class ApiRepository @Inject constructor(
 
     suspend fun registerAndroidToken(token: String, customerId: Long? = null, driverId: Long? = null) {
         remote.registerToken(token, customerId, driverId)
+    }
+
+    suspend fun getCustomerOrders(customerId: Long): List<CustomerOrderResponse> {
+        return remote.getCustomerOrders(customerId)
     }
 }

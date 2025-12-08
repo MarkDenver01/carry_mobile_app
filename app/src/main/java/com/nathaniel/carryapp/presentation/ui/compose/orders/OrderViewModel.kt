@@ -24,6 +24,8 @@ import com.nathaniel.carryapp.domain.model.Province
 import com.nathaniel.carryapp.domain.request.CustomerRegistrationRequest
 import com.nathaniel.carryapp.domain.request.DeliveryAddressMapper
 import com.nathaniel.carryapp.domain.request.DeliveryAddressRequest
+import com.nathaniel.carryapp.domain.response.CustomerOrderResponse
+import com.nathaniel.carryapp.domain.response.OrderResponse
 import com.nathaniel.carryapp.domain.response.ProductCategoryResponse
 import com.nathaniel.carryapp.domain.usecase.BarangayResult
 import com.nathaniel.carryapp.domain.usecase.CheckLoginSessionUseCase
@@ -38,6 +40,7 @@ import com.nathaniel.carryapp.domain.usecase.GetBarangaysByCityUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCitiesByProvinceUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCurrentLocationUseCase
 import com.nathaniel.carryapp.domain.usecase.GetMobileOrEmailUseCase
+import com.nathaniel.carryapp.domain.usecase.GetMyOrdersUseCase
 import com.nathaniel.carryapp.domain.usecase.GetProvincesByRegionUseCase
 import com.nathaniel.carryapp.domain.usecase.GetRecommendationsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetRelatedProductsUseCase
@@ -138,6 +141,7 @@ class OrderViewModel @Inject constructor(
     private val getAllNotificationsUseCase: GetAllNotificationsUseCase,
     private val getUnreadNotificationCountUseCase: GetUnreadNotificationCountUseCase,
     private val markAllNotificationsReadUseCase: MarkAllNotificationsReadUseCase,
+    private val getMyOrdersUseCase: GetMyOrdersUseCase,
     private val apiRepository: ApiRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
@@ -239,6 +243,12 @@ class OrderViewModel @Inject constructor(
 
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing = _isRefreshing.asStateFlow()
+
+    private val _orders = MutableStateFlow<List<CustomerOrderResponse>>(emptyList())
+    val orders: StateFlow<List<CustomerOrderResponse>> = _orders
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
 
     init {
         loadRegions()
@@ -945,6 +955,21 @@ class OrderViewModel @Inject constructor(
                                 it.categoryName.contains(query, ignoreCase = true)
                     }
                 }
+            }
+        }
+    }
+
+    fun loadOrders(customerId: Long?) {
+        if (customerId == null) return
+
+        viewModelScope.launch {
+            try {
+                _isLoading.value = true
+                _orders.value = getMyOrdersUseCase(customerId)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                _isLoading.value = false
             }
         }
     }

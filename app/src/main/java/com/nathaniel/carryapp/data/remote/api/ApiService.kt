@@ -11,6 +11,7 @@ import com.nathaniel.carryapp.domain.request.UpdateWalletBalanceRequest
 import com.nathaniel.carryapp.domain.request.UserHistoryRequest
 import com.nathaniel.carryapp.domain.response.CashInInitResponse
 import com.nathaniel.carryapp.domain.response.CustomerDetailResponse
+import com.nathaniel.carryapp.domain.response.CustomerOrderResponse
 import com.nathaniel.carryapp.domain.response.OrderResponse
 import com.nathaniel.carryapp.domain.response.ProductCategoryResponse
 import com.nathaniel.carryapp.domain.response.ProductResponse
@@ -126,4 +127,9 @@ interface ApiService {
     suspend fun registerToken(
         @Body body: Map<String, String>
     ): Response<ResponseBody>
+
+    @GET("/user/public/api/orders/customer/{customerId}")
+    suspend fun getCustomerOrders(
+        @Path("customerId") customerId: Long
+    ): Response<List<CustomerOrderResponse>>
 }

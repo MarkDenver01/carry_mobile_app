@@ -1,6 +1,7 @@
 package com.nathaniel.carryapp.presentation.ui.compose.orders.account
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -32,6 +33,8 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.nathaniel.carryapp.R
+import com.nathaniel.carryapp.domain.response.CustomerOrderResponse
+import com.nathaniel.carryapp.domain.response.OrderResponse
 import com.nathaniel.carryapp.navigation.Routes
 import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
 import com.nathaniel.carryapp.presentation.ui.compose.orders.cart.CartViewModel
@@ -57,6 +60,11 @@ fun AccountScreen(navController: NavController) {
     var selectedIndex by remember { mutableStateOf(0) }
     val bannerCount by orderViewModel.bannerCount.collectAsState()
     val unreadCount by orderViewModel.unreadCount.collectAsState()
+    // Orders state
+    val customerSession by orderViewModel.customerSession.collectAsState()
+    val myOrders by orderViewModel.orders.collectAsState()
+    val ordersLoading by orderViewModel.isLoading.collectAsState()
+
 
     var searchQuery by remember { mutableStateOf("") }
 
@@ -100,6 +108,11 @@ fun AccountScreen(navController: NavController) {
         }
     }
 
+    // 🔹 Load My Orders when we know customerId
+    LaunchedEffect(customerSession?.customer?.customerId) {
+        orderViewModel.loadOrders(customerSession?.customer?.customerId)
+    }
+
     Scaffold(
         containerColor = Color(0xFFF7F8FA),
         topBar = {
@@ -107,7 +120,7 @@ fun AccountScreen(navController: NavController) {
                 notifications = unreadCount,
                 cartCount = cartCount,
                 onCartClick = { navController.navigate(Routes.CART) },
-                onNotificationClick = {  navController.navigate(Routes.NOTIFICATIONS)  }
+                onNotificationClick = { navController.navigate(Routes.NOTIFICATIONS) }
             )
         },
         bottomBar = {
@@ -301,46 +314,90 @@ fun AccountScreen(navController: NavController) {
 
 
             // ================================
-            // 📦 MY ORDERS (EMPTY)
+            // 📦 MY ORDERS (WITH BACKEND)
             // ================================
             if (shouldShowSection("My Orders")) {
                 item {
                     SectionCard(
                         title = "My Orders",
-                        rightText = "View all"
+                        rightText = "View all",
+                        onRightClick = { navController.navigate(Routes.ORDER_LIST) }
                     ) {
 
-                        Spacer(Modifier.height(4.dp))
+                        val latestOrder: CustomerOrderResponse? = myOrders.firstOrNull()
 
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
+                        when {
+                            ordersLoading -> {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 16.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(
+                                        color = Color(0xFF118B3C),
+                                        strokeWidth = 3.dp
+                                    )
+                                }
+                            }
 
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_empty_basket),
-                                contentDescription = "",
-                                tint = Color(
-                                    0xFF118B3C
-                                ),
-                                modifier = Modifier.size(80.dp)
-                            )
+                            latestOrder == null -> {
+                                // EMPTY STATE (same as before)
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_empty_basket),
+                                        contentDescription = "",
+                                        tint = Color(0xFF118B3C),
+                                        modifier = Modifier.size(80.dp)
+                                    )
 
-                            Spacer(Modifier.height(10.dp))
+                                    Spacer(Modifier.height(10.dp))
 
-                            Text(
-                                "You don't have any orders yet.",
-                                fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF0E1F22),
-                                textAlign = TextAlign.Center
-                            )
+                                    Text(
+                                        "You don't have any orders yet.",
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color(0xFF0E1F22),
+                                        textAlign = TextAlign.Center
+                                    )
 
-                            Text(
-                                "Your orders will appear here.",
-                                fontSize = 13.sp,
-                                color = Color(0xFF75828A),
-                                textAlign = TextAlign.Center
-                            )
+                                    Text(
+                                        "Your orders will appear here.",
+                                        fontSize = 13.sp,
+                                        color = Color(0xFF75828A),
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
+
+                            else -> {
+                                // 🔥 PREVIEW OF LATEST ORDER (SukiGrocer style)
+                                LatestOrderPreview(
+                                    order = latestOrder,
+                                    onViewClick = {
+                                        navController.navigate("${Routes.ORDER_DETAILS}/${latestOrder.orderId}")
+                                    }
+                                )
+
+                                Spacer(Modifier.height(12.dp))
+
+                                Button(
+                                    onClick = { navController.navigate(Routes.ORDER_LIST) },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0xFF118B3C)
+                                    ),
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Text(
+                                        "View All Orders",
+                                        color = Color.White,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+                            }
                         }
                     }
                     Spacer(Modifier.height(20.dp))
@@ -518,15 +575,6 @@ fun AccountScreen(navController: NavController) {
                 }
 
                 Spacer(Modifier.height(12.dp))
-
-                Text(
-                    "Delete my account",
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center,
-                    color = Color(0xFF6F7F85),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
             }
         }
 
@@ -552,12 +600,13 @@ fun AccountCard(content: @Composable () -> Unit) {
 }
 
 // ======================================================================
-// 📌 SECTION CARD with Title
+// 📌 SECTION CARD with Title + (optional) rightText click
 // ======================================================================
 @Composable
 fun SectionCard(
     title: String? = null,
     rightText: String? = null,
+    onRightClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
     AccountCard {
@@ -580,7 +629,12 @@ fun SectionCard(
                             rightText,
                             fontSize = 14.sp,
                             color = Color(0xFF118B3C),
-                            fontWeight = FontWeight.Medium
+                            fontWeight = FontWeight.Medium,
+                            modifier = if (onRightClick != null) {
+                                Modifier.clickable { onRightClick() }
+                            } else {
+                                Modifier
+                            }
                         )
                     }
                 }
@@ -600,5 +654,57 @@ fun InfoRow(label: String, value: String) {
     Column(Modifier.padding(vertical = 6.dp)) {
         Text(label, fontSize = 13.sp, color = Color(0xFF6F7F85))
         Text(value, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+    }
+}
+
+// ======================================================================
+// 🧾 LATEST ORDER PREVIEW (SukiGrocer-style)
+// ======================================================================
+@Composable
+fun LatestOrderPreview(
+    order: CustomerOrderResponse,
+    onViewClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text(
+                    text = "Order #${order.orderId}",
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 16.sp
+                )
+
+                Spacer(Modifier.height(2.dp))
+
+                Text(
+                    text = order.status.toString().replace("_", " ").lowercase()
+                        .replaceFirstChar { it.uppercase() },
+                    fontSize = 13.sp,
+                    color = Color(0xFF6F7F85)
+                )
+            }
+
+            Text(
+                text = "View",
+                color = Color(0xFF118B3C),
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.clickable { onViewClick() }
+            )
+        }
+
+        Spacer(Modifier.height(8.dp))
+
+        Text(
+            text = "₱${"%,.2f".format(order.totalAmount)}",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF0E1F22)
+        )
     }
 }

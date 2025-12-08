@@ -16,6 +16,7 @@ import com.nathaniel.carryapp.domain.response.BarangayResponse
 import com.nathaniel.carryapp.domain.response.CashInInitResponse
 import com.nathaniel.carryapp.domain.response.CityResponse
 import com.nathaniel.carryapp.domain.response.CustomerDetailResponse
+import com.nathaniel.carryapp.domain.response.CustomerOrderResponse
 import com.nathaniel.carryapp.domain.response.OrderResponse
 import com.nathaniel.carryapp.domain.response.ProductCategoryResponse
 import com.nathaniel.carryapp.domain.response.ProductResponse
@@ -25,6 +26,7 @@ import com.nathaniel.carryapp.domain.response.UserHistoryResponse
 import com.nathaniel.carryapp.domain.response.WalletResponse
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
+import retrofit2.HttpException
 import retrofit2.Response
 import javax.inject.Inject
 
@@ -116,5 +118,14 @@ class ApiDatasourceImpl @Inject constructor(
         driverId?.let { body["driverId"] = it.toString() }
 
         apiService.registerToken(body)
+    }
+
+    override suspend fun getCustomerOrders(customerId: Long): List<CustomerOrderResponse> {
+        val response = apiService.getCustomerOrders(customerId)
+        if (response.isSuccessful) {
+            return response.body().orEmpty()
+        } else {
+            throw HttpException(response)
+        }
     }
 }
