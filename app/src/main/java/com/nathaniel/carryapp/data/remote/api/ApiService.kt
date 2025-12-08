@@ -2,6 +2,7 @@ package com.nathaniel.carryapp.data.remote.api
 
 import com.nathaniel.carryapp.domain.model.MembershipResponse
 import com.nathaniel.carryapp.domain.model.ProductBannerResponse
+import com.nathaniel.carryapp.domain.model.SnowballPromo
 import com.nathaniel.carryapp.domain.request.CashInRequest
 import com.nathaniel.carryapp.domain.request.CheckoutRequest
 import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
@@ -157,4 +158,7 @@ interface ApiService {
         @Path("customerId") customerId: Long,
         @Query("points") points: Int
     ): Response<ResponseBody>
+
+    @GET("/api/snowball/mobile")
+    suspend fun getSnowballPromos(): Response<List<SnowballPromo>>
 }

@@ -43,6 +43,7 @@ import com.nathaniel.carryapp.domain.usecase.GetMyMembershipUseCase
 import com.nathaniel.carryapp.domain.usecase.GetMyOrdersUseCase
 import com.nathaniel.carryapp.domain.usecase.GetProvincesByRegionUseCase
 import com.nathaniel.carryapp.domain.usecase.GetRecommendationsUseCase
+import com.nathaniel.carryapp.domain.usecase.GetSnowballPromosUseCase
 import com.nathaniel.carryapp.domain.usecase.GetUnreadNotificationCountUseCase
 import com.nathaniel.carryapp.domain.usecase.GetUserHistoryUseCase
 import com.nathaniel.carryapp.domain.usecase.GetUserSessionUseCase
@@ -107,9 +108,10 @@ object AppModule {
     fun provideApiRepository(
         remote: ApiDatasource,
         local: LoginDatasource,
-        tokenManager: TokenManager
+        tokenManager: TokenManager,
+        apiService: ApiService
     ): ApiRepository {
-        return ApiRepository(remote, local, tokenManager)
+        return ApiRepository(remote, local, tokenManager, apiService)
     }
 
     @Provides
@@ -426,4 +428,10 @@ object AppModule {
     fun provideDeductPointsMembershipUseCase(
         apiRepository: ApiRepository
     ): DeductPointsMembershipUseCase = DeductPointsMembershipUseCase(apiRepository)
+
+    @Provides
+    @Singleton
+    fun provideGetSnowballPromosUseCase(
+        repository: ApiRepository
+    ): GetSnowballPromosUseCase = GetSnowballPromosUseCase(repository)
 }

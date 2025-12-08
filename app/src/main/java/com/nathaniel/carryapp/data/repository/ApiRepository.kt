@@ -6,6 +6,7 @@ import com.nathaniel.carryapp.data.local.prefs.TokenManager
 import com.nathaniel.carryapp.data.local.room.entity.CustomerEntity
 import com.nathaniel.carryapp.data.local.room.entity.DriverEntity
 import com.nathaniel.carryapp.data.local.room.entity.LoginEntity
+import com.nathaniel.carryapp.data.remote.api.ApiService
 import com.nathaniel.carryapp.domain.datasource.ApiDatasource
 import com.nathaniel.carryapp.domain.datasource.LoginDatasource
 import com.nathaniel.carryapp.domain.enum.HttpStatus
@@ -21,6 +22,7 @@ import com.nathaniel.carryapp.domain.model.ProductBanner
 import com.nathaniel.carryapp.domain.model.ProductBannerMapper
 import com.nathaniel.carryapp.domain.model.ProductBannerResponse
 import com.nathaniel.carryapp.domain.model.Province
+import com.nathaniel.carryapp.domain.model.SnowballPromo
 import com.nathaniel.carryapp.domain.request.CashInRequest
 import com.nathaniel.carryapp.domain.request.CheckoutRequest
 import com.nathaniel.carryapp.domain.request.CustomerDetailRequest
@@ -45,7 +47,8 @@ import javax.inject.Inject
 class ApiRepository @Inject constructor(
     private val remote: ApiDatasource,
     private val loginDataSource: LoginDatasource,
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    private val apiService: ApiService
 ) {
 
     suspend fun sendOtp(mobileNumber: String): NetworkResult<Unit> {
@@ -511,6 +514,15 @@ class ApiRepository @Inject constructor(
 
     suspend fun usePoints(customerId: Long, points: Int) {
         remote.usePoints(customerId, points)
+    }
+
+    suspend fun getSnowballPromos(): List<SnowballPromo> {
+        val res = apiService.getSnowballPromos()
+        if (res.isSuccessful) {
+            return res.body() ?: emptyList()
+        } else {
+            throw Exception("Failed to load promos")
+        }
     }
 
 }

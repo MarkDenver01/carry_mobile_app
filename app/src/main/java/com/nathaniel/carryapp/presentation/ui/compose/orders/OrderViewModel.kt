@@ -22,6 +22,7 @@ import com.nathaniel.carryapp.domain.model.MembershipResponse
 import com.nathaniel.carryapp.domain.model.Product
 import com.nathaniel.carryapp.domain.model.ProductBanner
 import com.nathaniel.carryapp.domain.model.Province
+import com.nathaniel.carryapp.domain.model.SnowballPromo
 import com.nathaniel.carryapp.domain.request.CustomerRegistrationRequest
 import com.nathaniel.carryapp.domain.request.DeliveryAddressMapper
 import com.nathaniel.carryapp.domain.request.DeliveryAddressRequest
@@ -49,6 +50,7 @@ import com.nathaniel.carryapp.domain.usecase.GetMyOrdersUseCase
 import com.nathaniel.carryapp.domain.usecase.GetProvincesByRegionUseCase
 import com.nathaniel.carryapp.domain.usecase.GetRecommendationsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetRelatedProductsUseCase
+import com.nathaniel.carryapp.domain.usecase.GetSnowballPromosUseCase
 import com.nathaniel.carryapp.domain.usecase.GetUnreadNotificationCountUseCase
 import com.nathaniel.carryapp.domain.usecase.GetUserHistoryResult
 import com.nathaniel.carryapp.domain.usecase.GetUserHistoryUseCase
@@ -151,6 +153,7 @@ class OrderViewModel @Inject constructor(
     private val availMembershipUseCase: AvailMembershipUseCase,
     private val addMembershipPointsUseCase: AddPointsMembershipUseCase,
     private val deductPointsMembershipUseCase: DeductPointsMembershipUseCase,
+    private val getSnowballPromosUseCase: GetSnowballPromosUseCase,
     private val apiRepository: ApiRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
@@ -262,6 +265,9 @@ class OrderViewModel @Inject constructor(
     private val _membership = MutableStateFlow<MembershipResponse?>(null)
     val membership: StateFlow<MembershipResponse?> = _membership
 
+    private val _snowballPromos = MutableStateFlow<List<SnowballPromo>>(emptyList())
+    val snowballPromos: StateFlow<List<SnowballPromo>> = _snowballPromos
+
     init {
         loadRegions()
         loadProvinces()
@@ -270,6 +276,19 @@ class OrderViewModel @Inject constructor(
         checkLoginStatus()
         loadCustomerSession()
         loadProductBanners()
+        loadSnowballPromos()
+    }
+
+    fun loadSnowballPromos() {
+        viewModelScope.launch {
+            try {
+                val promos = getSnowballPromosUseCase()
+                _snowballPromos.value = promos
+                Timber.d("✅ Loaded ${promos.size} snowball promos")
+            } catch (e: Exception) {
+                Timber.e("❌ Failed loading snowball promos: ${e.message}")
+            }
+        }
     }
 
     fun addPointsAfterPurchase(customerId: Long, totalAmount: Double) {
@@ -358,7 +377,8 @@ class OrderViewModel @Inject constructor(
         }
     }
 
-    val bannerCount: StateFlow<Int> = productBanners.map { it.size }
+    val bannerCount: StateFlow<Int> = snowballPromos
+        .map { it.size }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),

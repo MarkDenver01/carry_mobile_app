@@ -27,3 +27,22 @@ object ProductBannerMapper {
             .map { toDomain(it) }
     }
 }
+
+data class SnowballPromo(
+    val id: Long,
+    val title: String,
+    val reward: String,
+    val requiredQty: Int,
+    val hasExpiry: Boolean,
+    val expiry: String?,
+    val terms: String,
+    val products: List<ProductItem>,
+    val promoPrices: Map<Long, Double>
+)
+
+data class ProductItem(
+    val productId: Long,
+    val name: String,
+    val categoryName: String?,
+    val imageUrl: String?
+)
