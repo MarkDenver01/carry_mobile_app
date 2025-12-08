@@ -22,6 +22,7 @@ import com.nathaniel.carryapp.presentation.ui.compose.orders.category.ListCatego
 import com.nathaniel.carryapp.presentation.ui.compose.orders.location.DeliveryAddressScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.location.LocationConfirmationScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.main_screen.OrderDetailScreen
+import com.nathaniel.carryapp.presentation.ui.compose.orders.main_screen.OrderReceiptScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.main_screen.OrderScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.main_screen.OrdersListScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.product.ProductDetailRouter
@@ -166,6 +167,16 @@ fun NavGraphBuilder.orderGraph(navController: NavController) {
     ) { backStack ->
         val orderId = backStack.arguments?.getString("orderId")?.toLongOrNull()
         OrderDetailScreen(
+            navController = navController,
+            orderId = orderId
+        )
+    }
+
+    composable(
+        route = "${Routes.ORDER_RECEIPT}/{orderId}"
+    ) { backStack ->
+        val orderId = backStack.arguments?.getString("orderId")?.toLongOrNull()
+        OrderReceiptScreen(
             navController = navController,
             orderId = orderId
         )

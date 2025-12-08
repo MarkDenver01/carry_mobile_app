@@ -217,6 +217,6 @@ fun statusColor(status: OrderStatus): Color {
         OrderStatus.PROCESSING -> Color(0xFF2196F3)
         OrderStatus.ON_DELIVERY -> Color(0xFF4CAF50)
         OrderStatus.CANCELLED -> Color(0xFFF44336)
-        OrderStatus.COMPLETED -> Color(0xFF118B3C)
+        OrderStatus.DELIVERED -> Color(0xFF118B3C)
     }
 }

@@ -4,6 +4,6 @@ enum class OrderStatus {
     PENDING,
     PROCESSING,
     ON_DELIVERY,
-    COMPLETED,
+    DELIVERED,
     CANCELLED
 }

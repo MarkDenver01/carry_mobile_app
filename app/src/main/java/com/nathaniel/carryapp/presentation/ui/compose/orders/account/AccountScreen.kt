@@ -33,6 +33,7 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.nathaniel.carryapp.R
+import com.nathaniel.carryapp.domain.enum.OrderStatus
 import com.nathaniel.carryapp.domain.response.CustomerOrderResponse
 import com.nathaniel.carryapp.domain.response.OrderResponse
 import com.nathaniel.carryapp.navigation.Routes
@@ -378,6 +379,9 @@ fun AccountScreen(navController: NavController) {
                                     order = latestOrder,
                                     onViewClick = {
                                         navController.navigate("${Routes.ORDER_DETAILS}/${latestOrder.orderId}")
+                                    },
+                                    onReceiptClick = {
+                                        navController.navigate("${Routes.ORDER_RECEIPT}/${latestOrder.orderId}")
                                     }
                                 )
 
@@ -407,38 +411,92 @@ fun AccountScreen(navController: NavController) {
             // ================================
             // 🧾 TRANSACTIONS (EMPTY)
             // ================================
+            // ================================
             if (shouldShowSection("Transactions")) {
                 item {
-                    SectionCard {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_reciept),
-                                contentDescription = "",
-                                tint = Color(
-                                    0xFF118B3C
-                                ),
-                                modifier = Modifier.size(80.dp)
-                            )
-                            Spacer(Modifier.height(12.dp))
 
-                            Text(
-                                "No transactions yet",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 18.sp,
-                                textAlign = TextAlign.Center
-                            )
+                    val paidOrders = myOrders.filter { it.status == OrderStatus.DELIVERED }
 
-                            Text(
-                                "Your payment transactions will appear here.",
-                                fontSize = 13.sp,
-                                color = Color(0xFF75828A),
-                                textAlign = TextAlign.Center
-                            )
+                    SectionCard(title = "Transactions") {
+
+                        when {
+                            ordersLoading -> {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 20.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(
+                                        color = Color(0xFF118B3C),
+                                        strokeWidth = 3.dp
+                                    )
+                                }
+                            }
+
+                            paidOrders.isEmpty() -> {
+                                // ✅ EMPTY STATE (UNCHANGED DESIGN)
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_reciept),
+                                        contentDescription = "",
+                                        tint = Color(0xFF118B3C),
+                                        modifier = Modifier.size(80.dp)
+                                    )
+
+                                    Spacer(Modifier.height(12.dp))
+
+                                    Text(
+                                        "No transactions yet",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 18.sp,
+                                        textAlign = TextAlign.Center
+                                    )
+
+                                    Text(
+                                        "Your payment transactions will appear here.",
+                                        fontSize = 13.sp,
+                                        color = Color(0xFF75828A),
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
+
+                            else -> {
+                                // ✅ SHOW PAID RECEIPTS
+                                paidOrders.take(3).forEach { order ->
+
+                                    TransactionRow(
+                                        order = order,
+                                        onReceiptClick = {
+                                            navController.navigate(
+                                                "${Routes.ORDER_RECEIPT}/${order.orderId}"
+                                            )
+                                        }
+                                    )
+
+                                    Divider(Modifier.padding(vertical = 10.dp))
+                                }
+
+                                // ✅ VIEW MORE BUTTON
+                                Text(
+                                    text = "View More Transactions →",
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            navController.navigate(Routes.ORDER_LIST)
+                                        },
+                                    textAlign = TextAlign.End,
+                                    color = Color(0xFF118B3C),
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
                         }
                     }
+
                     Spacer(Modifier.height(20.dp))
                 }
             }
@@ -663,37 +721,28 @@ fun InfoRow(label: String, value: String) {
 @Composable
 fun LatestOrderPreview(
     order: CustomerOrderResponse,
-    onViewClick: () -> Unit
+    onViewClick: () -> Unit,
+    onReceiptClick: () -> Unit
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column {
-                Text(
-                    text = "Order #${order.orderId}",
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 16.sp
-                )
-
-                Spacer(Modifier.height(2.dp))
+                Text("Order #${order.orderId}", fontWeight = FontWeight.SemiBold)
 
                 Text(
-                    text = order.status.toString().replace("_", " ").lowercase()
-                        .replaceFirstChar { it.uppercase() },
+                    order.status.name.replace("_", " "),
                     fontSize = 13.sp,
-                    color = Color(0xFF6F7F85)
+                    color = if (order.status.name == "CANCELLED") Color.Red else Color.Gray
                 )
             }
 
             Text(
-                text = "View",
+                "View",
                 color = Color(0xFF118B3C),
-                fontWeight = FontWeight.Medium,
                 modifier = Modifier.clickable { onViewClick() }
             )
         }
@@ -701,10 +750,62 @@ fun LatestOrderPreview(
         Spacer(Modifier.height(8.dp))
 
         Text(
-            text = "₱${"%,.2f".format(order.totalAmount)}",
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF0E1F22)
+            "₱${"%,.2f".format(order.totalAmount)}",
+            fontWeight = FontWeight.Bold
         )
+
+        // ✅ RECEIPT BUTTON ONLY IF COMPLETED
+        if (order.status.name == "DELIVERED") {
+            Spacer(Modifier.height(8.dp))
+
+            Text(
+                text = "View Receipt",
+                color = Color(0xFF118B3C),
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.clickable { onReceiptClick() }
+            )
+        }
+    }
+}
+
+@Composable
+fun TransactionRow(
+    order: CustomerOrderResponse,
+    onReceiptClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        Column {
+            Text(
+                text = "Order #${order.orderId}",
+                fontWeight = FontWeight.Medium
+            )
+
+            Text(
+                text = order.createdAt,
+                fontSize = 12.sp,
+                color = Color(0xFF6F7F85)
+            )
+        }
+
+        Column(horizontalAlignment = Alignment.End) {
+            Text(
+                text = "₱${"%,.2f".format(order.totalAmount)}",
+                fontWeight = FontWeight.Bold
+            )
+
+            Text(
+                text = "View Receipt",
+                fontSize = 13.sp,
+                color = Color(0xFF118B3C),
+                modifier = Modifier.clickable { onReceiptClick() }
+            )
+        }
     }
 }

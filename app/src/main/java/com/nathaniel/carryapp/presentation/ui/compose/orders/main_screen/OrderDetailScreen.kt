@@ -157,7 +157,7 @@ fun OrderTrackerStepper(status: OrderStatus) {
         OrderStatus.PENDING,
         OrderStatus.PROCESSING,
         OrderStatus.ON_DELIVERY,
-        OrderStatus.COMPLETED,
+        OrderStatus.DELIVERED,
         OrderStatus.CANCELLED
     )
 

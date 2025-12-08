@@ -31,4 +31,5 @@ object Routes {
     const val NOTIFICATIONS = "notifications"
     const val ORDER_LIST = "order_lists"
     const val ORDER_DETAILS = "order_details"
+    const val ORDER_RECEIPT = "order_receipt"
 }
