@@ -3,6 +3,7 @@ package com.nathaniel.carryapp.data.remote.datasource
 import com.nathaniel.carryapp.data.remote.api.ApiService
 import com.nathaniel.carryapp.data.remote.api.PsgcApiService
 import com.nathaniel.carryapp.domain.datasource.ApiDatasource
+import com.nathaniel.carryapp.domain.model.MembershipResponse
 import com.nathaniel.carryapp.domain.model.ProductBannerResponse
 import com.nathaniel.carryapp.domain.request.CashInRequest
 import com.nathaniel.carryapp.domain.request.CheckoutRequest
@@ -127,5 +128,13 @@ class ApiDatasourceImpl @Inject constructor(
         } else {
             throw HttpException(response)
         }
+    }
+
+    override suspend fun availMembership(customerId: Long): Response<ResponseBody> {
+        return apiService.availMembership(customerId)
+    }
+
+    override suspend fun getMyMembership(customerId: Long): Response<MembershipResponse> {
+        return apiService.getMyMembership(customerId)
     }
 }

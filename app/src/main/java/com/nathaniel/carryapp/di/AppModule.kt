@@ -16,6 +16,7 @@ import com.nathaniel.carryapp.domain.datasource.ApiDatasource
 import com.nathaniel.carryapp.domain.datasource.CartDatasource
 import com.nathaniel.carryapp.domain.datasource.LoginDatasource
 import com.nathaniel.carryapp.domain.usecase.AddToCartUseCase
+import com.nathaniel.carryapp.domain.usecase.AvailMembershipUseCase
 import com.nathaniel.carryapp.domain.usecase.CashInUseCase
 import com.nathaniel.carryapp.domain.usecase.CheckAgreementStatusUseCase
 import com.nathaniel.carryapp.domain.usecase.CheckLoginSessionUseCase
@@ -36,6 +37,7 @@ import com.nathaniel.carryapp.domain.usecase.GetCitiesByProvinceUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCurrentLocationUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCustomerDetailsUseCase
 import com.nathaniel.carryapp.domain.usecase.GetMobileOrEmailUseCase
+import com.nathaniel.carryapp.domain.usecase.GetMyMembershipUseCase
 import com.nathaniel.carryapp.domain.usecase.GetMyOrdersUseCase
 import com.nathaniel.carryapp.domain.usecase.GetProvincesByRegionUseCase
 import com.nathaniel.carryapp.domain.usecase.GetRecommendationsUseCase
@@ -398,4 +400,16 @@ object AppModule {
     fun provideGetMyOrdersUseCase(
         apiRepository: ApiRepository
     ): GetMyOrdersUseCase = GetMyOrdersUseCase(apiRepository)
+
+    @Provides
+    @Singleton
+    fun provideAvailMembershipUseCase(
+        apiRepository: ApiRepository
+    ): AvailMembershipUseCase = AvailMembershipUseCase(apiRepository)
+
+    @Provides
+    @Singleton
+    fun provideGetMyMembershipUseCase(
+        apiRepository: ApiRepository
+    ): GetMyMembershipUseCase = GetMyMembershipUseCase(apiRepository)
 }

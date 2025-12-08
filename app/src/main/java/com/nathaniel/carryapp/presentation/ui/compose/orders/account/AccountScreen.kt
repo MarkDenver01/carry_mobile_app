@@ -1,5 +1,7 @@
 package com.nathaniel.carryapp.presentation.ui.compose.orders.account
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -37,6 +39,7 @@ import com.nathaniel.carryapp.domain.enum.OrderStatus
 import com.nathaniel.carryapp.domain.response.CustomerOrderResponse
 import com.nathaniel.carryapp.domain.response.OrderResponse
 import com.nathaniel.carryapp.navigation.Routes
+import com.nathaniel.carryapp.presentation.ui.compose.membership.GoldMembershipCard
 import com.nathaniel.carryapp.presentation.ui.compose.orders.OrderViewModel
 import com.nathaniel.carryapp.presentation.ui.compose.orders.cart.CartViewModel
 import com.nathaniel.carryapp.presentation.ui.compose.orders.widgets.ShopBottomBar
@@ -47,7 +50,10 @@ import com.nathaniel.carryapp.presentation.ui.state.LoginUiAction
 import com.nathaniel.carryapp.presentation.ui.state.LoginUiEvent
 import com.nathaniel.carryapp.presentation.utils.AnimatedLoaderOverlay
 import com.nathaniel.carryapp.presentation.utils.LoadingOverlay
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AccountScreen(navController: NavController) {
@@ -65,6 +71,7 @@ fun AccountScreen(navController: NavController) {
     val customerSession by orderViewModel.customerSession.collectAsState()
     val myOrders by orderViewModel.orders.collectAsState()
     val ordersLoading by orderViewModel.isLoading.collectAsState()
+    val membership by orderViewModel.membership.collectAsState()
 
 
     var searchQuery by remember { mutableStateOf("") }
@@ -111,7 +118,12 @@ fun AccountScreen(navController: NavController) {
 
     // 🔹 Load My Orders when we know customerId
     LaunchedEffect(customerSession?.customer?.customerId) {
-        orderViewModel.loadOrders(customerSession?.customer?.customerId)
+        val customerId = customerSession?.customer?.customerId
+        if (customerId != null) {
+            orderViewModel.loadOrders(customerId)
+            orderViewModel.loadMembership(customerId)
+        }
+
     }
 
     Scaffold(
@@ -258,53 +270,114 @@ fun AccountScreen(navController: NavController) {
             // ================================
             if (shouldShowSection("Suki Membership Program")) {
                 item {
-                    SectionCard(title = "Suki Membership Program") {
+                    if (membership == null) {
+                        SectionCard(title = "Suki Membership Program") {
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
 
-                            Image(
-                                painter = painterResource(R.drawable.ic_membership), // 🔥 Add your own icon
-                                contentDescription = "",
-                                modifier = Modifier
-                                    .size(70.dp)
-                                    .clip(RoundedCornerShape(12.dp)),
-                                contentScale = ContentScale.Crop
+                                Image(
+                                    painter = painterResource(R.drawable.ic_membership), // 🔥 Add your own icon
+                                    contentDescription = "",
+                                    modifier = Modifier
+                                        .size(70.dp)
+                                        .clip(RoundedCornerShape(12.dp)),
+                                    contentScale = ContentScale.Crop
+                                )
+
+                                Spacer(Modifier.width(14.dp))
+
+                                Column(modifier = Modifier.weight(1f)) {
+
+                                    Text(
+                                        "Become a Suki Member!",
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color(0xFF0E1F22)
+                                    )
+
+                                    Text(
+                                        "Enjoy exclusive discounts, points, and freebies every order.",
+                                        fontSize = 13.sp,
+                                        color = Color(0xFF6F7F85)
+                                    )
+                                }
+
+                                // 👉 BUTTON
+                                Button(
+                                    onClick = {
+                                        navController.navigate(Routes.SUKI_MEMBERSHIP)
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(
+                                            0xFF118B3C
+                                        )
+                                    ),
+                                    shape = RoundedCornerShape(15.dp)
+                                ) {
+                                    Text(
+                                        "Join",
+                                        color = Color.White,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        val isExpired = isMembershipExpired(membership!!.expiryDate)
+
+                        SectionCard(title = "Suki Membership Program") {
+
+                            GoldMembershipCard(
+                                name = customer?.userName ?: "",
+                                photo = customer?.photoUrl,
+                                points = membership!!.pointsBalance,
+                                expiry = membership!!.expiryDate
                             )
 
-                            Spacer(Modifier.width(14.dp))
+                            // ✅ EXPIRED UI WARNING + RENEW BUTTON
+                            if (isExpired) {
 
-                            Column(modifier = Modifier.weight(1f)) {
-
-                                Text(
-                                    "Become a Suki Member!",
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = Color(0xFF0E1F22)
-                                )
+                                Spacer(Modifier.height(14.dp))
 
                                 Text(
-                                    "Enjoy exclusive discounts, points, and freebies every order.",
-                                    fontSize = 13.sp,
-                                    color = Color(0xFF6F7F85)
+                                    text = "Membership Expired",
+                                    color = Color.Red,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp
                                 )
-                            }
 
-                            // 👉 BUTTON
-                            Button(
-                                onClick = {
-                                    //navController.navigate(Routes.MEMBERSHIP)
-                                },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(
-                                        0xFF118B3C
+                                Spacer(Modifier.height(10.dp))
+
+                                Button(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0xFF118B3C)
+                                    ),
+                                    shape = RoundedCornerShape(14.dp),
+                                    onClick = {
+                                        orderViewModel.availMembership(
+                                            customerId = customerSession?.customer?.customerId,
+                                            walletBalance = walletBalance,
+                                            onSuccess = {
+                                                orderViewModel.loadMembership(
+                                                    customerSession?.customer?.customerId ?: return@availMembership
+                                                )
+                                            },
+                                            onDeductWallet = {
+                                                customerViewModel.payMembershipFee()   // ✅ ACTUAL WALLET DEDUCT
+                                            }
+                                        )
+                                    }
+                                ) {
+                                    Text(
+                                        "Renew Membership ₱500",
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Bold
                                     )
-                                ),
-                                shape = RoundedCornerShape(15.dp)
-                            ) {
-                                Text("Join", color = Color.White, fontWeight = FontWeight.SemiBold)
+                                }
                             }
                         }
                     }
@@ -807,5 +880,18 @@ fun TransactionRow(
                 modifier = Modifier.clickable { onReceiptClick() }
             )
         }
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun isMembershipExpired(expiry: String?): Boolean {
+    if (expiry.isNullOrBlank()) return true
+
+    return try {
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        val expiryDate = LocalDate.parse(expiry, formatter)
+        expiryDate.isBefore(LocalDate.now())
+    } catch (e: Exception) {
+        true
     }
 }

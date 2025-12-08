@@ -159,5 +159,8 @@ class CustomerViewModel @Inject constructor(
         }
     }
 
+    fun payMembershipFee() {
+        deductWallet(500.0)
+    }
 
 }

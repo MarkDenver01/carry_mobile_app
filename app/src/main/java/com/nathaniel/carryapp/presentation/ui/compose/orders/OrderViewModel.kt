@@ -18,6 +18,7 @@ import com.nathaniel.carryapp.domain.enum.ToastType
 import com.nathaniel.carryapp.domain.mapper.CustomerDetailsMapper
 import com.nathaniel.carryapp.domain.model.Barangay
 import com.nathaniel.carryapp.domain.model.City
+import com.nathaniel.carryapp.domain.model.MembershipResponse
 import com.nathaniel.carryapp.domain.model.Product
 import com.nathaniel.carryapp.domain.model.ProductBanner
 import com.nathaniel.carryapp.domain.model.Province
@@ -27,6 +28,7 @@ import com.nathaniel.carryapp.domain.request.DeliveryAddressRequest
 import com.nathaniel.carryapp.domain.response.CustomerOrderResponse
 import com.nathaniel.carryapp.domain.response.OrderResponse
 import com.nathaniel.carryapp.domain.response.ProductCategoryResponse
+import com.nathaniel.carryapp.domain.usecase.AvailMembershipUseCase
 import com.nathaniel.carryapp.domain.usecase.BarangayResult
 import com.nathaniel.carryapp.domain.usecase.CheckLoginSessionUseCase
 import com.nathaniel.carryapp.domain.usecase.CityResult
@@ -40,6 +42,7 @@ import com.nathaniel.carryapp.domain.usecase.GetBarangaysByCityUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCitiesByProvinceUseCase
 import com.nathaniel.carryapp.domain.usecase.GetCurrentLocationUseCase
 import com.nathaniel.carryapp.domain.usecase.GetMobileOrEmailUseCase
+import com.nathaniel.carryapp.domain.usecase.GetMyMembershipUseCase
 import com.nathaniel.carryapp.domain.usecase.GetMyOrdersUseCase
 import com.nathaniel.carryapp.domain.usecase.GetProvincesByRegionUseCase
 import com.nathaniel.carryapp.domain.usecase.GetRecommendationsUseCase
@@ -142,6 +145,8 @@ class OrderViewModel @Inject constructor(
     private val getUnreadNotificationCountUseCase: GetUnreadNotificationCountUseCase,
     private val markAllNotificationsReadUseCase: MarkAllNotificationsReadUseCase,
     private val getMyOrdersUseCase: GetMyOrdersUseCase,
+    private val getMyMembershipUseCase: GetMyMembershipUseCase,
+    private val availMembershipUseCase: AvailMembershipUseCase,
     private val apiRepository: ApiRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
@@ -250,6 +255,9 @@ class OrderViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
+    private val _membership = MutableStateFlow<MembershipResponse?>(null)
+    val membership: StateFlow<MembershipResponse?> = _membership
+
     init {
         loadRegions()
         loadProvinces()
@@ -258,6 +266,48 @@ class OrderViewModel @Inject constructor(
         checkLoginStatus()
         loadCustomerSession()
         loadProductBanners()
+    }
+
+    fun loadMembership(customerId: Long) {
+        viewModelScope.launch {
+            when (val res = getMyMembershipUseCase(customerId)) {
+                is NetworkResult.Success -> _membership.value = res.data
+                else -> Timber.e("No membership yet")
+            }
+        }
+    }
+
+    fun availMembership(
+        customerId: Long?,
+        walletBalance: Double,
+        onSuccess: () -> Unit,
+        onDeductWallet: () -> Unit   // ✅ WALCTUAL WALLET DEDUCT CALLBACK
+    ) {
+        if (walletBalance < 500) {
+            Timber.e("❌ Insufficient wallet balance")
+            return
+        }
+
+        viewModelScope.launch {
+            when (val result = availMembershipUseCase(customerId!!)) {
+
+                is NetworkResult.Success -> {
+                    Timber.d("✅ Membership success — deducting wallet")
+
+                    // ✅ WALLET DEDUCTION HERE
+                    onDeductWallet()
+
+                    loadMembership(customerId)
+                    onSuccess()
+                }
+
+                is NetworkResult.Error -> {
+                    Timber.e("❌ Membership failed")
+                }
+
+                else -> Unit
+            }
+        }
     }
 
     val bannerCount: StateFlow<Int> = productBanners.map { it.size }

@@ -15,6 +15,7 @@ import com.nathaniel.carryapp.domain.mapper.ProductMapper
 import com.nathaniel.carryapp.domain.mapper.ProvinceMapper
 import com.nathaniel.carryapp.domain.model.Barangay
 import com.nathaniel.carryapp.domain.model.City
+import com.nathaniel.carryapp.domain.model.MembershipResponse
 import com.nathaniel.carryapp.domain.model.Product
 import com.nathaniel.carryapp.domain.model.ProductBanner
 import com.nathaniel.carryapp.domain.model.ProductBannerMapper
@@ -472,4 +473,36 @@ class ApiRepository @Inject constructor(
     suspend fun getCustomerOrders(customerId: Long): List<CustomerOrderResponse> {
         return remote.getCustomerOrders(customerId)
     }
+
+    suspend fun availMembership(customerId: Long): NetworkResult<Unit> {
+        return try {
+            val response = remote.availMembership(customerId)
+            if (response.isSuccessful) {
+                NetworkResult.Success(HttpStatus.SUCCESS, Unit)
+            } else {
+                NetworkResult.Error(HttpStatus.ERROR, "Failed to avail membership")
+            }
+        } catch (e: Exception) {
+            NetworkResult.Error(HttpStatus.ERROR, e.message ?: "Network error")
+        }
+    }
+
+    suspend fun getMyMembership(customerId: Long): NetworkResult<MembershipResponse> {
+        return try {
+            val response = remote.getMyMembership(customerId)
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body != null) {
+                    NetworkResult.Success(HttpStatus.SUCCESS, body)
+                } else {
+                    NetworkResult.Error(HttpStatus.ERROR, "Empty membership response")
+                }
+            } else {
+                NetworkResult.Error(HttpStatus.ERROR, "Failed to load membership")
+            }
+        } catch (e: Exception) {
+            NetworkResult.Error(HttpStatus.ERROR, e.message ?: "Network error (membership)")
+        }
+    }
+
 }

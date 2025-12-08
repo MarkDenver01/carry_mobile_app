@@ -1,5 +1,6 @@
 package com.nathaniel.carryapp.domain.datasource
 
+import com.nathaniel.carryapp.domain.model.MembershipResponse
 import com.nathaniel.carryapp.domain.model.ProductBannerResponse
 import com.nathaniel.carryapp.domain.request.CashInRequest
 import com.nathaniel.carryapp.domain.request.CheckoutRequest
@@ -69,4 +70,8 @@ interface ApiDatasource {
     suspend fun registerToken(token: String, customerId: Long?, driverId: Long?)
 
     suspend fun getCustomerOrders(customerId: Long): List<CustomerOrderResponse>
+
+    suspend fun availMembership(customerId: Long): Response<ResponseBody>
+
+    suspend fun getMyMembership(customerId: Long): Response<MembershipResponse>
 }

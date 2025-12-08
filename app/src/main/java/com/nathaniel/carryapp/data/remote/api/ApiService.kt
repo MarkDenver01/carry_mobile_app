@@ -1,5 +1,6 @@
 package com.nathaniel.carryapp.data.remote.api
 
+import com.nathaniel.carryapp.domain.model.MembershipResponse
 import com.nathaniel.carryapp.domain.model.ProductBannerResponse
 import com.nathaniel.carryapp.domain.request.CashInRequest
 import com.nathaniel.carryapp.domain.request.CheckoutRequest
@@ -76,7 +77,6 @@ interface ApiService {
         @Query("mobileNumber") mobileNumber: String
     ): Response<WalletResponse>
 
-
     @POST("api/wallet/update")
     suspend fun updateCustomerWalletBalance(
         @Body body: UpdateWalletBalanceRequest
@@ -132,4 +132,17 @@ interface ApiService {
     suspend fun getCustomerOrders(
         @Path("customerId") customerId: Long
     ): Response<List<CustomerOrderResponse>>
+
+
+    // ✅ AVAIL MEMBERSHIP
+    @POST("/user/public/api/membership/customer/{customerId}/avail")
+    suspend fun availMembership(
+        @Path("customerId") customerId: Long
+    ): Response<ResponseBody>
+
+    // ✅ GET MY MEMBERSHIP
+    @GET("/user/public/api/membership/customer/{customerId}")
+    suspend fun getMyMembership(
+        @Path("customerId") customerId: Long
+    ): Response<MembershipResponse>
 }

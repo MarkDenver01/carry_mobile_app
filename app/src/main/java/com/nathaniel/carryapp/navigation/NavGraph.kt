@@ -8,6 +8,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.nathaniel.carryapp.presentation.ui.compose.driver.DriverMainScreen
 import com.nathaniel.carryapp.presentation.ui.compose.initial.InitialScreen
+import com.nathaniel.carryapp.presentation.ui.compose.membership.SukiMembershipScreen
 import com.nathaniel.carryapp.presentation.ui.compose.notifications.NotificationHistoryScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.location.DeliveryAreaScreen
 import com.nathaniel.carryapp.presentation.ui.compose.orders.account.AccountScreen
@@ -180,5 +181,9 @@ fun NavGraphBuilder.orderGraph(navController: NavController) {
             navController = navController,
             orderId = orderId
         )
+    }
+
+    composable(Routes.SUKI_MEMBERSHIP) {
+        SukiMembershipScreen(navController)
     }
 }

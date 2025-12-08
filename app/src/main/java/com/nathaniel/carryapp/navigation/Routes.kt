@@ -32,4 +32,5 @@ object Routes {
     const val ORDER_LIST = "order_lists"
     const val ORDER_DETAILS = "order_details"
     const val ORDER_RECEIPT = "order_receipt"
+    const val SUKI_MEMBERSHIP = "suki_membership"
 }
